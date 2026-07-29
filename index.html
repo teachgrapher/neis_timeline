@@ -123,6 +123,23 @@ body{
 .res-head p{margin:0;font-size:13px;color:var(--ink-soft)}
 .res-clear{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);background:none;border:0;border-bottom:1px solid var(--rule);cursor:pointer;padding:0 0 1px;font-family:var(--sans)}
 .res-clear:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 역할 필터 ── */
+.facets{display:none;flex-wrap:wrap;align-items:center;gap:6px;margin:16px 0 0}
+.facets.on{display:flex}
+.facet-lab{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-right:2px}
+.facet{
+  font-family:var(--sans);font-size:12.5px;font-weight:600;line-height:1.4;
+  padding:4px 9px;background:var(--sheet);border:1px solid var(--rule);color:var(--ink-soft);
+  cursor:pointer;
+}
+.facet i{font-style:normal;font-weight:500;margin-left:3px;font-variant-numeric:tabular-nums}
+.facet:hover{border-color:var(--ink);color:var(--ink)}
+.facet.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.facet.on i{color:var(--dropout-deep)}
+.facet.more{border-style:dashed;background:none}
+.facet:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
 .hits{list-style:none;margin:20px 0 0;padding:0}
 .hit{
   display:block;padding:16px 18px;margin:0 0 10px;background:var(--sheet);
@@ -192,8 +209,8 @@ footer .by{margin-top:6px;font-size:10.5px;letter-spacing:.14em;text-transform:u
       <em>업무카드 단위로 찾아 바로 그 카드로 건너뛴다</em>
     </h1>
     <p class="hero-lede">
-      나이스 매뉴얼을 업무 단위로 잘라 <b>언제·누가·어디서·무엇을 어떻게·왜</b> 카드로 정리한 타임라인 모음이다.
-      아래에서 Part를 골라 문서로 들어가거나, 위 검색창에 키워드를 넣어 <b>51편 전체의 업무카드를 한 번에</b> 훑을 수 있다.
+      나이스 매뉴얼을 업무 단위로 잘라 <b>언제·누가·어디서·무엇을 어떻게·왜</b> 카드로 정리한 타임라인 모음입니다.
+      아래에서 Part를 골라 문서로 들어가거나, 위 검색창에 키워드를 넣어 <b>53편의 섹션과 622개의 업무카드에서</b> 검색하실 수 있습니다.
     </p>
     <dl class="meta-strip">
       <div><dt>Part</dt><dd id="m-part">9</dd></div>
@@ -210,6 +227,7 @@ footer .by{margin-top:6px;font-size:10.5px;letter-spacing:.14em;text-transform:u
       <p id="res-sub"></p>
       <button class="res-clear" type="button" id="clearbtn">검색 지우기</button>
     </div>
+    <div class="facets" id="facets" aria-label="역할로 좁히기"></div>
     <ol class="hits" id="hits"></ol>
     <p class="res-more" id="res-more"></p>
   </section>
@@ -232,7 +250,19 @@ var BASE  = window.NEIS_BASE || 'pages/';
 var PARTS = window.NEIS_PARTS || [];
 
 var $ = function(id){ return document.getElementById(id); };
-var qEl = $('q'), hitsEl = $('hits'), resEl = $('results');
+var qEl = $('q'), hitsEl = $('hits'), resEl = $('results'), facetsEl = $('facets');
+
+/* ── 역할 필터 상태 ── */
+// 같은 역할인데 원문 표기가 갈린 것만 한쪽으로 모은다. 뜻이 다를 여지가 있으면 건드리지 않았다
+var ROLE_ALIAS = {
+  '담임교사': '학급담임교사',
+  '보건업무담당자': '보건담당자',
+  '학교업무분장관리자': '학교업무분장관리담당자',
+  '동아리업무담당교사': '동아리담당교사'
+};
+var FACET_TOP = 8;     // 칩을 이만큼만 먼저 보이고 나머지는 접어 둔다
+var picked = [];       // 고른 역할. 비어 있으면 전체
+var facetOpen = false;
 
 /* ── 파일명에서 표시용 제목 만들기 ── */
 function labelOf(file){
@@ -346,10 +376,18 @@ function parseDoc(html, part, file){
 
     var flat = [desc, where, how, why, memo].join(' ').replace(/\s+/g,' ').trim();
 
+    // 필터 기준은 data-who다. w6의 '누가?'는 문장이라 낱말로 자르기 어렵다
+    var roles = [];
+    (a.getAttribute('data-who') || '').split(/\s+/).forEach(function(t){
+      if(!t) return;
+      var r = ROLE_ALIAS[t] || t;
+      if(roles.indexOf(r) === -1) roles.push(r);
+    });
+
     INDEX.push({
       url: url + '#' + a.id,
       part: part, doc: title, num: a.getAttribute('data-num') || '',
-      head: head, tags: tags, when: when, who: who, where: where, flat: flat,
+      head: head, tags: tags, when: when, who: who, where: where, flat: flat, roles: roles,
       hay: (head + ' ' + tags.join(' ') + ' ' + when + ' ' + who + ' ' + flat).toLowerCase()
     });
   });
@@ -474,25 +512,79 @@ function highlight(text, ts){
   return out;
 }
 
+// 검색어와 고른 역할을 주소에 담는 한 가지 형식. 해시와 문서 링크의 물음표 뒤가 같은 모양이다
+function stateQS(q){
+  var s = 'q=' + encodeURIComponent(q);
+  if(picked.length) s += '&who=' + encodeURIComponent(picked.join(','));
+  return s;
+}
+
+// 칩 개수는 낱말로만 걸러낸 결과에서 센다. 하나를 고른다고 나머지 숫자가 무너지지 않게 하려는 것
+function renderFacets(counts, total){
+  var keys = Object.keys(counts).sort(function(a,b){
+    return counts[b] - counts[a] || (a < b ? -1 : 1);
+  });
+  if(keys.length < 2){
+    facetsEl.innerHTML = '';
+    facetsEl.classList.remove('on');
+    return;
+  }
+
+  var html = '<span class="facet-lab">역할</span>'
+           + '<button type="button" class="facet' + (picked.length ? '' : ' on') + '"'
+           + ' data-role="" aria-pressed="' + !picked.length + '">전체 <i>' + total + '</i></button>';
+
+  (facetOpen ? keys : keys.slice(0, FACET_TOP)).forEach(function(r){
+    var on = picked.indexOf(r) !== -1;
+    html += '<button type="button" class="facet' + (on ? ' on' : '') + '"'
+          + ' data-role="' + esc(r) + '" aria-pressed="' + on + '">'
+          + esc(r) + ' <i>' + counts[r] + '</i></button>';
+  });
+
+  if(keys.length > FACET_TOP){
+    html += '<button type="button" class="facet more" data-more="1">'
+          + (facetOpen ? '접기' : '+' + (keys.length - FACET_TOP) + '개 더') + '</button>';
+  }
+
+  facetsEl.innerHTML = html;
+  facetsEl.classList.add('on');
+}
+
 function runSearch(raw){
   var q = raw.trim();
   if(!q){ closeSearch(); return; }
 
   var ts = terms(q);
-  var found = [];
+  var matched = [];
   INDEX.forEach(function(item){
     var ok = ts.every(function(t){ return item.hay.indexOf(t) !== -1; });
-    if(ok) found.push({ it:item, sc:score(item, ts) });
+    if(ok) matched.push(item);
   });
+
+  var counts = {};
+  matched.forEach(function(it){
+    it.roles.forEach(function(r){ counts[r] = (counts[r] || 0) + 1; });
+  });
+  // 낱말을 더 넣어 결과가 바뀌면, 이제 없는 역할은 스스로 풀린다.
+  // 색인이 아직 도는 중이면 판단하지 않는다. 주소로 막 들어온 역할이 지워지기 때문이다
+  if(doneDocs >= readyDocs){
+    picked = picked.filter(function(r){ return counts[r]; });
+  }
+  renderFacets(counts, matched.length);
+
+  var found = matched.filter(function(it){
+    return !picked.length || it.roles.some(function(r){ return picked.indexOf(r) !== -1; });
+  }).map(function(it){ return { it:it, sc:score(it, ts) }; });
   found.sort(function(a,b){ return b.sc - a.sc; });
 
+  var qs = stateQS(q);
   var shown = found.slice(0, MAX_HITS);
   hitsEl.innerHTML = shown.map(function(f){
     var it = f.it;
     var tagHtml = it.tags.length
       ? '<p class="hit-tags">' + it.tags.map(function(t){ return '<i>' + highlight(t, ts) + '</i>'; }).join('') + '</p>'
       : '';
-    return '<li><a class="hit" href="' + it.url + '">'
+    return '<li><a class="hit" href="' + it.url.replace('#', '?' + qs + '#') + '">'
          + '<p class="hit-crumb"><b>' + esc(it.part) + '</b> · ' + esc(it.doc) + '</p>'
          + '<h3>' + highlight(it.head, ts) + '<span>카드 ' + esc(it.num) + '</span></h3>'
          + tagHtml
@@ -501,22 +593,31 @@ function runSearch(raw){
   }).join('');
 
   if(!found.length){
-    hitsEl.innerHTML = '<li class="res-empty"><b>‘' + esc(q) + '’</b>에 해당하는 업무카드가 없습니다.'
-      + (doneDocs < readyDocs ? ' 아직 색인 중이니 잠시 뒤 다시 보입니다.' : ' 띄어쓰기를 지우거나 더 짧은 낱말로 찾아보세요.') + '</li>';
+    hitsEl.innerHTML = '<li class="res-empty">'
+      + (picked.length
+          ? '<b>‘' + esc(q) + '’</b> 결과 가운데 고른 역할에 해당하는 업무카드가 없습니다. 위에서 <b>전체</b>를 눌러 보세요.'
+          : '<b>‘' + esc(q) + '’</b>에 해당하는 업무카드가 없습니다.'
+            + (doneDocs < readyDocs ? ' 아직 색인 중이니 잠시 뒤 다시 보입니다.' : ' 띄어쓰기를 지우거나 더 짧은 낱말로 찾아보세요.'))
+      + '</li>';
   }
 
   $('res-title').textContent = '‘' + q + '’ 검색 결과';
   $('res-sub').textContent = found.length + '개 카드'
+    + (picked.length ? ' · 낱말 결과 ' + matched.length + '개를 역할로 좁힘' : '')
     + (doneDocs < readyDocs ? ' · 색인 ' + doneDocs + '/' + readyDocs + '편 진행 중' : '');
   $('res-more').textContent = found.length > MAX_HITS
-    ? '앞의 ' + MAX_HITS + '개만 보이고 있습니다. 낱말을 하나 더 넣어 범위를 좁혀 보세요.' : '';
+    ? '앞의 ' + MAX_HITS + '개만 보이고 있습니다. 위에서 역할을 고르거나 낱말을 하나 더 넣어 범위를 좁혀 보세요.' : '';
 
   resEl.classList.add('on');
   $('parts').style.display = 'none';
-  history.replaceState(null, '', '#q=' + encodeURIComponent(q));
+  history.replaceState(null, '', '#' + qs);
 }
 
 function closeSearch(){
+  picked = [];
+  facetOpen = false;
+  facetsEl.innerHTML = '';
+  facetsEl.classList.remove('on');
   resEl.classList.remove('on');
   hitsEl.innerHTML = '';
   $('parts').style.display = '';
@@ -533,6 +634,22 @@ $('clearbtn').addEventListener('click', function(){
   qEl.value = '';
   closeSearch();
   qEl.focus();
+});
+facetsEl.addEventListener('click', function(e){
+  var b = e.target.closest('.facet');
+  if(!b) return;
+  if(b.getAttribute('data-more')){
+    facetOpen = !facetOpen;
+  }else{
+    var r = b.getAttribute('data-role');
+    if(!r){
+      picked = [];
+    }else{
+      var i = picked.indexOf(r);
+      if(i === -1) picked.push(r); else picked.splice(i, 1);
+    }
+  }
+  runSearch(qEl.value);
 });
 document.addEventListener('keydown', function(e){
   if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'){
@@ -564,10 +681,11 @@ if(location.protocol === 'file:'){
   indexAll();
 }
 
-var m = location.hash.match(/^#q=(.*)$/);
+var m = location.hash.match(/^#q=([^&]*)(?:&who=(.*))?$/);
 if(m){
   try{
     var restored = decodeURIComponent(m[1]);
+    if(m[2]) picked = decodeURIComponent(m[2]).split(',').filter(Boolean);
     qEl.value = restored;
     runSearch(restored);
   }catch(e){ /* 잘못된 해시는 무시한다 */ }

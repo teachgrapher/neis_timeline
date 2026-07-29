@@ -45,6 +45,29 @@ body{
 .topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
 .topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
 .topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+.topbar .home{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .home:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 이웃 문서 이동 ── */
+.docnav{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;margin:52px 0 0;padding-top:22px;border-top:1.5px solid var(--ink)}
+.docnav a{
+  display:block;padding:12px 14px;background:var(--sheet);border:1px solid var(--rule);
+  text-decoration:none;color:var(--ink);font-size:14px;font-weight:600;line-height:1.45;
+  transition:border-color .12s,color .12s;
+}
+.docnav a:hover{border-color:var(--mark);color:var(--mark)}
+.docnav a:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.docnav a span{display:block;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:3px}
+.docnav a:hover span{color:var(--mark)}
+.docnav .next{text-align:right}
+.docnav .hub{display:flex;align-items:center;font-size:13px;background:none;border-style:dashed;color:var(--ink-soft)}
+.docnav .gap{border:0}
+@media (max-width:640px){
+  .topbar .up{display:none}
+  .docnav{grid-template-columns:1fr;gap:8px;margin-top:38px}
+  .docnav .next{text-align:left}
+  .docnav .hub{justify-content:center}
+}
 
 /* ── 진행 티커 ── */
 .ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
@@ -192,7 +215,7 @@ footer a{color:var(--ink)}
 }
 @media print{
   body{background:#fff}
-  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
   .task{break-inside:avoid;box-shadow:none}
 }
 </style>
@@ -204,6 +227,7 @@ footer a{color:var(--ink)}
     <span class="dot" aria-hidden="true"></span>
     <b>개별화교육계획</b>
     <span class="sub">업무 21개 · 시간순 타임라인</span>
+    <a class="home" href="../index.html">← 전체 색인</a>
     <a class="up" href="#timeline">타임라인 ↑</a>
   </div>
   <div class="ticker">
@@ -638,6 +662,12 @@ footer a{color:var(--ink)}
 </article>
 
 
+    <nav class="docnav" aria-label="이웃 문서 이동">
+      <span class="gap"></span>
+      <a class="hub" href="../index.html">전체 색인 · Part 4 개별화교육계획</a>
+      <span class="gap"></span>
+    </nav>
+
     <footer>
 <p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part 4 개별화교육계획, Section_01~04 개별화교육계획 (585–615쪽)</p>
 <p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
@@ -693,6 +723,20 @@ var io = new IntersectionObserver(function(es){
   });
 },{rootMargin:'-18% 0px -68% 0px'});
 document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+<script>
+// 허브 검색을 거쳐 들어왔다면 '전체 색인' 링크가 그 검색 결과로 되돌리게 한다
+(function(){
+  var p = new URLSearchParams(location.search), keep = [];
+  ['q','who'].forEach(function(k){
+    var v = p.get(k);
+    if(v) keep.push(k + '=' + encodeURIComponent(v));
+  });
+  if(!keep.length) return;
+  document.querySelectorAll('a.home,a.hub').forEach(function(a){
+    a.href = '../index.html#' + keep.join('&');
+  });
+})();
 </script>
 </body>
 </html>
