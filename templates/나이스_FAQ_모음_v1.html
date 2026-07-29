@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<!-- 자주 묻는 질문을 업무카드 형식으로 모으는 문서. 카드를 하나씩 붙여 나간다 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>나이스 FAQ 모음 · 자주 묻는 질문</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --offset:calc(var(--topbar-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+.wrap{max-width:900px;margin:0 auto;padding:0 24px}
+
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(30px,5.2vw,46px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero-lede{max-width:60ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+
+.qlist{margin:0 0 52px;scroll-margin-top:var(--offset)}
+.qlist h2{font-family:var(--serif);font-size:20px;font-weight:700;margin:0;padding-bottom:10px;border-bottom:1.5px solid var(--ink);letter-spacing:-.01em}
+.qlist ol{list-style:none;margin:16px 0 0;padding:0}
+.qlist li{border-bottom:1px solid var(--rule-soft)}
+.qlist a{display:flex;gap:14px;align-items:baseline;padding:11px 2px;text-decoration:none;color:var(--ink);font-size:15px;line-height:1.5}
+.qlist a:hover{color:var(--mark)}
+.qlist a b{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--mark);flex:none;font-variant-numeric:tabular-nums;min-width:22px}
+
+/* ── 업무카드 (타임라인 문서와 동일한 구조) ── */
+main{max-width:900px;margin:0 auto}
+.task{background:var(--sheet);border:1px solid var(--rule);box-shadow:0 1px 0 var(--shadow);display:grid;grid-template-columns:78px minmax(0,1fr);margin:0 0 26px;scroll-margin-top:var(--offset)}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px}
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 24px 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px}
+
+@media (max-width:640px){
+  :root{--topbar-h:50px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+}
+@media print{body{background:#fff}.topbar,.cardnav{display:none}.task{break-inside:avoid;box-shadow:none}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>나이스 FAQ 모음</b>
+    <a class="up" href="../index.html">색인으로</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <p class="eyebrow">FAQ · 강원 나이스 현장지원단(고등)</p>
+    <h1>자주 묻는 질문</h1>
+    <p class="hero-lede">현장에서 되풀이해 들어오는 질문을 업무카드와 같은 형식으로 모았다. 색인 페이지의 검색창에서도 이 카드들이 함께 걸린다.</p>
+  </section>
+
+  <nav class="qlist" id="qlist">
+    <h2>질문 목록</h2>
+    <ol id="qitems"></ol>
+  </nav>
+</div>
+
+<main>
+
+<!--
+  ┌──────────────────────────────────────────────────────────────┐
+  │ 카드 하나 추가하는 법                                          │
+  │                                                              │
+  │ 아래 <article> 한 덩어리를 통째로 복사해 맨 아래에 붙인 뒤      │
+  │   · id="t3"  ← 겹치지 않는 번호로. 색인 검색이 이 값으로 이동한다 │
+  │   · data-num="3"  ← 왼쪽 여백에 찍히는 번호                     │
+  │   · data-when / data-who  ← 검색에 걸리는 값이니 비워 두지 말 것 │
+  │ 를 고치고 내용을 바꾸면 된다.                                   │
+  │                                                              │
+  │ 질문 목록은 자동으로 다시 만들어지므로 따로 손대지 않아도 된다.   │
+  │ 태그는 <span class="tag now">(검정) 과 tag opt(연두), tag(테두리만) │
+  │ 세 가지를 쓴다. 안 쓰면 <div class="tags"> 줄을 통째로 지운다.    │
+  └──────────────────────────────────────────────────────────────┘
+-->
+
+<article class="task" id="t1" data-num="1" data-stage="Q" data-when="예시" data-who="예시">
+  <div class="gutter"><b>01</b><span class="gstage">Q</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">예시 카드</span><span class="tag opt">지우고 실제 질문으로 바꿀 것</span></div>
+    <h3>여기에 질문을 한 문장으로 적는다</h3>
+    <p class="desc">질문의 배경과 결론을 먼저 짧게 적는 자리다. <strong>가장 중요한 한 문장은 이렇게 감싸면 형광펜이 그어진다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>이 상황이 언제 생기는지 적는다.</dd></dl>
+      <dl><dt>누가?</dt><dd>누가 처리하는지 적는다.</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-성적처리선행작업]</code> 처럼 메뉴 경로를 적는다.</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>조건을 확인하고 <span class="btn">{조회}</span> → 값을 고친 뒤 <span class="btn">{저장}</span> 같은 순서로 적는다.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>왜 그렇게 해야 하는지 한 문장으로 적는다.</dd></dl>
+    </div>
+    <div class="memo"><h4>실무 메모</h4><ul>
+      <li>덧붙일 주의사항을 항목으로 적는다.</li>
+      <li><b>꼭 짚어야 할 것은 이렇게 강조한다.</b></li>
+    </ul></div>
+    <p class="cardnav"><a href="#qlist">질문 목록으로 돌아가기</a></p>
+  </div>
+</article>
+
+<article class="task" id="t2" data-num="2" data-stage="Q" data-when="예시" data-who="예시">
+  <div class="gutter"><b>02</b><span class="gstage">Q</span></div>
+  <div class="body">
+    <h3>두 번째 예시 카드</h3>
+    <p class="desc">태그와 실무 메모는 없어도 된다. 이 카드처럼 <code>tags</code>와 <code>memo</code> 줄을 지우고 써도 색인과 검색은 그대로 동작한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>필요한 항목만 남기고 나머지 <code>&lt;dl&gt;</code> 줄은 지워도 된다.</dd></dl>
+      <dl><dt>누가?</dt><dd>다만 '언제'와 '누가'는 검색에 자주 걸리니 되도록 채운다.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>답만 있고 이유가 없으면 비슷한 다른 상황에 응용하지 못하기 때문이다.</dd></dl>
+    </div>
+    <p class="cardnav"><a href="#qlist">질문 목록으로 돌아가기</a></p>
+  </div>
+</article>
+
+</main>
+
+<footer>
+  <p>나이스 FAQ 모음 · 강원 나이스 현장지원단(고등)</p>
+</footer>
+
+<script>
+// 카드에서 질문 목록을 자동으로 만든다. 카드를 늘려도 손댈 필요가 없다
+(function(){
+  var items = document.getElementById('qitems'), html = '';
+  document.querySelectorAll('article.task').forEach(function(a){
+    var h = a.querySelector('h3');
+    if(!h) return;
+    html += '<li><a href="#' + a.id + '"><b>' + (a.getAttribute('data-num') || '') + '</b>'
+          + '<span>' + h.textContent + '</span></a></li>';
+  });
+  items.innerHTML = html;
+})();
+</script>
+</body>
+</html>
