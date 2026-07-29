@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<!-- 독서활동상황 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>독서활동상황 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(3,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>독서활동상황 관리</b>
+    <span class="sub">업무 5개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">· Section_08 · pp. 716–719</p>
+    <h1>독서활동상황 관리
+      <em>업무 5개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>연중 / 학기말</dd></div>
+      <div><dt>업무담당</dt><dd>교과담당교사, 학급담임교사</dd></div>
+      <div><dt>메뉴경로</dt><dd>[학급담임-학생생활-독서활동상황-독서활동상황기록], [교과담임-성적-성적처리-과목별독서활동]</dd></div>
+      <div><dt>선행조건</dt><dd>머리말에 선행처리 표기 없음</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>연중 수시 입력</h3>
+            <p class="tl-sub">독서활동을 확인한 시점마다 · 이전 독서활동상황 중복 확인이 선행</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 개인별 기록"><span>01</span>개인별 기록</button><button type="button" class="tl-btn" data-go="t4" title="04 과목별 등록"><span>04</span>과목별 등록</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>학기말 정리</h3>
+            <p class="tl-sub">학급 학생 전체를 모아 입력 · 독서활동 영역을 먼저 정해야 함</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t2" title="02 반별 등록"><span>02</span>반별 등록</button><button type="button" class="tl-btn" data-go="t3" title="03 같은 도서 일괄입력"><span>03</span>같은 도서 일괄입력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>오류 확인 시</h3>
+            <p class="tl-sub">잘못 등록한 것을 확인한 즉시 · 등록 이후에만 발생</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 잘못된 기록 삭제"><span>05</span>잘못된 기록 삭제</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="연중수시" data-who="학급담임교사">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 담임 입력">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">연중 수시</span><span class="tag opt">특정 교과에 해당하지 않는 독서활동</span></div>
+    <h3>개인별 독서활동상황 기록</h3>
+    <p class="desc">학생 한 명씩 독서활동상황을 확인하며 입력할 때 쓰는 화면이다. <strong>특정 교과에 해당하지 않는 독서활동은 학급담임교사가 공통으로 입력한다.</strong> 입력 전에 이전 독서활동상황을 열어 같은 도서가 아닌지 확인하는 절차가 함께 들어 있다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중 수시, 학생의 독서활동을 확인한 시점마다.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학생생활-독서활동상황-독서활동상황기록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학급담임-학생생활-독서활동상황-독서활동상황기록]</code>의 <span class="btn">{개인별}</span> 탭에서 '학년도', '학기', '학년', '반'을 확인하고 <span class="btn">{조회}</span> 후 해당 학생을 클릭 → <span class="btn">{독서활동상황조회}</span>하여 '독서활동상황 조회' 창에서 이전 독서활동상황을 확인하고 <span class="btn">{닫기}</span> → 이전 독서활동상황과 동일한 도서가 아닌 경우 '독서활동상황' 내용 입력 후 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>같은 도서가 되풀이 기록되는 일 없이, 학생의 독서 이력이 학기별로 쌓이게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>입력 주체와 '과목 또는 영역'</h4><ul><li>독서활동은 교과목별로 해당 교과 관련 독서활동을 교과담당교사가 입력하되, <b>특정 교과에 해당하지 않을 경우 학급담임교사가 공통으로 입력할 수 있음</b>.</li><li>'과목 또는 영역'란에는 교과담당교사가 입력하는 경우 해당 '교과명'이, 학급담임교사가 입력하는 경우 '공통'이 자동으로 입력됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>학기 구분 입력</h4><ul><li>독서활동 내용 입력은 학기를 구분하여 입력하며 '(1학기)', '(2학기)'는 나이스에서 학기별로 입력 시 자동으로 입력됨.</li><li><b>2학기에 1학기의 독서 입력을 원하는 경우 조회조건에서 학기를 '1'로 바꾸어 조회하여 입력함</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="연중수시" data-who="교과담당교사">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 교과 입력">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">연중 수시</span><span class="tag">교과담당교사 전용 경로</span></div>
+    <h3>과목별 독서활동 등록</h3>
+    <p class="desc">해당 학기에 개설된 과목과 관련된 독서활동은 교과담당교사가 자기 과목의 강의실 단위로 직접 입력한다. <strong>이전독서활동상황 조회 창에서 이전 독서활동과 중복되지 않음을 먼저 확인한 뒤 입력한다.</strong> 특정 교과에 해당하지 않는 독서활동은 이 화면이 아니라 학급담임교사가 공통으로 입력한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중 수시, 학기별로 구분하여 입력하며 학기말까지 마무리함.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-성적-성적처리-과목별독서활동]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’ 확인 후 ‘학년’, ‘과목’, ‘강의실’을 선택하고 <span class="btn">{조회}</span> → 해당 학생 ‘성명’ 또는 ‘학적변동구분’을 클릭하여 ‘이전독서활동상황 조회’ 창에서 이전독서활동과 중복되지 않음을 확인하고 <span class="btn">{닫기}</span> → ‘독서활동상황’ 내용을 입력하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 읽은 책을 담당 교과의 학습과 연결해 남겨, 같은 도서가 학기마다 되풀이 기록되지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>독서활동은 교과목별로 해당 교과 관련 독서활동을 교과담당교사가 입력하되, 특정 교과에 해당하지 않을 경우 학급담임교사가 공통으로 입력할 수 있음.</li><li>‘과목 또는 영역’란에는 교과담당교사가 입력하는 경우 해당 ‘교과명’이, 학급담임교사가 입력하는 경우 ‘공통’이 자동으로 입력됨.</li><li>독서활동 내용 입력은 <b>학기를 구분하여 입력</b>하며 ‘(1학기)’, ‘(2학기)’는 나이스에서 학기별로 입력 시 자동으로 입력됨.</li><li>2학기에 1학기의 독서 입력을 원하는 경우 조회조건에서 학기를 ‘1’로 바꾸어 조회하여 입력함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>지우려 할 때</h4><ul><li>내용을 지우고 <span class="btn">{저장}</span>하면 ‘독서활동상황은 필수입니다’라는 내용이 나타나므로 이 화면에서는 지울 수 없음.</li><li><b>삭제는 [학생생활-독서활동상황-독서활동상황기록]에서 해당 영역을 선택하여 <span class="btn">{삭제}</span></b> 해야 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="학기말" data-who="학급담임교사">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 담임 입력">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말</span></div>
+    <h3>반별 독서활동상황기록 등록</h3>
+    <p class="desc">학급 학생 전체의 독서활동상황을 한 화면에서 보며 입력할 때 쓴다. <strong>조회 조건에 '독서활동 영역'이 들어가므로 어느 영역에 기록할지 먼저 정해야 한다.</strong> 개인별 탭과 같은 메뉴이지만 여러 학생을 이어서 입력할 때 손이 덜 간다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 학급 학생의 독서활동을 모아 정리하는 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학생생활-독서활동상황-독서활동상황기록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학급담임-학생생활-독서활동상황-독서활동상황기록]</code>의 <span class="btn">{반별}</span> 탭에서 '학년도', '학기', '학년', '반', '독서활동 영역'을 확인하고 <span class="btn">{조회}</span> → '독서활동상황' 내용을 입력하여 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학급 전체의 독서활동 기록 상태를 한눈에 놓고 빠진 학생 없이 채우려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'과목 또는 영역'란에는 학급담임교사가 입력하는 경우 '공통'이 자동으로 입력됨.</li><li>독서활동 내용 입력은 학기를 구분하여 입력하며 '(1학기)', '(2학기)'는 나이스에서 학기별로 입력 시 자동으로 입력됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="A" data-when="학기말" data-who="학급담임교사">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE A · 담임 입력">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말</span><span class="tag opt">여러 학생 같은 도서일 때</span></div>
+    <h3>반별 화면에서 같은 도서명 일괄입력</h3>
+    <p class="desc">학급의 여러 학생이 같은 책을 읽어 도서명이 겹칠 때 쓴다. <strong>{덮어쓰기}를 선택하면 기존 '독서활동상황기록'이 모두 삭제되므로 재차 확인하여 사용해야 한다.</strong> {반별} 탭의 <span class="btn">{일괄입력}</span> 기능이다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 반별 독서활동상황을 조회한 뒤 같은 도서명을 여러 학생에게 넣어야 할 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학생생활-독서활동상황-독서활동상황기록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학급담임-학생생활-독서활동상황-독서활동상황기록]</code>의 <span class="btn">{반별}</span> 탭에서 '학년도', '학기', '학년', '반', '독서활동 영역'을 확인하고 <span class="btn">{조회}</span> → <span class="btn">{일괄입력}</span>을 이용하여 여러 명의 학생에게 같은 도서명을 입력 → <span class="btn">{이어쓰기}</span> 또는 <span class="btn">{덮어쓰기}</span>를 선택 → <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학급 공통 도서를 학생마다 다시 타이핑하지 않고 한 번에 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>이어쓰기와 덮어쓰기</h4><ul><li><span class="btn">{반별}</span> 입력의 경우 <span class="btn">{일괄입력}</span>을 이용하여 여러 명의 학생에게 같은 도서명을 일괄 입력할 수 있음.</li><li><span class="btn">{이어쓰기}</span>는 기존의 입력된 독서활동상황에 이어서 입력됨.</li><li><span class="btn">{덮어쓰기}</span>는 기존의 입력된 독서활동상황을 삭제하고 새로운 독서활동상황만 입력됨.</li><li><b>{덮어쓰기} 선택시 기존 '독서활동상황기록'이 모두 삭제되므로 재차 확인하여 사용해야함</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="C" data-when="정정시점" data-who="학급담임교사 교과담당교사">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE C · 정정">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">잘못 등록한 것을 확인한 즉시</span><span class="tag">학급담임 화면에서만 삭제 가능</span></div>
+    <h3>잘못 등록한 독서활동상황 삭제</h3>
+    <p class="desc">독서활동상황 내용을 입력하지 않아야 할 학생에게 실수로 등록한 경우에 해당한다. <strong>입력 화면에서 내용을 지우고 {저장}하면 '독서활동상황은 필수입니다'라는 안내가 나타나 지워지지 않는다.</strong> 내용을 비우는 방식이 아니라 해당 영역을 선택해 삭제하는 방식으로 처리한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중 / 학기말, 독서활동상황을 이미 등록한 뒤 잘못 등록한 것을 확인한 시점</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사, 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-독서활동상황-독서활동상황기록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학생생활-독서활동상황-독서활동상황기록]</code>에서 해당 영역을 선택 → <span class="btn">{삭제}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>입력하지 않아야 할 학생의 기록이 학기 자료에 남아 그대로 반영되는 것을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>내용을 지우고 <span class="btn">{저장}</span>하면 <b>'독서활동상황은 필수입니다'</b>라는 안내가 나타나므로, 내용을 비우는 방법으로는 삭제되지 않음.</li><li>삭제는 <code>[학생생활-독서활동상황-독서활동상황기록]</code>에서 <b>해당 영역을 선택</b>한 뒤 <span class="btn">{삭제}</span>하는 방식으로만 처리함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 , Section_08 독서활동상황 관리 (716–719쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

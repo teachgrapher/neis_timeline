@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<!-- 감염병 환자 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>감염병 환자 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>감염병 환자 관리</b>
+    <span class="sub">업무 7개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Part 보건 · Section_02 · pp. 991–998</p>
+    <h1>감염병 환자 관리
+      <em>업무 7개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학기초 / 학기말</dd></div>
+      <div><dt>업무담당</dt><dd>머리말에 업무담당 표기 없음(보건 영역 담당)</dd></div>
+      <div><dt>메뉴경로</dt><dd>[보건-감염병환자관리]</dd></div>
+      <div><dt>선행조건</dt><dd>머리말에 선행처리 표기 없음</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>환자 발생 인지 직후</h3>
+            <p class="tl-sub">감염병 환자 발생을 확인한 시점 · 이후 모든 업무의 근거 자료</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 환자 개별 등록"><span>01</span>환자 개별 등록</button><button type="button" class="tl-btn" data-go="t2" title="02 환자 일괄 등록"><span>02</span>환자 일괄 등록</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>환자 등록 후 신고 문서 작성</h3>
+            <p class="tl-sub">환자 등록 완료 후 · 신고 대상이 조회 조건에 걸려야 함</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t3" title="03 에듀파인 기안신청"><span>03</span>에듀파인 기안신청</button><button type="button" class="tl-btn" data-go="t4" title="04 교육청 보고서 생성"><span>04</span>교육청 보고서 생성</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>결재 완료 후 제출</h3>
+            <p class="tl-sub">승인요청과 기안문서상신을 거쳐 결재가 끝난 뒤</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 감염병 보고 제출"><span>05</span>감염병 보고 제출</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>수정 사항 발생 시</h3>
+            <p class="tl-sub">치료현황 등 등록 내용이 달라진 환자가 있는 경우만 해당</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t6" title="06 수정 보고 제출"><span>06</span>수정 보고 제출</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>학기말 정리</h3>
+            <p class="tl-sub">등록과 보고가 모두 정리된 뒤 집계 확인</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t7" title="07 발생 통계 조회"><span>07</span>발생 통계 조회</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="발생시" data-who="보건업무담당자">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 환자 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">감염병 환자 발생 인지 직후</span></div>
+    <h3>감염병 환자 개별 등록</h3>
+    <p class="desc">학교에서 감염병 환자가 한두 명 발생해 개별로 기록을 남겨야 할 때 쓰는 업무입니다. 학생을 직접 찾아 발생 정보를 하나씩 입력하므로, <strong>등록된 환자 정보가 이후 에듀파인 기안신청·교육청 보고서 생성·발생 통계의 원본 자료</strong>가 됩니다. 여러 명을 같은 조건으로 등록해야 하면 감염병환자일괄등록을 씁니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초 / 학기말, 감염병 환자 발생을 인지한 시점</dd></dl>
+      <dl><dt>누가?</dt><dd>보건업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[보건-감염병환자관리-감염병환자등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[보건-감염병환자관리-감염병환자등록]</code>에서 <span class="btn">{등록}</span>함 → '감염병환자등록' 창에서 <span class="btn">{학생찾기}</span>로 '고등학교 학생찾기' 창에서 학년을 '전체'로 확인하고 '성명'을 입력하고 <span class="btn">{조회}</span>된 학생목록에서 학생을 선택하여 <span class="btn">{확인}</span>함 → '발생인지일', '병명', '발견경위', '주요증상', '치료현황', '등교중지여부', '확진여부'를 입력하여 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>감염병 환자의 발생 사실과 상태를 학교 기록으로 확정해, 보건소 신고와 교육청 보고가 근거를 갖추도록 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{학생찾기}</span>로 '고등학교 학생찾기' 창에서 <b>학년을 '전체'로 확인</b>하고 '성명'을 입력하고 <span class="btn">{조회}</span>된 학생목록에서 해당 학생을 선택하여 <span class="btn">{확인}</span>함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="발생시" data-who="보건업무담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 환자 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">동일 감염병 다수 발생 시</span><span class="tag opt">개별 등록으로 대체 가능</span></div>
+    <h3>감염병 환자 일괄 등록</h3>
+    <p class="desc">같은 학급에서 동일한 감염병 환자가 여럿 나와 개별 등록이 번거로울 때 쓰는 업무입니다. '학년도', '학년', '반' 단위로 학생을 조회해 여러 명을 함께 등록합니다. <strong>[일괄적용항목]에서 항목을 선택한 뒤 순번이 가장 빠른 학생을 선택해 <span class="btn">{일괄적용}</span>해야</strong> 나머지 학생에게 값이 반영됩니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초 / 학기말, 같은 감염병 환자가 여러 명 발생한 시점</dd></dl>
+      <dl><dt>누가?</dt><dd>보건업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[보건-감염병환자관리-감염병환자일괄등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[보건-감염병환자관리-감염병환자일괄등록]</code>에서 '학년도', '학년', '반'을 확인하고 <span class="btn">{조회}</span>함 → 해당 학생들을 선택한 후 '감염병명'을 입력하고 [일괄적용항목]에서 '감염병명'과 같이 일괄적용이 가능한 항목을 선택하고 <span class="btn">{일괄적용}</span>하여 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>동일한 감염병이 여러 학생에게 퍼진 상황을 빠짐없이 같은 기준으로 기록해, 집단 발생 규모가 보고 자료에 그대로 드러나게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>일괄적용이 되지 않는 경우</h4><ul><li>일괄등록을 하려 할 때 <b>선택된 학생 누구에게나 입력하면 <span class="btn">{일괄적용}</span>이 되지 않습니다.</b></li><li><span class="btn">{일괄적용항목}</span>의 '발생인지일', '감염병명', '확진여부', '치료현황', '등교중지현황', '발견경위', '주요증상', '참고사항' 중에 선택된 항목의 해당란에 선택 또는 기재하고, <b>일괄 등록이 필요한 학생 중에 순번이 가장 빠른 학생을 선택하여 <span class="btn">{일괄적용}</span>을 한 경우에만</b> 차 순번의 학생들에게 적용됩니다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="B" data-when="신고시" data-who="보건업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE B · 감염병 신고">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">감염병 환자 등록 직후</span><span class="tag">관할보건소 신고</span></div>
+    <h3>감염병환자 신고 - 에듀파인 기안신청</h3>
+    <p class="desc">감염병환자등록을 마친 뒤 <strong>‘법정 감염병’을 관할보건소에 신고해야 하는 경우</strong>에 하는 업무이다. 전자결재 경로인 에듀파인 기안신청으로 신고가 진행되므로, 신고 대상 환자가 조회 조건에 걸리도록 <span class="btn">{검색일}</span>과 <span class="btn">{치료현황}</span>, <span class="btn">{보고여부}</span>를 먼저 맞춰야 한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>감염병 환자 등록이 끝난 뒤 신고가 필요한 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>보건업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[보건-감염병환자관리-감염병환자등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[보건-감염병환자관리-감염병환자등록]</code>에서 <span class="btn">{검색일}</span>을 설정하고 <span class="btn">{치료현황}</span>, <span class="btn">{보고여부}</span>를 선택하여 <span class="btn">{조회}</span>함 → <span class="btn">{에듀파인기안신청}</span>을 클릭하여 <span class="btn">{확인}</span> 후 유의사항을 인지하고 ‘학교 감염병 환자신고’ 내용을 검토하여 <span class="btn">{에듀파인기안신청}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>등록해 둔 감염병환자를 전자결재 경로로 관할보건소에 제때 신고해 학교 밖 방역 대응이 늦어지지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>‘학교 감염병 환자신고’ 내용을 검토한 뒤에</b> <span class="btn">{에듀파인기안신청}</span>을 누른다. 신청 전 안내되는 유의사항을 반드시 인지해야 한다.</li><li>신고 대상이 목록에 나오지 않으면 <span class="btn">{검색일}</span>, <span class="btn">{치료현황}</span>, <span class="btn">{보고여부}</span> 조건을 다시 확인한다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="신고시" data-who="보건업무담당자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 감염병 신고">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">감염병 환자 등록 직후</span><span class="tag">교육청 보고</span></div>
+    <h3>감염병환자 신고 - 교육청 보고서 생성</h3>
+    <p class="desc">에듀파인 기안신청과 달리 <strong>교육청에 보고할 ‘감염병환자발생보고’ 문서를 만들어야 하는 경우</strong>에 하는 업무이다. 조회 조건은 기안신청과 같지만, 조회 뒤 <span class="btn">{교육청보고서생성}</span>을 눌러 학교 기본정보와 조치사항을 직접 작성해 저장한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>감염병 환자 등록이 끝난 뒤 교육청 보고가 필요한 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>보건업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[보건-감염병환자관리-감염병환자등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[보건-감염병환자관리-감염병환자등록]</code>에서 <span class="btn">{검색일}</span>을 설정하고 <span class="btn">{치료현황}</span>, <span class="btn">{보고여부}</span>를 선택하여 <span class="btn">{조회}</span>하고 <span class="btn">{교육청보고서생성}</span>함 → ‘감염병환자발생보고’ 창에 학교 기본정보를 입력하고 ‘학교조치사항’, ‘방역기관조치사항’, ‘향후조치계획’을 등록하여 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교가 실제로 취한 조치와 앞으로의 계획을 교육청에 전달해 학교 단위 대응이 상급기관 판단에 반영되게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>‘감염병환자발생보고’ 창에서는 <b>학교 기본정보와 함께 ‘학교조치사항’, ‘방역기관조치사항’, ‘향후조치계획’을 모두 등록한 뒤</b> <span class="btn">{저장}</span>한다.</li><li>조회 조건 설정은 에듀파인 기안신청과 동일하므로, 같은 조회 결과에서 <span class="btn">{에듀파인기안신청}</span>과 <span class="btn">{교육청보고서생성}</span> 중 필요한 경로를 고른다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="C" data-when="결재후" data-who="보건업무담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE C · 보고 제출·수정">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">결재 완료 후</span></div>
+    <h3>감염병 보고 제출</h3>
+    <p class="desc">학교에서 등록한 감염병 보고를 교육청으로 최종 제출하는 업무다. <strong>제출 전에 {승인요청}과 '기안문서상신'을 거쳐 결재가 완료되어야 {제출}이 가능하다.</strong> 감염병 보고 대상이 있는 학교에서 수행한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초 / 학기말, 감염병 보고 대상이 등록되고 기안 결재가 완료된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>보건업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[보건-감염병환자관리-감염병보고제출]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도'를 확인하고 <span class="btn">{조회}</span> → '감염병보고제출'에서 제출하고자 하는 감염병 보고를 선택( )하여 <span class="btn">{승인요청}</span> → '기안문서상신' 창을 작성하여 <span class="btn">{상신}</span> → 결재완료되면 '감염병환자 발생현황'을 확인하고 <span class="btn">{제출}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교 감염병 발생 현황을 결재 절차를 거친 공식 보고로 교육청에 전달하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>결재완료되면</b> '감염병환자 발생현황'을 확인한 뒤 <span class="btn">{제출}</span>함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="C" data-when="수정발생시" data-who="보건업무담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE C · 보고 제출·수정">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수정 사항 발생 시</span></div>
+    <h3>감염병 환자 조회 및 수정 보고 제출</h3>
+    <p class="desc">이미 등록·보고한 감염병 환자의 내용이 달라졌을 때 수정보고를 만드는 업무다. 치료현황 등이 변경된 환자가 있는 경우에만 해당한다. <strong>환자 정보를 먼저 고치고 그 내용을 토대로 {보고서생성}을 해야 변경 사항이 반영된다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초 / 학기말, 등록된 감염병 환자의 내용에 수정이 발생한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>보건업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[보건-감염병환자관리-감염병환자조회및수정보고제출]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{검색일}</span>을 설정하고 <span class="btn">{치료현황}</span>을 선택하여 <span class="btn">{조회}</span> → 수정보고 할 학생 선택( ) 후 <span class="btn">{보고서생성}</span>을 클릭 → <span class="btn">{감염병환자발생보고}</span> 창에서 수정보고 할 내용을 작성하여 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>먼저 보고한 내용과 실제 환자 상태가 어긋난 채로 남지 않도록 바뀐 사실을 다시 알리려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>감염병환자 수정이 필요한 경우, <b>환자 목록을 더블 클릭하여</b> <span class="btn">{감염병환자수정}</span> 창에서 입력하고 변경된 내용을 토대로 <span class="btn">{보고서생성}</span>할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="D" data-when="학기말" data-who="보건업무담당자">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE D · 통계 확인">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말</span><span class="tag">조회 전용</span></div>
+    <h3>감염병 발생 통계 및 추이 조회</h3>
+    <p class="desc">감염병환자 등록과 보고가 쌓인 뒤 학교의 감염병 발생 현황을 종합해서 보는 업무입니다. <strong>등록된 감염병환자 자료를 근거로 통계가 집계되므로 등록·수정보고가 정리된 상태에서 조회합니다.</strong> 발생년도와 검색일 조건으로 기간을 좁혀 볼 수 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초 / 학기말, 감염병환자 등록과 보고가 정리된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>보건업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[보건-감염병환자관리-감염병발생통계및추이조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[보건-감염병환자관리-감염병발생통계및추이조회]</code>의 <span class="btn">{감염병발생통계}</span> 탭에서 '발생년도', '검색일'을 선택하여 <span class="btn">{조회}</span> → 조회된 감염병 발생 통계 결과를 <span class="btn">{통계}</span> 탭을 선택하여 감염병 발생현황을 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교에서 어떤 감염병이 얼마나 발생했는지 흐름을 파악해 방역 조치와 다음 학기 보건 계획의 근거로 삼기 위해서입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>{시각화통계} 탭</b>에서는 감염병의 종류 및 발생 횟수를 막대그래프로 제공함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part 보건, Section_02 감염병 환자 관리 (991–998쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

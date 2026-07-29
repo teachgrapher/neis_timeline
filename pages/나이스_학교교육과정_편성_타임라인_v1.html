@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<!-- 학교교육과정 편성 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>학교교육과정 편성 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>학교교육과정 편성</b>
+    <span class="sub">업무 11개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">교육과정 · Section_04 · pp. 91–119</p>
+    <h1>학교교육과정 편성
+      <em>업무 11개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학년초, 학기초</dd></div>
+      <div><dt>업무담당</dt><dd>교육과정 업무담당자</dd></div>
+      <div><dt>메뉴경로</dt><dd>[교육과정-편제및과목개설관리-편제및과목개설관리]</dd></div>
+      <div><dt>선행조건</dt><dd>[교육과정-입학생교육과정관리-입학생학교교육과정등록/검증]의 {학교유형정보설정}에서 입학년도별 1학년 기준으로 '학교유형'을 설정함. 신학년도 이전에 등록할 경우 [학교정보-학교정보-기준년도/학기관리]에서 '교무학년도', '교무학기'는 현재학년도 2학기로, '수업학년도', '수업학기'는 신학년도 1학기로 설정함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>학년초 편제 착수</h3>
+            <p class="tl-sub">학교유형 설정 직후 · 과목이 하나도 등록되지 않은 상태</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 이전 편제 가져오기"><span>01</span>이전 편제 가져오기</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>기본 편제 등록</h3>
+            <p class="tl-sub">모든 고등학교 공통 · 학년·학기별로 등록</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t2" title="02 보통교과 등록"><span>02</span>보통교과 등록</button><button type="button" class="tl-btn" data-go="t3" title="03 창의적 체험활동"><span>03</span>창의적 체험활동</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>전문교과 편제 등록</h3>
+            <p class="tl-sub">2026학년도 3학년에 전문교과를 편성한 학교만</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 전문교과Ⅰ 등록"><span>04</span>전문교과Ⅰ 등록</button><button type="button" class="tl-btn" data-go="t5" title="05 전문교과Ⅱ 기초"><span>05</span>전문교과Ⅱ 기초</button><button type="button" class="tl-btn" data-go="t6" title="06 실무과목 능력단위"><span>06</span>실무과목 능력단위</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>대체 편성·공동교육과정</h3>
+            <p class="tl-sub">교과 편제 등록 후 · 대체·교체 편성교와 공동교육과정 운영교만</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t7" title="07 전문→진로선택"><span>07</span>전문→진로선택</button><button type="button" class="tl-btn" data-go="t8" title="08 보통→전문교과Ⅱ"><span>08</span>보통→전문교과Ⅱ</button><button type="button" class="tl-btn" data-go="t9" title="09 공동교육과정"><span>09</span>공동교육과정</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>등록 후 보완</h3>
+            <p class="tl-sub">오류나 변경사항이 확인된 학교만</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t10" title="10 편제·시수 수정"><span>10</span>편제·시수 수정</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">06</p>
+            <h3>마감과 승인요청</h3>
+            <p class="tl-sub">등록과 수정을 모두 마친 뒤 · 편제표와 총계 일치 확인</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t11" title="11 편제표 업무승인"><span>11</span>편제표 업무승인</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="편제착수" data-who="교육과정업무담당자">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 편제 착수">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">편제 등록 착수 시점</span><span class="tag opt">선택 · 신규 등록으로 대체 가능</span><span class="tag">성적처리유형 후속 등록 필수</span></div>
+    <h3>이전 학년도 편제 가져오기</h3>
+    <p class="desc">이전 학년도와 편제가 크게 달라지지 않은 학교라면 과목을 하나씩 새로 등록하기 전에 먼저 가져오기를 시도한다. 다만 <strong>원본 편제와 대상 편제의 교육과정 차수가 다른 경우, 성적처리유형이 다른 경우, 해당 학년에 한 과목이라도 편제가 등록된 경우에는 {가져오기}를 할 수 없다.</strong> 가져온 과목은 '성적처리유형'이 공란으로 들어오므로 반드시 뒤이어 채워야 한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기초. [교육과정-입학생교육과정관리-입학생학교교육과정등록/검증]의 {학교유형정보설정}에서 입학년도별 1학년 기준으로 '학교유형'을 설정한 뒤, 해당 학년에 편제 과목이 아직 하나도 등록되지 않은 상태에서 함.</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code>에서 '학년도' 확인 후 '계열', '학년'을 선택하고 <span class="btn">{조회}</span> → <span class="btn">{가져오기}</span> 하여 '편제 가져오기' 창에서 '원본'에 가져올 '기준'을 선택하고 '학년도', '학기', '과정', '계열', '학년'을 입력 또는 선택한 뒤 <span class="btn">{조회}</span> → '대상'에 '학년도', '학기', '과정', '계열', '학년'을 확인 후 가져올 과목명을 선택하여 <span class="btn">{저장}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>매년 반복되는 편제를 처음부터 다시 입력하지 않고, 시도교육(지원)청에서 승인한 편제표와 달라진 부분만 손보게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>학과가 설치된 특수목적고등학교, 특성화고등학교, 직업계열 학과가 설치된 일반고등학교에서는 조회 조건에 '학과'가 나타남.</li><li>특성화고등학교나 특수목적고등학교의 경우 편제를 <span class="btn">{가져오기}</span> 하면 다른 학과에 공통으로 등록된 과목 중 필요한 과목만 선택하여 현재 편제로 저장할 수 있음.</li><li>이전 학년도 편제를 <span class="btn">{가져오기}</span> 하여 수정이 필요한 과목은 학점, 시수를 수정하거나 삭제 후 재등록할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>가져온 뒤 반드시 확인할 것</h4><ul><li><b>편제 가져오기를 통해 가져온 편제과목은 '성적처리유형'이 공란이므로 '과목명'을 클릭하여 '학교교육과정편제 및 시간배당 수정' 창에서 '성적처리유형'을 반드시 등록해야 함.</b></li><li><b>원본 편제와 대상 편제의 교육과정 차수가 다른 경우, 성적처리유형이 다른 경우, 해당 학년에 한 과목이라도 편제가 등록된 경우 {가져오기} 할 수 없음.</b></li><li>교육과정의 편성은 과목별 성적처리유형, 학교생활기록부의 교과학습발달상황 내용과 밀접한 관련이 있으므로 시도교육(지원)청에서 승인한 교육과정을 기준으로 정확하게 편제함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="B" data-when="교과편제" data-who="교육과정업무담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE B · 보통교과·창체">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">편제 등록 시작 시점</span><span class="tag">모든 고등학교</span></div>
+    <h3>보통교과 과목 등록</h3>
+    <p class="desc">모든 고등학교가 학년·학기별로 반드시 거치는 편제 등록의 기본 업무입니다. 2026학년도 1･2학년은 2022 개정 교육과정, 3학년은 2015 개정 교육과정 기준으로 교과(군)과 과목을 고르고 학점만 입력하면 시수는 자동 계산됩니다. <strong>편제 등록 전 [교육과정-입학생교육과정관리-입학생학교교육과정등록/검증]의 {학교유형정보설정}에서 입학년도별 1학년 기준으로 '학교유형'을 설정한 후 저장해야 함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기초. 입학년도별 '학교유형' 설정을 저장한 뒤. 신학년도 이전에 등록할 경우 '교무학년도', '교무학기'는 현재학년도 2학기, '수업학년도', '수업학기'는 신학년도 1학기로 설정한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '계열'을 확인 후 '학년'을 선택하고 <span class="btn">{조회}</span>하여 <span class="btn">{등록}</span>함 → '학교교육과정편제 및 시간배당 등록' 창에서 '학년', '학기'를 확인하고 <span class="btn">{교과과정등록}</span> 탭에서 편제를 등록하려는 교과(보통교과)와 교과편제(예: 국어-공통국어 1)를 선택한 후 과목의 '학점'을 입력 후 저장 → 시수는 자동 계산됨.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>시도교육(지원)청이 승인한 교육과정을 나이스에 그대로 옮겨, 과목별 성적처리와 학교생활기록부 교과학습발달상황이 처음부터 어긋나지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>학점과 시수 기준</h4><ul><li>(① 2022 개정 교육과정을 적용받는 2026학년도 고등학교 1･2학년)과 (② 2015 개정 교육과정을 적용받는 산업수요 맞춤형 고등학교, 특성화고등학교 3학년) <b>1학점은 16회</b>를 이수하는 수업량.</li><li>(③ 2015 개정 교육과정을 적용받는 일반고등학교(직업계열 학과가 설치된 일반고등학교 포함), 특수목적고등학교) <b>1학점은 17회</b>를 이수하는 수업량.</li><li>2022 개정 교육과정(2026학년도 1･2학년)의 보통교과는 공통과목, 일반선택, 진로선택, 융합선택으로 구분되고, 2015 개정 교육과정(2026학년도 3학년)의 보통교과는 공통과목, 일반선택, 진로선택으로 구분됨.</li><li>2022 개정 교육과정 보통교과와 전문교과 전문공통･전공일반 과목은 학기 단위로 과목을 편성하고 전문교과 전공실무 과목은 2학기에 걸쳐 편성 가능함.</li><li>동일 과목을 2명의 교과담당교사가 나누어 수업해도 1개로 편제함(예: 기술･가정을 기술교과 담당교사와 가정교과 담당교사가 나누어 수업을 해도 '기술･가정' 1개임).</li><li>동일 학년도 입학생의 교육과정 편성 시 동일 과목을 여러 학기에 편성할 때는 동일한 학점으로 편성해야 함. 다만 학과별로 학생을 선발한 경우(예술계열, 체육계열 중점학교 등)에는 동일한 과목을 학점 수를 달리하여 편성 가능하며, 입학 연도가 다른 경우에도 학점 수를 달리하여 편성할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>등록 절차와 성적처리유형</h4><ul><li>2022 개정 교육과정 등록 절차 — 교육과정 고시 내 보통교과 과목은 교과(군) 선택 → 과목 선택 → 학점 등록. 고시 외 과목과 대체･교체 편성 과목은 교과(군) 선택 → '과목명' <span class="btn">{조회}</span> → '편제이동과목/교육감승인과목 등록'에서 '성적처리유형' 선택 → <span class="btn">{저장}</span>.</li><li>2015 개정 교육과정 등록 절차 — 교육과정 고시 내 보통교과 및 전문교과Ⅰ 과목은 교과(군) 선택 → 과목 선택 → 학점 등록. 고시 외 과목과 대체･교체 편성 과목은 교과(군) 선택 → '과목명' <span class="btn">{조회}</span> → '편제이동과목/교육감승인과목 등록'에서 '성적처리유형' 선택 → <span class="btn">{저장}</span>.</li><li>교육과정 고시과목은 교과(군)별, 과목별 기본 성적처리 유형이 자동으로 등록됨. 성적처리유형 변경 시에는 '과목명'을 클릭하여 '학교교육과정편제 및 시간배당 수정' 창에서 수정하되, <b>보통교과 교육과정 고시 과목은 공통과목, 일반선택, 진로선택 과목의 성적처리유형 변경은 불가함.</b></li><li>'과학탐구실험'은 공통과목에 해당하는 과목이지만 고등학교의 실험탐구연구를 중심으로 하는 과목이므로 성적처리유형이 성취도(3단계)로 설정됨.</li><li>교육과정의 편성은 과목별 성적처리유형, 학교생활기록부의 교과학습발달상황 내용과 밀접한 관련이 있으므로 정확하게 편제함(시도교육(지원)청에서 승인한 교육과정을 기준으로 등록함).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="B" data-when="교과편제" data-who="교육과정업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE B · 보통교과·창체">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">교과 편제 등록과 같은 시기</span><span class="tag">모든 고등학교</span></div>
+    <h3>창의적 체험활동 등록</h3>
+    <p class="desc">교과 과목과 달리 창의적 체험활동은 같은 창의 별도 탭에서 영역별 시수만 입력합니다. 2026학년도 1･2학년은 자율･자치활동, 동아리활동, 진로활동 영역이고 3학년은 자율활동, 동아리활동, 봉사활동, 진로활동 영역입니다. <strong>학교교육과정 편제표에 따라 각 활동 영역별 시수를 입력하면 해당 활동의 학점은 '0'으로 표기되나 최종 학점은 전체 영역의 시수가 합산되어 자동 계산됨.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기초. 해당 학년의 편제 등록 창을 열어 교과 편제를 등록하는 시점</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학년'을 선택하고 <span class="btn">{조회}</span>하여 <span class="btn">{등록}</span>함 → '학교교육과정편제 및 시간배당 등록' 창에서 '학년', '학기'를 확인하고 <span class="btn">{창의적체험활동}</span> 탭에서 창의적 체험활동 영역별 '시수' 입력 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교과 이외의 이수 시간까지 편제에 담아 학생의 총 이수 학점과 학교생활기록부 창의적 체험활동 기록이 편제표와 맞도록 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>2022 개정 교육과정(2026학년도 1･2학년) 창의적 체험활동의 자율･자치활동, 동아리활동, 진로활동 영역과 2015 개정 교육과정(2026학년도 3학년)의 자율활동, 동아리활동, 봉사활동, 진로활동 영역은 <span class="btn">{창의적체험활동}</span> 탭에서 등록함.</li><li>2022 개정 교육과정(2026학년도 1･2학년) <b>1학점은 16시수</b>임.</li><li>2015 개정 교육과정(2026학년도 3학년) 특성화고등학교, 산업수요 맞춤형 고등학교의 경우 <b>1학점은 16시수</b>이고 일반고등학교(직업계열 학과가 설치된 일반고등학교 포함), 특수목적고등학교의 경우 <b>1학점은 17시수</b>임.</li><li>자율활동, 봉사활동 영역과 같이 학기별 시수가 <b>17시간 이내로 1학점보다 작은 경우</b>, 시수를 입력하면 해당 활동 영역의 학점은 '0'으로 표기되나, 최종 학점은 전체 영역의 시수가 합산되어 자동 계산됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="C" data-when="교과편제" data-who="교육과정업무담당자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE C · 전문교과·이동편제">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 편제 등록 시</span><span class="tag opt">2026학년도 3학년 한정</span><span class="tag opt">특수목적고 위주</span></div>
+    <h3>2015 개정 교육과정(2026학년도 3학년) 전문교과Ⅰ 과목 등록</h3>
+    <p class="desc">2015 개정 교육과정을 적용받는 2026학년도 3학년에 전문교과Ⅰ 과목을 편성한 학교만 해당한다. 전문교과Ⅰ은 성취도와 석차등급을 병기해 산출하므로 <strong>교과(전문교과Ⅰ)와 교과편제를 정확히 선택해야 성적처리유형이 제대로 잡힌다.</strong> 1학점은 17회를 이수하는 수업량이다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기초. '학교유형' 설정을 마친 뒤 편제 등록 단계에서 처리함.</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code>에서 '학년도', '학년' 확인 후 <span class="btn">{조회}</span>하고 <span class="btn">{등록}</span>함 → '학교교육과정편제 및 시간배당 등록' 창에서 '학년', '학기'를 확인하고 <span class="btn">{교과과정등록}</span> 탭에서 편제를 등록하려는 교과(전문교과Ⅰ)와 교과편제(예: 외국어 계열-심화 영어 회화 Ⅱ)를 선택함 → 과목의 '학점'을 입력(시수는 자동 계산됨, 1학점은 17회를 이수하는 수업량임)하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>시도교육(지원)청에서 승인한 편제표대로 전문교과Ⅰ을 등록해 두어야 학생 성적이 성취도와 석차등급 병기 방식으로 정확히 산출되고 학교생활기록부 교과학습발달상황에 그대로 이어지기 때문이다.</dd></dl>
+    </div>
+<div class="memo"><h4>성적처리 기준</h4><ul><li>전문교과Ⅰ은 <b>'성취도(A-B-C-D-E)'와 '석차등급(1~9등급)'을 병기</b>하여 성적을 산출함.</li><li>성취도(3단계) 산출 과목은 융합과학 탐구, 과학과제 연구, 물리학 실험, 화학 실험, 생명과학 실험, 지구과학 실험, 사회 탐구 방법, 사회과제 연구임.</li><li>전문교과Ⅰ·Ⅱ를 진로선택 과목으로 대체 편성하는 경우 성적처리유형은 '성취도(3단계)(성취도별분포비율)'로 설정함(전문교과Ⅰ의 체육계열·예술계열 제외).</li><li>전문교과Ⅰ을 진로선택 과목으로 대체 편성하는 경우는 '학교교육과정편제 및 시간배당 등록' 창의 하단에서 '과목명'을 입력 후 <span class="btn">{조회}</span>하여 '편제이동과목/교육감승인과목 등록'으로 반영하여 진로선택과목 평가 방법에 따라 성취도(3단계)(성취도별분포비율)로 산출함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>같은 절차를 쓰는 경우</h4><ul><li>특수목적고등학교에서 교육부 고시 교육과정 교과목 이외의 교과목(교육과정 고시 외 과목) 등록 시에도 동일한 절차대로 진행함.</li><li>교육과정 편성·운영 지침에 따라 전문교과Ⅱ를 보통교과(진로선택 과목)로 대체 또는 교체 편성하는 경우나 보통교과 및 전문교과Ⅰ을 전문교과Ⅱ로 대체 또는 교체 편성하는 경우에도 동일한 절차대로 진행하되, '학교교육과정편제 및 시간배당 등록' 창에서 편제 선택 및 '성적처리유형'을 <b>교육부훈령에 따라 정확하게 선택</b>해야 함.</li><li>2022 개정 교육과정을 적용받는 학년은 과목 조회 시 '국제공인 교육과정 여부' 항목이 추가되어 조회됨. 국제공인 교육과정 과목을 선택하면 '성적처리유형'에 2022 개정 교육과정에서 설정 가능한 모든 성적처리유형(성취도(3단계), 성취도(5단계), 성취도(5단계)+석차등급(5등급), 이수/미이수)이 나타나며, <b>시도교육청과 협의된 성적처리유형</b>을 선택하여 등록해야 함.</li><li>'학교교육과정편제 및 시간배당 수정' 창에서 국제공인 교육과정 과목은 과목명 옆에 '(국제공인)'으로 표시됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="C" data-when="교과편제" data-who="교육과정업무담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE C · 전문교과·이동편제">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 편제 등록 시</span><span class="tag opt">2026학년도 3학년 한정</span><span class="tag opt">특성화고·마이스터고 위주</span></div>
+    <h3>2015 개정 교육과정(2026학년도 3학년) 전문교과Ⅱ 기초과목 등록</h3>
+    <p class="desc">2015 개정 교육과정을 적용받는 2026학년도 3학년에 전문교과Ⅱ 기초과목을 편성한 학교만 해당한다. 전문교과Ⅱ 전문공통과목인 '성공적인 직업생활'도 같은 방법으로 등록한다. <strong>전문교과Ⅱ는 성취도 5단계(A-B-C-D-E)로 평정하며 '석차등급'은 산출하지 않는다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기초. '학교유형' 설정을 마친 뒤 편제 등록 단계에서 처리함.</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code>에서 '학년도', '학년' 확인 후 <span class="btn">{조회}</span>하고 <span class="btn">{등록}</span>함 → '학교교육과정편제 및 시간배당 등록' 창에서 '학년', '학기'를 확인하고 <span class="btn">{교과과정등록}</span> 탭에서 편제를 등록하려는 교과(전문교과Ⅱ)와 교과편제(예: 기계-기계 일반)를 선택함 → 과목의 '학점'을 입력(시수는 자동 계산됨, 1학점은 16회를 이수하는 수업량임)하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>기초과목을 전문교과Ⅱ 편제로 정확히 올려 두어야 성취도 5단계 평정이 그대로 적용되고, 이론과 실습을 병행하는 수업량이 학점·시수로 맞게 반영되기 때문이다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>전문교과Ⅱ 전문공통과목인 '성공적인 직업생활'도 같은 방법으로 등록함.</li><li>전문교과Ⅱ는 성취도 5단계(A-B-C-D-E)로 평정하며 '석차등급'은 산출하지 않음.</li><li>특성화고등학교에서 '성공적인 직업생활' 과목은 전문교과Ⅱ의 전문공통 과목으로 편제(성적처리 유형-성취도(5단계)), 보통교과(군)의 진로선택 과목으로 편제(성적처리 유형-성취도(3단계)), 보통교과(군)의 교양 과목으로 편제(성적처리 유형-이수/미이수) 유형으로 편제가 가능함.</li><li>다만 보통교과(군)의 진로선택·교양 과목처럼 <b>편제를 이동 등록할 경우는 '학교교육과정편제 및 시간배당 등록' 창의 하단에서 '과목명'을 입력 후 <span class="btn">{조회}</span>하여 '편제이동과목/교육감승인과목 등록'에서 등록</b>해야 함.</li><li>전문교과Ⅱ 기초과목에서 능력단위를 사용하는 경우는 'NCS 능력단위' 사용으로 선택하고 능력단위를 등록함.</li><li>기초과목의 경우 이론과 실습을 병행할 수 있기 때문에 능력단위에 등록되는 학점과 기초과목에 등록되는 학점은 서로 다르게 등록할 수 있음. 다만 <b>기초과목의 학점은 초과할 수 없음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="C" data-when="교과편제" data-who="교육과정업무담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE C · 전문교과·이동편제">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 편제 등록 시</span><span class="tag opt">2026학년도 3학년 한정</span><span class="tag opt">특성화고·마이스터고 한정</span></div>
+    <h3>전문교과Ⅱ 실무과목의 능력단위 등록과 시수 수정</h3>
+    <p class="desc">전문교과Ⅱ 실무과목을 편성한 학교만 해당한다. 능력단위 등록(1단계)과 능력단위 시수 수정(2단계)은 매뉴얼상 나뉘어 있지만 <strong>학점을 먼저 입력해 저장한 뒤 시수를 수정하는 방법으로 등록</strong>해야 하므로 한 호흡으로 처리한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기초. 편제 등록 단계에서 실무과목 등록과 함께 처리함.</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><b>1단계(능력단위 등록)</b> <code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code>에서 '학년도', '학년'을 선택하고 <span class="btn">{조회}</span>하여 <span class="btn">{등록}</span>함 → '학교교육과정편제 및 시간배당 등록' 창에서 '학년', '학기'를 확인하고 <span class="btn">{교과과정등록}</span> 탭에서 편제를 등록하려는 교과(전문교과Ⅱ)와 교과편제(예: 기계-기계 제어 설계)를 선택함 → <span class="btn">{일반}</span> 탭에서 'NSC 능력단위' 사용을 확인 후 '대분류', '세분류', '능력단위'를 선택하고 '학점'을 입력(시수는 자동 계산됨, 1학점은 16회를 이수하는 수업량임)하여 <span class="btn">{저장}</span>함. <b>2단계(능력단위 시수 수정)</b> 같은 메뉴에서 '학년도', '학년'을 선택하고 <span class="btn">{조회}</span>하여 실무과목의 능력단위를 수정할 교과(예: 기계 제어 설계)의 '과목명'을 선택함 → '학교교육과정편제 및 시간배당 수정(실무과목)' 창의 '변경 능력단위 정보'에서 능력단위 '시수'를 수정한 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>실무과목은 능력단위가 과목과 같은 레벨로 쓰이므로, 능력단위별 시수까지 맞춰 두어야 이후 과목개설·시간표·담당교사 배정·시수누계가 실제 수업 운영대로 굴러가기 때문이다.</dd></dl>
+    </div>
+<div class="memo"><h4>등록과 수정 시 주의</h4><ul><li>학점 입력 시 시수는 자동계산(1학점=16시수)되며, 입력한 시수를 변경할 경우 학점은 변경되지 않음(<b>전문교과Ⅱ 실무과목의 능력단위를 등록할 경우 학점을 먼저 입력 후 시수를 수정하는 방법으로 등록</b>함).</li><li>능력단위 코드의 수정은 해당 능력단위명을 클릭하여 수정함.</li><li>능력단위 시수 수정은 <b>1건씩</b> 수정할 수 있음.</li><li><b>능력단위와 실무과목은 동시에 수정이 불가능함.</b></li><li>최신 버전의 능력단위는 국가직무능력표준사이트(https://www.ncs.go.kr)의 [NCS 및 학습모듈검색]에서 확인할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>연계 메뉴와 활용</h4><ul><li><span class="btn">{자격기반}</span>은 '과정형 자격평가'를 운영하는 학교에서 활용하며, <code>[학생생활-자격증및NCS이수상황-자격기반능력단위편성관리]</code>에서 자격별 능력단위를 편성한 경우 학년과 학기에 맞춰 해당 내용이 조회됨.</li><li>직업교육 위탁과정 학생이 직업교육 위탁기관에서 이수한 전문교과Ⅱ는 <code>[학적-위탁·현장실습학생관리-위탁·현장실습학생관리-자료관리]</code>에서 전문교과Ⅱ의 교과(군)과 과목을 참조하여 편제를 등록함(성취도 5단계 성적산출).</li><li>실무과목명은 같으나 하위 능력단위가 다른 경우 과목명이 중복으로 나타나는데, 실무과목명을 선택하여 '학교교육과정편제 및 시간배당 수정(실무과목)' 창에서 <b>'실무과목그룹명'에 세부전공(코스)명을 등록</b>하면 성적처리 시 실무과목명을 분리하여 조회할 수 있음.</li><li>산학일체형 도제학교처럼 학생 개인별로 기업에서 이수한 능력단위가 다른 경우, 실무과목 능력단위 등록 시 '학생선택'으로 능력단위를 입력함. '학생선택' 능력단위 수강학생은 <code>[학생생활-자격증및NCS이수상황-국가직무능력표준이수상황관리]</code>에서 <span class="btn">{학생선택추가}</span>하여 학생이 기업에서 실제 이수한 능력단위(능력단위명, 이수시간, 원점수, 성취도)를 등록함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="C" data-when="교과편제" data-who="교육과정업무담당자">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE C · 전문교과·이동편제">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 편제 등록 시</span><span class="tag opt">대체·교체 편성 학교만</span></div>
+    <h3>전문교과를 진로선택 과목으로 등록(편제이동과목 등록)</h3>
+    <p class="desc">전문교과Ⅰ이나 전문교과Ⅱ를 보통교과(군)으로 대체 편성하여 운영하는 학교만 해당한다. 이때는 교과과정등록 탭에서 과목을 바로 고르는 것이 아니라 <strong>보통교과(군)에서 '과목명'을 조회해 '편제이동과목/교육감승인과목 등록'으로 등록</strong>한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기초. 보통교과 편제를 등록하는 단계에서 함께 처리함.</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code>에서 '학년도', '학년'을 선택하고 <span class="btn">{조회}</span>하여 <span class="btn">{등록}</span>함 → '학교교육과정편제 및 시간배당 등록' 창에서 '학년', '학기'를 확인하고 <span class="btn">{교과과정등록}</span> 탭에서 편제를 등록하려는 교과(보통교과-기술·가정/제2외국어/한문/교양)를 선택한 후 '과목명(예: 프로그래밍)'을 입력하고 <span class="btn">{조회}</span>함 → '과목명'(예: 프로그래밍)을 클릭한 후 우측 '편제이동과목/교육감승인과목 등록'에서 '학점'(시수는 자동계산됨, 1학점은 16회를 이수하는 수업량임)과 '성적처리유형(성취도(3단계)(성취도별분포비율))'을 선택한 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>전문교과 과목을 실제 운영하는 보통교과(군) 자리에 옮겨 놓아야 진로선택 과목 평가 방법대로 성적이 산출되고 학교생활기록부에도 그 교과(군)으로 기록되기 때문이다.</dd></dl>
+    </div>
+<div class="memo"><h4>성적처리유형 판단</h4><ul><li>전문교과Ⅰ·Ⅱ를 진로선택 과목으로 대체 편성하는 경우 성적처리유형은 <b>'성취도(3단계)(성취도별분포비율)'</b>로 설정함(전문교과Ⅰ의 체육계열·예술계열 제외).</li><li>고시외 과목의 경우 <span class="btn">{상세}</span> 버튼을 클릭하면 '과목상세' 창의 '과목개요'에서 해당 교과의 교과(군)을 확인할 수 있으며, 일반고등학교에서 전문교과Ⅱ의 경우 교과(군)을 참조하여 보통교과의 관련 교과(군) 진로선택과목으로 편성함.</li><li>전문 교과의 과목을 일반고등학교에서 개설하는 경우 진로 선택과목으로 편성하며, 기본 학점과 증감 범위는 일반고등학교의 보통교과 해당 교과(군) 기본 학점과 증감 범위를 따르고 성적처리도 일반고등학교 보통교과 해당 교과(군)의 성적처리 방법을 따름.</li></ul></div><div class="memo" style="margin-top:12px"><h4>특수목적고 선택과목을 일반고에서 편성할 때</h4><ul><li>특수목적고등학교의 선택과목을 일반고등학교에서 편성할 경우 편성 가능 학점 범위는 일반고등학교 기준 보통교과 선택 과목의 기본 학점과 증감 범위를 따름(과학 계열 수학·과학·정보 3~5학점, 체육 계열 체육 2~4학점, 예술 계열 예술 2~4학점, 외국어·국제 계열 영어·사회(역사/도덕 포함)·제2외국어 3~5학점).</li><li>다만 <b>성적처리 방법은 특목고 기준의 성적처리 방법을 따름.</b> 예를 들어 예술 계열의 예술 교과군 과목인 '드로잉'을 일반고등학교의 예술 교과(군) 진로 선택과목으로 편성하였다면 '성취도 3단계'가 아니라 '석차등급 5단계+성취도 5단계'로 산출해야 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="C" data-when="교과편제" data-who="교육과정업무담당자">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE C · 전문교과·이동편제">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 편제 등록 시</span><span class="tag opt">대체·교체 편성 학교만</span></div>
+    <h3>보통교과·전문교과Ⅰ을 전문교과Ⅱ 기초과목으로 등록(편제이동과목 등록)</h3>
+    <p class="desc">보통교과 또는 전문교과Ⅰ을 전문교과Ⅱ로 대체 편성하여 운영하는 학교만 해당한다. 전문교과Ⅱ 교과(군)에서 '과목명'을 조회해 '편제이동과목/교육감승인과목 등록'으로 올리며, <strong>성적처리유형은 전문교과Ⅱ의 성적처리 방법인 성취도(5단계)로 설정한다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기초. 전문교과Ⅱ 편제를 등록하는 단계에서 함께 처리함.</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code>에서 '학년도', '학년'을 선택하고 <span class="btn">{조회}</span>하여 <span class="btn">{등록}</span>함 → '학교교육과정편제 및 시간배당 등록' 창에서 '학년', '학기'를 확인하고 <span class="btn">{교과과정등록}</span> 탭에서 편제를 등록하려는 교과편제(전문교과Ⅱ-디자인·문화 콘텐츠)를 선택한 후 '과목명(예: 사진 영상 편집)'을 입력하고 <span class="btn">{조회}</span>함 → 과목명(예: 사진 영상 편집)을 클릭한 후 우측 '편제이동과목/교육감승인과목 등록'에서 '학점'(시수는 자동계산됨, 1학점은 16회를 이수하는 수업량임)과 '성적처리유형(성취도(5단계))'을 선택한 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>직업계 교육과정으로 운영하는 과목을 전문교과Ⅱ 자리에 맞춰 두어야 성취도 5단계로 평정되고 석차등급이 잘못 산출되는 일을 막을 수 있기 때문이다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>보통교과 및 전문교과Ⅰ을 전문교과Ⅱ로 대체 또는 교체 편성하여 운영하는 경우 성적처리유형은 전문교과Ⅱ의 성적처리 방법인 <b>성취도(5단계)</b>로 설정함.</li><li>실무과목의 능력단위는 나이스에서 실무과목의 하위 개념을 가지나 실무과목과 동일한 레벨로 사용됨(예: 능력단위별 과목개설, 능력단위별 시간표 구성, 능력단위별 담당교사 배정, 능력단위별 결보강처리, 능력단위별 시수누계 등).</li><li>2022 개정 교육과정에서 동일 학년도 입학생의 교육과정 편성 시 <b>동일 과목을 여러 학기에 편성할 때는 동일한 학점으로 편성</b>해야 함. 다만 학과별로 학생을 선발한 경우(예술계열, 체육계열 중점학교 등)에는 동일한 과목을 학점 수를 달리하여 편성 가능하며, 입학 연도가 다른 경우에도 학점 수를 달리하여 편성할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="C" data-when="교과편제" data-who="교육과정업무담당자">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE C · 전문교과·이동편제">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 편제 등록 시</span><span class="tag opt">공동교육과정 운영교만</span></div>
+    <h3>공동교육과정 개설 과목 편제 등록</h3>
+    <p class="desc">공동교육과정이나 온라인학교 개설 과목을 운영하는 학교만 해당한다. 공동교육과정은 진로선택 과목으로 편성하며, <strong>편제 등록 시 공동교육과정을 선택하고 <span class="btn">{저장}</span>해야 하며 등록 후 '학교교육과정편제 및 시간배당 수정' 창에서는 수정할 수 없다.</strong> 거점교의 공동교육과정 개설 교과목이 일과 내 교과목과 학점이 같은 경우라도 분리하여 등록할 수 있다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기초. 편제 등록 단계에서 처리하되 등록 후 수정이 불가하므로 편제표 확정 후에 처리함.</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code>에서 '학년도', '학년'을 선택하고 <span class="btn">{조회}</span>하여 <span class="btn">{등록}</span>함 → '학교교육과정편제 및 시간배당 등록' 창에서 편성할 보통교과 교과(군)을 선택한 후 '과목명'을 입력하고 <span class="btn">{조회}</span>함 → 과목명을 클릭한 후 '편제이동과목/교육감승인과목 등록'에서 '학점'과 '성적처리유형'을 선택함 → 공동교육과정을 선택하고 <span class="btn">{저장}</span>함(예시: 2015 개정 교육과정 전문교과Ⅰ '국제 경제' 과목(2학점)을 보통교과 '사회(역사/도덕포함)' 편제로 등록함).</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>공동교육과정 과목을 별도로 구분해 등록해야 원점수·과목평균·성취도·석차등급이 공동교육과정 산출 방식대로 처리되고, 학교생활기록부 '비고'란에 '공동' 표기가 자동으로 붙기 때문이다.</dd></dl>
+    </div>
+<div class="memo"><h4>등록 원칙과 성적산출</h4><ul><li>'공동교육과정'은 진로선택 과목으로 편성하며, 편제 등록 시 공동교육과정을 선택하고 <span class="btn">{저장}</span>함(<b>편제 등록 후 '학교교육과정편제 및 시간배당 수정' 창에서 수정 불가함</b>).</li><li>'공동교육과정'으로 운영하는 과목은 나이스 편제 등록 시 '공동교육과정' 여부를 선택하면 '성적처리유형'이 자동으로 수정됨.</li><li>2015 개정 교육과정(2026학년도 3학년) 공동교육과정 과목은 원점수·과목평균·표준편차·수강자수를 산출하고 성취도는 교과(군)별 3단계 또는 5단계로 산출함(보통교과 진로선택과목(진로선택으로 편성된 전문교과 포함), 체육·예술 교과(군)의 일반선택과목과 교양 교과(군)의 과목 제외).</li><li>2022 개정 교육과정(2026학년도 1·2학년) 공동교육과정 및 온라인학교 개설 과목은 원점수·과목평균·성취도(5단계)·성취도별 분포비율·수강자수를 산출함(체육·예술 교과(군)의 과목(특수목적고등학교의 체육·예술 교과(군) 선택 과목 제외), 공통과목의 '과학탐구실험', 교양 교과(군)의 과목 제외).</li><li>공동교육과정으로 이수한 과목은 학교생활기록부 교과학습발달상황 과목 성적의 '비고'란에 '공동'(소속교 개설과목 수강), '공동, 타기관'(타교 개설과목 수강)이 자동으로 표기됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>거점교 유형별 편성 방법</h4><ul><li>2015 개정 교육과정(2026학년도 3학년) 특수목적고등학교나 특성화고등학교에서 일반고등학교 학생이 함께 수강하는 경우 보통교과의 관련 교과(군) 진로선택과목으로 편성함.</li><li>2022 개정 교육과정(2026학년도 1·2학년) <b>거점교가 일반고등학교인 경우</b> 일반고등학교와 특수목적고등학교, 일반고등학교와 특성화고등학교 간 공동교육과정은 전문 교과 선택 시 보통 교과의 진로 선택 과목으로 편성함.</li><li>2022 개정 교육과정(2026학년도 1·2학년) <b>거점교가 특수목적고등학교·특성화고등학교인 경우</b> 특수목적고등학교 보통교과는 과목 구분을 그대로 따르고, 전문교과는 특성화고등학교에서 개설하는 경우에는 전문교과 교과(군)으로 편성함.</li><li>거점교의 공동교육과정 개설 교과목이 일과 내 교과목과 학점이 같은 경우라도 분리하여 공동교육과정 교과목을 등록할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="D" data-when="편제보완" data-who="교육과정업무담당자">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE D · 수정과 승인">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">편제 등록 후 보완 시점</span><span class="tag opt">수정·삭제 필요 시</span></div>
+    <h3>편제 및 시간배당 수정</h3>
+    <p class="desc">편제명, 과목명, 학점, 성적처리유형 등을 잘못 등록했거나 변경이 필요한 학교만 해당합니다. <strong>편제한 과목을 삭제하는 경우 과목개설이 되었거나 성적이 입력된 경우 모두 삭제해야 합니다.</strong> 편제 가져오기로 가져온 과목은 '성적처리유형'이 공란이므로 이 창에서 반드시 등록해야 합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기초에 편제 및 시간배당 등록을 마친 뒤 오류나 변경사항이 확인된 시점</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학년'을 확인하고 <span class="btn">{조회}</span>하여 수정할 '과목명'을 선택함 → '학교교육과정편제 및 시간배당 수정' 창의 '변경 정보'란에서 내용 수정 후 <span class="btn">{저장}</span>함(잘못 등록한 경우 <span class="btn">{삭제}</span>할 수 있음).</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교육과정 편성 내용이 과목별 성적처리유형과 학교생활기록부 교과학습발달상황으로 그대로 이어지므로, 승인받은 편제표와 다른 부분을 성적 산출 전에 바로잡으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>수정 전 확인할 조건</h4><ul><li>편제한 과목의 수정이나 삭제가 필요한 경우 사용함.</li><li>일반고등학교에서 고시 외 과목의 교양 교과(군)의 '과목구분'을 '진로선택'에서 '일반선택'으로 변경하는 경우에는 확인창이 나타나므로 '과목구분'을 정확하게 선택해야 함.</li><li>과목별 세부능력 및 특기사항이 등록된 후에 편제를 수정할 경우 <code>[학생부-학교생활기록부-학교생활기록부-학생부반영]</code>에서 교과학습발달상황 항목을 자료반영해야 수정 내용이 반영됨.</li><li><b>성적처리유형이 서로 다른 교과(예: 전문교과, 보통교과)의 경우 성적이 산출되었거나 학교생활기록부의 교과학습발달상황에 성적자료가 반영되어 있으면 수정할 수 없으므로, 이 때는 산출된 성적 및 교과학습발달상황을 먼저 삭제한 후 수정해야 함.</b></li><li><b>편제한 과목을 삭제하는 경우 과목개설이 되었거나, 성적이 입력된 경우 모두 삭제해야 함.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>수정 창에서 가능한 작업</h4><ul><li>'학교교육과정편제 및 시간배당 수정'의 '변경 정보'에서 '편제명', '과목명'을 클릭 시 '편제명 변경' 창, '과목명 변경' 창이 나타나 편제명 또는 과목명을 수정할 수 있음.</li><li>'공동교육과정'으로 운영하는 과목은 나이스 편제 등록 시 '공동교육과정' 여부를 선택하면 '성적처리유형'이 자동으로 수정됨.</li><li>편제 가져오기를 통해 가져온 편제과목의 경우 '성적처리유형'이 공란이므로 '과목명'을 클릭하여 '학교교육과정편제 및 시간배당 수정' 창에서 <b>'성적처리유형'을 반드시 등록해야 함.</b></li><li>실무과목의 능력단위 코드 수정은 해당 능력단위명을 클릭하여 수정하며, 능력단위 시수 수정은 1건씩 수정할 수 있고 <b>능력단위와 실무과목은 동시에 수정이 불가능함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t11" data-num="11" data-stage="D" data-when="마감승인" data-who="교육과정업무담당자">
+  <div class="gutter"><b>11</b><span class="gstage" title="원문 STAGE D · 수정과 승인">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">편제 등록·수정을 모두 마친 뒤</span></div>
+    <h3>편제 및 시간배당표 업무승인</h3>
+    <p class="desc">편제 및 시간배당 등록과 수정을 끝낸 모든 학교가 마지막에 거치는 단계입니다. <strong>조회된 총계 시수와 학점은 교육지원청에서 승인받은 교육과정 편제표와 일치해야 합니다.</strong> {마감}을 해야 {승인요청}이 활성화됩니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기초에 계열·학과별 편제 및 시간배당 등록과 수정이 모두 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-확인및승인]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도' 확인 후 '계열', '학과'를 선택하고 <span class="btn">{조회}</span>하여 내용을 확인하고 <span class="btn">{마감}</span>함 → <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교가 나이스에 등록한 편제가 교육지원청에 제출한 편제표와 같다는 것을 결재로 확정해, 이후 과목개설과 성적처리가 승인된 교육과정 위에서 돌아가게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-확인및승인]</code>에서 조회된 <b>총계 시수와 학점은 교육지원청에서 승인받은 교육과정 편제표와 일치해야 함.</b></li><li><b>{마감}하면 {승인요청}이 활성화되고, {마감}은 {마감취소}로 변경됨.</b></li><li>후행처리로 <code>[교육과정-편제및과목개설관리]</code>에서 과목개설 및 수강학생을 편성함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 교육과정, Section_04 학교교육과정 편성 (91–119쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

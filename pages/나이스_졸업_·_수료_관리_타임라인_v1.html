@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<!-- 졸업 · 수료 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>졸업 · 수료 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>졸업 · 수료 관리</b>
+    <span class="sub">업무 11개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">학적 · Section_15 · pp. 533–551</p>
+    <h1>졸업 · 수료 관리
+      <em>업무 11개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학년말</dd></div>
+      <div><dt>업무담당</dt><dd>학적 업무담당자</dd></div>
+      <div><dt>메뉴경로</dt><dd>[학적-졸업/수료관리]</dd></div>
+      <div><dt>선행조건</dt><dd>학교생활기록부 전체 항목의 기재사항에 대해 입력 및 대조·확인 작업이 완료되고 학교생활기록부와 건강기록부를 검증하여 마감을 완료함(예외적인 인정오류 외에는 반드시 수정함).</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>학년말 사전 준비</h3>
+            <p class="tl-sub">학교생활기록부·건강기록부 마감 진행과 병행 · 졸업/수료대상자 생성 전에 끝냄</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 증서 양식 등록"><span>01</span>증서 양식 등록</button><button type="button" class="tl-btn" data-go="t2" title="02 조기졸업자 등록"><span>02</span>조기졸업자 등록</button><button type="button" class="tl-btn" data-go="t3" title="03 수료대상자 등록"><span>03</span>수료대상자 등록</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>대상자 생성과 확인</h3>
+            <p class="tl-sub">조기졸업자·수료대상자 등록 완료가 선행조건</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 졸업/수료자 생성"><span>04</span>졸업/수료자 생성</button><button type="button" class="tl-btn" data-go="t5" title="05 대상자 명단 출력"><span>05</span>대상자 명단 출력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>대장번호 부여</h3>
+            <p class="tl-sub">졸업/수료대상자 생성 후 · 졸업일자 확인 필요</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t6" title="06 대장번호 부여"><span>06</span>대장번호 부여</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>대장번호 보완</h3>
+            <p class="tl-sub">부여 방식이 학교 기준과 다르거나 대상 추가가 필요한 학교만</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t7" title="07 수정파일 올리기"><span>07</span>수정파일 올리기</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>학적반영 확정</h3>
+            <p class="tl-sub">학교생활기록부·건강기록부 마감 완료 후 결재상신 가능</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t8" title="08 졸업생 학적반영"><span>08</span>졸업생 학적반영</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">06</p>
+            <h3>졸업식 전후 출력</h3>
+            <p class="tl-sub">증서 양식 등록과 대장번호 부여가 선행조건</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t10" title="10 졸업/수료대장 출력"><span>10</span>졸업/수료대장 출력</button><button type="button" class="tl-btn" data-go="t9" title="09 졸업·수료장 출력"><span>09</span>졸업·수료장 출력</button><button type="button" class="tl-btn" data-go="t11" title="11 졸업생 생기부 출력"><span>11</span>졸업생 생기부 출력</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="사전준비" data-who="학적업무담당자">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 서식 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">졸업장 출력 전</span><span class="tag opt">서식구분별 등록</span></div>
+    <h3>졸업장 · 수료장 · 명예졸업장 양식 등록과 편집</h3>
+    <p class="desc">졸업 · 수료 관리에서 가장 먼저 손대는 준비 작업이다. <strong>졸업장이나 수료장을 출력하기 위해서는 [학적-졸업/수료관리-졸업장/수료장/명예졸업장양식관리]에서 졸업장이나 수료장을 먼저 등록해야 함.</strong> 서식문구는 학교마다 다를 수 있으므로 우리 학교 문구로 등록하고 미리보기로 확인한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 졸업 · 수료장 출력에 앞서 미리 등록해 두는 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-졸업/수료관리-졸업장/수료장/명예졸업장양식관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'서식구분' 선택 후 <span class="btn">{등록}</span> 함 → '서식명', '서식문구', '수여자명' 입력하고 <span class="btn">{저장}</span> 하면 우측에 미리보기로 졸업장 양식이 나타남.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>실제 증서 용지에 인쇄될 문구와 글자 위치를 학교 기준에 맞춰 확정해 두어, 졸업식 직전에 출력물을 다시 손보지 않으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'서식구분'에는 '졸업장', '수료장', '명예졸업장'을 선택할 수 있으며, <b>서식문구는 학교마다 다를 수 있음</b>.</li><li><span class="btn">{양식편집}</span> 으로 졸업장의 서식을 학교 상황에 맞게 세부적으로 설정할 수 있음.</li><li><span class="btn">{크게보기}</span> 로 '졸업장/수료장/명예졸업장' 양식을 PDF, 워드, 엑셀, 파워포인트, 한글 문서로 저장하거나 출력할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>양식편집 설정 범위</h4><ul><li>설정 가능 항목 — 서식번호, 서식명, 학과, 학생성명, 생년월일, 서식문구, 일자, 수여자명.</li><li>서식 기능 — 폰트명(궁서체, 굴림체, 돋움체, 맑은 고딕, 바탕체, HY견고딕), 크기, 속성(없음, Bold, StrikeOut, Underline, Italic), 색상(검정, 빨강, 파랑, 노랑), 정렬(왼쪽, 가운데, 오른쪽), 가로 위치(X), 세로 위치(Y), 넓이, 높이.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="B" data-when="대상자확정" data-who="학적업무담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE B · 대상자 확정">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">졸업/수료대상자 생성 전</span><span class="tag opt">조기졸업 대상자가 있는 학교만</span></div>
+    <h3>조기졸업자 등록과 진학학교 지정</h3>
+    <p class="desc">조기졸업 대상자가 없는 학교에서는 이 메뉴를 사용하지 않는다. <strong>조기졸업 대상자는 2학년 학생만 등록할 수 있다.</strong> 등록한 학생은 현재 3학년 졸업 대상자에 포함되어 졸업 처리가 진행된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 학교생활기록부와 건강기록부 마감이 완료된 뒤 졸업/수료대상자를 생성하기 전</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-졸업/수료관리-조기졸업자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'졸업학년도' 확인 후 <span class="btn">{조회}</span>하고 <span class="btn">{등록}</span>함 → '조기졸업자 등록' 창에서 '졸업학년도' 확인 후 '학년', '반'을 선택하고 <span class="btn">{조회}</span>함 → 조기졸업 대상 학생을 선택하고 '진학학교'를 등록하기 위해 <span class="btn">{학교찾기}</span>로 진학학교를 등록하고 <span class="btn">{저장}</span> 후 <span class="btn">{닫기}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학칙에 따라 2년만 이수하고 나가는 학생을 3학년 졸업 대상자와 같은 절차로 졸업시키고 진학할 학교까지 학적에 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{학교찾기}</span>를 클릭하면 나타나는 '학교찾기' 창에서 '시도교육청구분' 선택, '학교명' 입력 후 <span class="btn">{조회}</span>하여 목록에서 진학학교를 클릭하고 <span class="btn">{확인}</span>함.</li><li><span class="btn">{삭제}</span>로 기등록된 조기졸업 대상자를 선택하여 삭제할 수 있음.</li><li><b>조기졸업 대상자는 2학년 학생만 등록할 수 있음.</b></li><li>조기졸업 대상자로 등록된 학생은 현재 3학년 졸업 대상자에 포함되어 졸업 처리를 할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>근거 법령</h4><ul><li>조기진급 및 조기졸업에 대한 근거는 「초·중등교육법」 제27조(조기진급 및 조기졸업 등), 같은 법 시행령 제9조(학교규칙의 기재사항 등) 제1항제5호, 제53조(조기진급·조기졸업 등), 「조기진급 등에 관한 규정」에 의함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="B" data-when="대상자확정" data-who="학적업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE B · 대상자 확정">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">졸업/수료대상자 생성 전</span><span class="tag opt">수료대상자가 있는 학교만</span></div>
+    <h3>수료대상자 등록</h3>
+    <p class="desc">수료대상자가 없는 학교에서는 이 메뉴를 사용하지 않는다. '수료자 등록' 창에서 등록 가능 학년은 2·3학년이다. <strong>수료대상자로 등록된 학생은 현재 3학년 졸업 대상자에서 제외되어 졸업처리를 할 수 없다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 학교생활기록부와 건강기록부 마감이 완료된 뒤 졸업/수료대상자를 생성하기 전</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-졸업/수료관리-수료자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'졸업학년도' 확인 후 <span class="btn">{조회}</span>하여 <span class="btn">{등록}</span>함 → '수료자 등록' 창에서 '졸업학년도' 확인 후 '학년', '반'을 선택하고 <span class="btn">{조회}</span>함 → 수료대상 학생을 선택 후 <span class="btn">{저장}</span>하고 <span class="btn">{닫기}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>졸업 요건을 채우지 못한 학생을 졸업자와 갈라 놓아 졸업대장이 아닌 수료대장으로 관리하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'수료자 등록' 창에서 등록 가능 학년은 2·3학년임.</li><li><b>수료대상자로 등록된 학생은 현재 3학년 졸업 대상자에서 제외되어 졸업처리를 할 수 없음.</b></li><li><span class="btn">{삭제}</span>로 기등록된 수료대상자를 선택하여 삭제할 수 있음.</li><li>수료대상자가 없는 학교에서는 <code>[학적-졸업/수료관리-수료자관리]</code>를 사용하지 않음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="대상자확정" data-who="학적업무담당자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 대상자 확정">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">조기졸업자·수료대상자 등록을 끝낸 뒤</span></div>
+    <h3>졸업 / 수료대상자 생성</h3>
+    <p class="desc">조기졸업자와 수료대상자 등록을 마친 뒤 한 번 실행하는 업무다. 등록한 두 명단을 목록에서 확인하고 생성하면 조기졸업자, 수료대상자, 정상졸업자가 한꺼번에 만들어진다. <strong>졸업/수료대상자를 생성하면 [조기졸업자관리]와 [수료자관리]에서 더 이상 대상자를 등록할 수 없다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 조기졸업자관리와 수료자관리에서 대상자 등록을 완료한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-졸업/수료관리-졸업/수료대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'졸업학년도', '졸업구분' 확인 후 <span class="btn">{조회}</span>함 → <code>[학적-졸업/수료관리-조기졸업자관리]</code>와 <code>[학적-졸업/수료관리-수료자관리]</code>에서 등록한 조기졸업자와 수료대상자를 목록에서 확인하고 <span class="btn">{생성}</span>함 → '졸업/수료대상자 생성' 창에서 '졸업학년도' 확인 후 <span class="btn">{작업실행}</span>하고 <span class="btn">{확인}</span>하여 조기졸업자, 수료대상자, 정상졸업자를 생성함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>흩어져 등록된 명단을 하나의 확정 명단으로 굳혀 대장번호 부여와 학적반영이 같은 대상자를 보고 돌아가게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'졸업구분'은 '전체', '정상졸업', '조기졸업', '수료' 중에서 선택할 수 있음.</li><li><code>[학적-졸업/수료관리-졸업/수료대상자관리]</code>에서 등록한 수료대상자가 없는 경우 [졸업/수료대상자관리]에서 조회 시 목록에는 공란으로 나타남.</li><li><span class="btn">{작업실행}</span> 시 조기졸업 대상자도 현재 3학년 졸업 대상자에 포함되어 생성됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>생성 후 상태 변화</h4><ul><li>졸업/수료대상자를 생성하면 목록 위에 "☞ 졸업/수료대상자가 생성되었습니다."가 표시되고 <span class="btn">{생성}</span>이 <span class="btn">{생성취소}</span>로 변경되며, 필요시 <span class="btn">{생성취소}</span>할 수 있음.</li><li><b>졸업/수료대상자를 생성하면 [조기졸업자관리]와 [수료자관리]에서 "☞ 졸업대상자가 생성되었습니다."가 표시되고 각각의 메뉴에서 조기졸업 대상자와 수료대상자를 등록할 수 없음.</b></li><li><span class="btn">{생성취소}</span>로 기생성된 조기졸업 대상자, 정상졸업 대상자, 수료대상자를 삭제할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="대상자확정" data-who="학적업무담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 대상자 확정">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">등록·생성 직후 확인이 필요할 때</span><span class="tag">세 메뉴 절차 동일</span></div>
+    <h3>조기졸업자 · 수료대상자 · 졸업/수료대상자 목록 출력</h3>
+    <p class="desc">세 메뉴 모두 절차가 같아 한 카드로 묶었다. 등록하거나 생성한 명단이 맞는지 종이나 파일로 대조할 때 쓴다. <strong>어느 메뉴든 '졸업학년도' 확인 후 조회한 다음 출력하는 흐름이 같다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 조기졸업자·수료대상자 등록이나 졸업/수료대상자 생성을 마친 직후</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-졸업/수료관리-조기졸업자관리]</code> <code>[학적-졸업/수료관리-수료자관리]</code> <code>[학적-졸업/수료관리-졸업/수료대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>해당 메뉴에서 '졸업학년도' 확인 후 <span class="btn">{조회}</span>하고 <span class="btn">{출력}</span>을 클릭하면 나타나는 창에서 내용을 확인하고 저장 또는 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>대장번호를 부여해 되돌리기 어려워지기 전에 명단이 빠지거나 잘못 들어간 곳이 없는지 눈으로 대조하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>어떤 목록을 언제 여는가</h4><ul><li>조기졸업대상자 목록 — <code>[학적-졸업/수료관리-조기졸업자관리]</code>에서 <span class="btn">{출력}</span>. 2학년 조기졸업 대상자와 진학학교를 확인할 때 엶.</li><li>수료대상자 목록 — <code>[학적-졸업/수료관리-수료자관리]</code>에서 <span class="btn">{출력}</span>. 졸업 대상자에서 빠지는 2·3학년 학생을 확인할 때 엶.</li><li>졸업/수료대상자 목록 — <code>[학적-졸업/수료관리-졸업/수료대상자관리]</code>에서 <span class="btn">{출력}</span>. 생성 후 조기졸업자·수료대상자·정상졸업자가 모두 들어갔는지 확인할 때 엶.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li><span class="btn">{출력}</span>으로 목록을 PDF, 워드, 엑셀, 파워포인트, 한글 문서로 저장하거나 출력할 수 있음.</li><li>조기졸업자 출력은 <span class="btn">{출력}</span>을 클릭하면 나타나는 '조기졸업대상자' 창에서 내용을 확인하고 저장 또는 출력함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="C" data-when="대장번호부여" data-who="학적업무담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE C · 대장번호 · 학적반영">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">졸업 / 수료대상자 생성 후</span></div>
+    <h3>졸업 / 수료대장번호 부여</h3>
+    <p class="desc">졸업 / 수료대상자 생성을 마친 모든 학교가 하는 업무입니다. 제공되는 부여 방식이 학교 기준과 맞지 않으면 가장 유사한 방식을 선택해 작업실행한 뒤 수정파일로 보완합니다. <strong>'졸업일자'는 [교육과정-학사일정관리-학사일정관리]의 {연간학사일정관리} 탭에 등록된 졸업일자가 자동 반영되고, 졸업식이 등록되어 있지 않으면 '2025.02.28.'로 반영되므로 반드시 확인이 필요함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 졸업 / 수료대상자 생성이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-졸업/수료관리-졸업/수료대장번호부여]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-졸업/수료관리-졸업/수료대장번호부여]</code>에서 '졸업학년도', '졸업회차', '졸업대장시작번호', '수료대장시작번호', '졸업일자' 확인 → '졸업대장번호부여'를 학교 실정에 맞게 선택 → <span class="btn">{작업실행}</span> 후 <span class="btn">{확인}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>졸업생 한 명 한 명에게 학교의 공식 졸업 순번을 확정해 붙여, 졸업장과 졸업대장 그리고 학교생활기록부의 기록이 같은 번호로 맞물리게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>번호가 매겨지는 방식</h4><ul><li>'졸업회차', '졸업대장시작번호'는 이전학년도에 나이스로 졸업처리를 한 경우 '졸업회차'는 이전학년도 졸업회차+1로, '졸업대장시작번호'는 이전학년도 마지막 졸업대장번호+1로 부여됨.</li><li>졸업대장번호부여 방식에서 '학적편제순(학과포함)'은 계열-학년-학과-반-번호 순, '학적편제순(학과미포함)'은 계열-학년-반-번호 순, '반코드순'은 반-번호 순으로 채번됨.</li><li><b>졸업대장 시작번호는 숫자만으로 이루어진 자료와 ####-####의 형식으로만 부여할 수 있으며, 최대 16자리까지만 부여할 수 있음.</b> 숫자만으로 이루어진 자료는 하이픈(-) 뒤에 위치한 입력창에 졸업대장번호를 입력함(예시: 2025-10001, 10987).</li><li>졸업대장번호를 '학년도-연번' 형식의 학년도별로 부여하는 경우 '졸업회차' 옆의 '대장번호형식변경'을 선택하여 부여함.</li><li>'남여구분'을 선택하면 남학생이 앞번호부터 졸업대장번호가 부여됨.</li><li>졸업대장번호를 '학적편제순'으로 부여하면 [학적-졸업/수료관리-졸업생학생부출력]에서 학적편제순으로 학교생활기록부를 출력할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>작업실행과 취소</h4><ul><li>{작업실행}으로 학교생활기록부의 학교정보(학년이력)에 졸업대장번호가, 인적·학적사항의 학적사항에 '2025.01.10. ○○고등학교 제3학년 졸업'이 자동으로 등록되며, 졸업생 학적반영 전에 졸업 관련 항목이 모두 입력된 졸업 대상자의 학교생활기록부를 출력할 수 있음.</li><li>{작업실행} 시 학교생활기록부의 학교정보(학년이력)에 졸업대장번호가 인적·학적사항의 학적사항에 '2026.01.07. ○○고등학교 제3학년 졸업'이 자동으로 등록됨.</li><li><b>{작업실행}을 완료하면 {작업실행}이 {작업취소}로 변경되며, 필요시 {작업취소}할 수 있음.</b></li><li>{작업취소}하면 졸업 대상자 학교생활기록부의 학교정보(학년이력)에 반영된 졸업대장번호와 인적·학적사항의 학적사항에서 '2025.01.10. ○○고등학교 제3학년 졸업' 내용이 삭제됨.</li><li>{작업실행}을 완료하면 '졸업대장번호수정파일올리기'에 {출력}이 나타나며, {출력}으로 졸업/수료대장번호 부여 내역을 PDF, 워드, 엑셀, 파워포인트, 한글 문서로 저장하거나 출력할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="C" data-when="대장번호부여" data-who="학적업무담당자">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE C · 대장번호 · 학적반영">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">대장번호 작업실행 직후</span><span class="tag opt">부여 방식이 학교 기준과 다를 때만</span></div>
+    <h3>졸업대장번호 수정파일 올리기</h3>
+    <p class="desc">제공되는 졸업대장번호부여 방식이 당해 학교 기준과 일치하지 않거나 추가 대상 학생을 입력하려는 학교만 하는 업무입니다. <strong>{작업실행}을 완료해야 '졸업대장번호수정파일올리기'에 {출력}이 나타남.</strong> 학교 기준과 부여 방식이 맞는 학교는 이 업무를 건너뜁니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 졸업 / 수료대장번호 부여의 {작업실행}을 완료한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-졸업/수료관리-졸업/수료대장번호부여]</code>의 '졸업대장번호수정파일올리기'</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>가장 유사한 방식을 선택하여 <span class="btn">{작업실행}</span>하여 졸업대장번호를 부여 → '졸업대장번호수정파일올리기'에서 <span class="btn">{엑셀다운로드}</span> 시 '엑셀'을 선택하여 다운로드 → '졸업/수료증서번호'를 입력 후 저장 → <span class="btn">{엑셀업로드}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>나이스가 제공하는 채번 방식에 없는 우리 학교의 증서번호 규칙과 추가 대상 학생을 그대로 반영해, 실제 종이 증서와 대장의 번호가 어긋나지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'졸업대장번호수정파일올리기'에서 {엑셀다운로드} 시 엑셀(*.xlsx), 한셀(*.cell), CSV(*.csv) 중에서 선택하여 다운로드할 수 있으며, 파일 형식에 따라 파일명은 자동으로 '2025학년도 졸업_수료대장번호 부여'로 부여됨.</li><li><b>{엑셀업로드} 시 파일 확장자는 엑셀(*.xlsx)·한셀(*.cell)·CSV(*.csv) 파일로만 업로드할 수 있음.</b></li><li>{출력}으로 졸업/수료대장번호 부여 내역을 PDF, 워드, 엑셀, 파워포인트, 한글 문서로 저장하거나 출력할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="C" data-when="학적반영" data-who="학적업무담당자">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE C · 대장번호 · 학적반영">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학교생활기록부·건강기록부 마감 후</span><span class="tag">전자결재 필요</span></div>
+    <h3>졸업 / 수료생 학적반영</h3>
+    <p class="desc">졸업 · 수료 처리의 마지막 확정 단계로 모든 학교가 하는 업무입니다. <strong>학교생활기록부 및 건강기록부가 먼저 마감되어 있어야 졸업/수료생 학적반영을 위한 결재상신이 가능함.</strong> 학교생활기록부에 졸업대장번호와 졸업에 대한 학적사항 등이 입력되었는지 확인한 후 진행합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 졸업 / 수료대장번호 부여와 학교생활기록부 · 건강기록부 마감이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-졸업/수료관리-졸업/수료생학적반영]</code>, <code>[승인사항-상신함]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-졸업/수료관리-졸업/수료생학적반영]</code>에서 '졸업학년도' 확인 → <span class="btn">{승인요청}</span>으로 '기안문서상신' 창에서 <span class="btn">{결재자지정}</span> 후 결재할 문서를 선택하여 '내용'을 입력 → <span class="btn">{상신}</span>으로 업무승인과정을 거쳐 결재권자의 결재가 완료되면 <span class="btn">{학적반영}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>재학생 자료를 졸업생 자료로 확정해, 민원 창구에서 졸업증명서와 졸업생 학교생활기록부를 발급할 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>결재와 반영 절차</h4><ul><li>{승인요청}으로 {상신}하는 과정은 Section_14 명예졸업 관리 1. 명예졸업 대상자 관리 5) 명예졸업 대상자 학적반영 과정을 참조함.</li><li>{승인요청}으로 업무승인과정을 거쳐 결재가 완결되면, '결재 미상신'이 {학적반영}으로 변경됨.</li><li><b>{학적반영취소}는 [승인사항-상신함]에서 {기결문서취소}를 통해 기결문서 취소 결재가 완료된 후에 가능함.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>반영 이후에 달라지는 것</h4><ul><li><b>{학적반영}하면 학생의 정보가 '졸업생자료'가 되므로 나이스의 현재 학년도에서는 더 이상 조회되지 않으며, 민원 시스템과 연동되어 민원인을 대상으로 졸업증명서와 졸업생 학교생활기록부를 발급할 수 있음.</b></li><li>졸업생 학적반영 이후에는 [학적-졸업/수료관리-졸업생학생부출력]에서 졸업생 학교생활기록부를 학생별로 개별 출력할 수 있으며, 반별 일괄출력은 지원되지 않음.</li><li>졸업장과 졸업대장은 [학적-졸업/수료관리-졸업/수료대장번호부여]를 하면 [학적-졸업/수료관리-졸업/수료생학적반영]에서 {학적반영}을 하지 않아도 출력할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="D" data-when="졸업식전후" data-who="학적업무담당자">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE D · 증서 · 대장 출력">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">졸업과 동시에</span><span class="tag">법정장부</span></div>
+    <h3>졸업 · 수료대장 출력</h3>
+    <p class="desc">졸업대장과 수료대장은 교무업무에서 법정장부로 관리되는 문서이므로 반드시 출력하여 보관해야 합니다. <strong>[학적-졸업/수료관리-졸업/수료대장번호부여]를 하면 {학적반영}을 하지 않아도 출력할 수 있습니다.</strong> 전산자료와 종이출력물을 동시에 관리합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 졸업/수료대장번호 부여를 마친 뒤 졸업과 동시에.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-졸업/수료관리-졸업/수료대장출력]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'졸업학년도' 확인 후 '구분'을 선택하고 <span class="btn">{조회}</span> 함 → <span class="btn">{출력}</span> 을 클릭하면 나타나는 '졸업대장 출력' 창에서 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>졸업 사실을 학교가 영구히 증명할 수 있도록 법정장부를 전산자료와 종이출력물 두 형태로 남겨 두기 위해서입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>이전학년도 졸업대장·수료대장을 조회하려면 '졸업학년도'를 이전학년도로 수정하고 <span class="btn">{조회}</span> 함.</li><li>졸업장과 졸업대장은 <b>[학적-졸업/수료관리-졸업/수료대장번호부여]를 하면 [학적-졸업/수료관리-졸업/수료생학적반영]에서 {학적반영}을 하지 않아도 출력할 수 있음.</b></li><li>졸업대장·수료대장은 <b>졸업과 동시에 나이스에서 전자결재 후 출력하여 보관함</b>(전산자료와 종이출력물로 동시 관리).</li><li>나이스의 [학적-졸업/수료관리-졸업/수료생학적반영]에서 <span class="btn">{승인요청}</span> 으로 업무승인과정을 거쳐 결재를 완료함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>법정장부 범위</h4><ul><li>교무업무에서 법정장부로 관리되는 문서에는 학교생활기록부, 학교생활기록부 정정대장(재학생·졸업생), 졸업대장, 수료대장이 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="D" data-when="졸업식전후" data-who="학적업무담당자">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE D · 증서 · 대장 출력">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">졸업식 전후</span><span class="tag opt">양식 등록 선행 필수</span></div>
+    <h3>졸업 · 수료장 출력</h3>
+    <p class="desc">졸업생과 수료생에게 수여할 졸업장·수료장을 실제 용지에 인쇄하는 업무입니다. <strong>[학적-졸업/수료관리-졸업장/수료장/명예졸업장양식관리]에서 졸업장이나 수료장을 먼저 등록해야 출력할 수 있습니다.</strong> 이전학년도 졸업장도 '졸업학년도'만 바꾸면 다시 뽑을 수 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 졸업/수료대장번호 부여를 마치고 증서 양식 등록이 끝난 뒤 졸업식 전후.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-졸업/수료관리-졸업/수료장출력]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'졸업학년도' 확인 후 '성명' 입력 또는 공란, '구분', '정렬순'을 선택하고 <span class="btn">{조회}</span> 함 → '테두리', '학과포함', '학교장명', '학교명추가'를 상황에 맞게 선택 및 입력하고 출력할 학생을 선택한 후 <span class="btn">{출력}</span> 을 클릭하면 나타나는 '졸업/수료장 출력' 창에서 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생에게 실제로 건네주는 졸업 증서를 학교 실정에 맞는 문구와 서식으로 정확히 만들어 수여하기 위해서입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>이전학년도 졸업장을 조회하려면 '졸업학년도'를 이전학년도로 수정하고 <span class="btn">{조회}</span> 함.</li><li>'성명'을 공란으로 두고 <span class="btn">{조회}</span> 하면 졸업학년도에 해당하는 모든 졸업생이 조회됨.</li><li>졸업장이나 수료장을 출력하기 위해서는 <b>[학적-졸업/수료관리-졸업장/수료장/명예졸업장양식관리]에서 졸업장이나 수료장을 먼저 등록해야 함.</b></li><li><b>졸업장을 테두리가 있는 용지로 인쇄하는 경우 테두리 선택을 해제하여 출력함.</b></li><li>일반학과인 경우 학과포함 선택 여부에 관계 없이 학과가 나타나지 않음.</li><li><span class="btn">{출력}</span> 으로 졸업장·수료장을 PDF, 워드, 엑셀, 파워포인트, 한글 문서로 저장하거나 출력할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t11" data-num="11" data-stage="D" data-when="학적반영" data-who="학적업무담당자">
+  <div class="gutter"><b>11</b><span class="gstage" title="원문 STAGE D · 증서 · 대장 출력">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">졸업생 학적반영 이후</span><span class="tag opt">증명·제출 용도 불가</span></div>
+    <h3>졸업생 학교생활기록부 출력</h3>
+    <p class="desc">졸업생 학적반영을 마친 뒤 졸업생의 학교생활기록부를 학생별로 확인·출력하는 업무입니다. <strong>학급별 일괄출력은 지원되지 않으며, 페이지별로 검색된 학생들만 일괄출력이 가능합니다.</strong> 출력 시 조회 및 출력 사유를 반드시 등록해야 합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, [학적-졸업/수료관리-졸업/수료생학적반영]에서 {학적반영}을 완료한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-졸업/수료관리-졸업생학생부출력]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'졸업학년도' 확인 후 출력할 학생의 '성명'을 입력하고 <span class="btn">{조회}</span> 함 → '학생부 선택', '출력옵션' 선택 후 출력하고자 하는 졸업생을 선택하여 <span class="btn">{출력}</span> 함 → '졸업생 학생부 조회 및 출력 사유 등록' 창에서 '조회 및 출력 사유'를 입력한 후 <span class="btn">{저장}</span> 하고 '확인' 창에서 내용 확인 후 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>졸업 후 기록을 확인해야 할 상황에서 누가 왜 열람했는지 사유를 남기면서 필요한 범위만 안전하게 꺼내 보기 위해서입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>학생 '성명'을 공란으로 두고 <span class="btn">{조회}</span> 하면 졸업학년도에 해당하는 모든 졸업생이 조회됨.</li><li>졸업생 학교생활기록부는 용도에 따라 '학교생활기록부Ⅰ'과 '학교생활기록부Ⅱ'로 구분하여 조회 및 출력할 수 있음.</li><li>졸업생 학적반영 이후에 출력할 수 있으나 <b>학급별 일괄출력은 지원되지 않으며, 페이지별로 검색된 학생들만 일괄출력이 가능함.</b></li><li>졸업대장번호를 '학적편제순'으로 부여하면 [학적-졸업/수료관리-졸업생학생부출력]에서 학적편제순으로 학교생활기록부를 출력할 수 있음.</li><li>졸업생 학교생활기록부는 나이스에서 <span class="btn">{승인요청}</span> 으로 업무승인과정을 거쳐 결재 완료 후 별도로 출력하여 보관하지 않음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>증명·제출 용도는 민원 메뉴</h4><ul><li><b>[학적-졸업/수료관리-졸업생학생부출력]에서 출력한 졸업생 학교생활기록부는 증명, 제출 등의 용도로 사용 불가함.</b></li><li>상급학교 전형자료를 온라인으로 제공하지 않는 학생의 경우 상급학교 전형자료용 학교생활기록부는 [민원] 메뉴의 '생활기록부(대입전형용)'를 이용하여 출력함.</li><li>[민원]의 출력상세경로는 <code>[민원-민원접수처리관리-제증명민원접수-학생관련민원접수]</code>의 <span class="btn">{민원사무명}</span> 에서 '생활기록부(초,중,고)'와 '생활기록부(대입전형용)'임.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 학적, Section_15 졸업 · 수료 관리 (533–551쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

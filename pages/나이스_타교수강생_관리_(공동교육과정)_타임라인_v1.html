@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<!-- 타교수강생 관리 (공동교육과정) 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>타교수강생 관리 (공동교육과정) · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>타교수강생 관리 (공동교육과정)</b>
+    <span class="sub">업무 20개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Part 2. 학적 · Section_13 · pp. 470–521</p>
+    <h1>타교수강생 관리 (공동교육과정)
+      <em>업무 20개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학기초, 학기중, 학기말</dd></div>
+      <div><dt>업무담당</dt><dd>공동교육과정 업무담당자</dd></div>
+      <div><dt>메뉴경로</dt><dd>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)]</dd></div>
+      <div><dt>선행조건</dt><dd>참여교 수강생이 소속교에서 학적이 구성되어 있어야 함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>학기초 수강생 등록</h3>
+            <p class="tl-sub">참여교 학생의 소속교 학적 구성 후 · 거점교와 거점센터만 해당</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 타교수강생 반 등록"><span>01</span>타교수강생 반 등록</button><button type="button" class="tl-btn" data-go="t2" title="02 수강생 개별 등록"><span>02</span>수강생 개별 등록</button><button type="button" class="tl-btn" data-go="t3" title="03 수강생 일괄등록"><span>03</span>수강생 일괄등록</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>확인요청과 학적반영</h3>
+            <p class="tl-sub">수강생 등록 완료 후 · 참여교 확인과 결재 승인이 선행</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 수강생 확인요청"><span>05</span>수강생 확인요청</button><button type="button" class="tl-btn" data-go="t6" title="06 학적반영"><span>06</span>학적반영</button><button type="button" class="tl-btn" data-go="t7" title="07 시간표 전송"><span>07</span>시간표 전송</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>학기중 수업일 출결</h3>
+            <p class="tl-sub">전체시간표 관리와 수강생편성 완료 후 · 수업일마다</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t8" title="08 수업일 출결등록"><span>08</span>수업일 출결등록</button><button type="button" class="tl-btn" data-go="t9" title="09 담임 결과사유 입력"><span>09</span>담임 결과사유 입력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>학적변동 발생 시</h3>
+            <p class="tl-sub">전출·중도해제·개명 등 사유가 있을 때만</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 정보수정·재확인요청"><span>04</span>정보수정·재확인요청</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>학기말 출결마감과 성적 확인</h3>
+            <p class="tl-sub">교시 출결마감 완료 후 · 개설 학점에 따라 갈림</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t10" title="10 학기말 과목 출결마감"><span>10</span>학기말 과목 출결마감</button><button type="button" class="tl-btn" data-go="t11" title="11 정규외 시수 입력"><span>11</span>정규외 시수 입력</button><button type="button" class="tl-btn" data-go="t17" title="17 일과 내 성적 확인"><span>17</span>일과 내 성적 확인</button><button type="button" class="tl-btn" data-go="t18" title="18 일과 외 성적 확인"><span>18</span>일과 외 성적 확인</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">06</p>
+            <h3>학기말 기록 작성과 전송</h3>
+            <p class="tl-sub">성적산출 후 · 기록 입력을 마친 뒤 참여교로 전송</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t13" title="13 세특 등록"><span>13</span>세특 등록</button><button type="button" class="tl-btn" data-go="t12" title="12 독서활동 등록"><span>12</span>독서활동 등록</button><button type="button" class="tl-btn" data-go="t15" title="15 교과우수상 등록"><span>15</span>교과우수상 등록</button><button type="button" class="tl-btn" data-go="t14" title="14 거점교 학생부 반영"><span>14</span>거점교 학생부 반영</button><button type="button" class="tl-btn" data-go="t16" title="16 참여교 자료 확인"><span>16</span>참여교 자료 확인</button><button type="button" class="tl-btn" data-go="t19" title="19 성적·세특 전송"><span>19</span>성적·세특 전송</button><button type="button" class="tl-btn" data-go="t20" title="20 학생생활 전송"><span>20</span>학생생활 전송</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="학기초등록" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 수강생 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기초, 수강생 등록 전</span><span class="tag">학년 단위 관리</span></div>
+    <h3>공동교육과정 타교수강생 반 정보 등록</h3>
+    <p class="desc">온라인·오프라인 공동교육과정 운영교(거점교)와 공동교육과정 거점센터에서만 하는 업무이다. 참여교 수강생을 등록하려면 먼저 그 학생을 담을 반이 있어야 하므로, <strong>공동교육과정이 무학년인 경우 수강하는 학년수만큼 학년별로 반정보를 등록해야 함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 참여교 수강생이 소속교에서 학적이 구성된 뒤 수강생 등록 전</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생 반 정보관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’ 확인 후 ‘학년’을 선택하고 <span class="btn">{조회}</span> → <span class="btn">{행추가}</span> 후 ‘반 정보’에서 ‘학년도’ 확인 후 ‘학년’을 선택하고 ‘반명’, ‘정렬순서’, ‘성적반 코드’ 입력 후 <span class="btn">{저장}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>참여교에서 온 학생을 거점교 안에서 학년·반·번호로 자리 잡게 해, 이후 출결·성적·시간표가 붙을 틀을 먼저 만들어 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>타교수강생 반정보 관리는 학년 단위로 관리하며, <b>공동교육과정이 무학년인 경우 수강하는 학년수만큼 학년별로 반정보를 등록해야 함.</b></li><li>학과가 설치된 고등학교의 ‘반 정보’에서 ‘계열’을 ‘일반계’로 선택하는 경우 <b>‘학과’는 공란으로 선택할 수 없으며</b>, 공업계, 상업계 등의 계열을 선택하면 거점교에 개설된 ‘학과’를 선택할 수 있음.</li><li>‘반명’은 한글 또는 숫자로 입력할 수 있음.</li><li>‘성적반코드’는 <code>[성적-지필/수행선행작업-OMR용코드관리]</code>의 <span class="btn">{과목코드관리}</span> 탭에서 지필평가 과목코드 등록 시 사용하는 코드이며, 일반적으로 반코드와 같게 두 자리로 설정함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="학기초등록" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 수강생 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기초, 반정보 등록 직후</span><span class="tag">학기 단위 등록</span></div>
+    <h3>공동교육과정 참여교 수강생 개별 등록</h3>
+    <p class="desc">거점교에서 참여교 학생 한 명씩을 찾아 타교수강생으로 올리는 업무이다. <strong>학기 단위로 공동교육과정 참여교 수강생을 등록함.</strong> ‘공동교육과정 학생정보’는 반 정보관리에서 등록해 둔 값만 고를 수 있으므로 업무 01이 끝나 있어야 한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 타교수강생 반 정보 등록을 마친 뒤 학기 단위로</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘원적교’, ‘성명(공란)’ 확인 후 <span class="btn">{조회}</span> → <span class="btn">{등록}</span>을 클릭해 나타나는 ‘타교수강생(공동교육과정) 등록’ 창에서 <span class="btn">{학생찾기}</span> 하여 ‘시작일자’와 ‘종료일자’ 확인 또는 선택 후 ‘교육구분’, ‘기관명’, ‘수강상태’를 확인하고 필요시 ‘전공’과 ‘비고’를 입력 → ‘원적교 학생정보’에서 타교수강생의 ‘학교명’, ‘학생부 자료 전송 학기’, ‘과정’, ‘학년’, ‘반’, ‘번호’ 확인 → ‘공동교육과정 학생정보’에서 ‘학년’, ‘반’ 선택하고 ‘번호(자동으로 마지막 번호가 표기됨)’ 입력 후 <span class="btn">{저장}</span>하고 ‘타교수강생 목록’에서 확인</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>참여교 학적에 있는 학생을 거점교 명부에 연결해, 출결·성적·기록 자료가 그 학생의 소속교로 되돌아갈 통로를 만들려고.</dd></dl>
+    </div>
+<div class="memo"><h4>입력값 관련</h4><ul><li>학기 단위로 공동교육과정 참여교 수강생을 등록함.</li><li>‘시작일자’와 ‘종료일자’는 거점교 교무학기 시작일과 종료일이 자동으로 설정됨.</li><li>‘공동교육과정 학생정보’는 <code>[타교수강생반정보관리]</code>에서 등록한 ‘계열’, ‘학과’, ‘학년’, ‘반’ 정보만 설정할 수 있음. 일반고등학교에서는 ‘학년’, ‘반’ 정보만 설정할 수 있음.</li><li>학과가 설치된 고등학교의 ‘공동교육과정 학생정보’에서 ‘계열’을 ‘일반계’로 선택하는 경우 <b>‘학과’는 공란으로 선택할 수 없으며</b>, 공업계, 상업계 등의 계열을 선택하면 거점교에 개설된 ‘학과’를 선택할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>학생찾기와 상태 변화</h4><ul><li>공동교육과정 참여교 수강생 등록 시 ‘확인 미요청’과 ‘미반영’의 숫자가 1씩 증가함.</li><li>‘타교수강생(공동교육과정) 등록’ 창에서 <span class="btn">{학생찾기}</span> 클릭 시 <b>‘학교찾기’와 ‘학생찾기’를 순서대로 수행</b>하여 참여교 수강생을 검색하여 반영함.</li><li>‘학생찾기’ 시 참여교 교무학기 설정 학기를 가져옴.</li><li>‘학생부 자료 전송 학기’는 거점교에서 자료전송 시 참여교의 자료수신 학기임.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="A" data-when="학기초등록" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE A · 수강생 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기초, 등록 대상이 많을 때</span><span class="tag opt">개별 등록으로 대체 가능</span></div>
+    <h3>참여교 수강생 일괄등록 · 수강생조회로 등록</h3>
+    <p class="desc">등록할 참여교 수강생이 많을 때 개별 등록 대신 쓰는 방법이다. 엑셀 서식으로 한 번에 올리거나, 나이스플러스로 수강신청한 학생 명단을 그대로 가져올 수 있다. <strong>{엑셀내려받기} 시 파일명은 ‘타교수강생 일괄등록 템플릿.xlsx’로 정해져 있음.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 타교수강생 반 정보 등록을 마친 뒤 수강생 등록 단계에서</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{일괄등록}</span>으로 참여교 수강생을 엑셀 파일로 작성하여 업로드 → <span class="btn">{엑셀내려받기}</span>로 ‘타교수강생 일괄등록 템플릿.xlsx’를 받아 엑셀 프로그램으로 열기하여 ‘공동교육과정 정보’와 ‘원적교 정보’를 입력하고 저장 → 또는 <span class="btn">{수강생조회}</span>로 나이스플러스를 통해 공동교육과정 개설 과목을 수강신청한 학생들의 정보를 확인하고 공동교육과정 수강생으로 등록</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>수강신청 결과와 이미 정리된 명단을 그대로 옮겨, 학생 한 명씩 학교찾기·학생찾기를 반복하며 생기는 누락과 오기를 줄이려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{일괄등록}</span>으로 참여교 수강생을 엑셀 파일로 작성하여 업로드 할 수 있음.</li><li><span class="btn">{엑셀내려받기}</span> 시 <b>파일명은 ‘타교수강생 일괄등록 템플릿.xlsx’로 정해져 있음.</b></li><li>‘타교수강생 일괄등록 템플릿.xlsx’ 파일을 엑셀 프로그램으로 열기하여 <b>‘공동교육과정 정보’와 ‘원적교 정보’를 입력하고 저장함.</b></li><li><span class="btn">{수강생조회}</span>로 나이스플러스를 통해 공동교육과정 개설 과목을 수강신청한 학생들의 정보를 확인하며, 공동교육과정 수강생으로 등록할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="승인반영" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 확인과 학적반영">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수강생 등록 직후</span><span class="tag">참여교 승인 필요</span></div>
+    <h3>공동교육과정 참여교 수강생 확인요청</h3>
+    <p class="desc">거점교에서 타교수강생으로 등록한 참여교 수강생을 참여교에 확인해 달라고 요청하는 단계입니다. <strong>'1) 공동교육과정 참여교 수강생 등록'에서 등록한 수강생만 '확인요청목록'에 나타납니다.</strong> 참여교의 승인 절차가 끝나야 다음 학적반영을 진행할 수 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 참여교 수강생을 타교수강생으로 등록한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-확인요청]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-확인요청]</code>에서 '학년도', '학기', '학년', '성명(공란)' 확인 후 <span class="btn">{조회}</span> → '확인요청목록'에서 '1) 공동교육과정 참여교 수강생 등록'에서 등록한 공동교육과정 참여교 수강생 선택 후 <span class="btn">{확인요청}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>거점교가 등록한 수강생 정보가 소속교의 학적과 어긋나지 않는지 참여교로부터 확인받아 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>공동교육과정 참여교 수강생을 <span class="btn">{확인요청}</span> 시 '확인미요청'의 숫자는 1씩 감소하고 '확인요청'의 숫자는 1씩 증가함.</li><li>공동교육과정 참여교에서 공동교육과정 업무당당자가 나이스 로그인 시 '업무요청내역'에 공동교육과정 수강생에 대한 확인요청 안내가 표시됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>참여교에서 하는 일</h4><ul><li>공동교육과정 참여교의 <code>[학적-공동교육과정관리-공동교육과정학생관리-공동교육과정학생확인요청 접수 및 전송]</code>에서 학생 '성명'을 클릭하여 '공동교육과정학생 상세정보' 창에서 공동교육과정 수강생의 정보 확인 후 공동교육과정 수강생을 선택하고 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재를 완료하고 <span class="btn">{요청확인}</span> 함.</li><li><b><span class="btn">{요청확인}</span> 시 '전송상태'가 '전송대기'에서 '전송완료'로 변경됨.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="B" data-when="승인반영" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE B · 확인과 학적반영">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">참여교 요청확인 완료 후</span><span class="tag">결재 필요</span></div>
+    <h3>참여교 수강생 학적반영 (승인요청 후 반영)</h3>
+    <p class="desc">참여교가 확인을 마친 수강생을 거점교 학적에 실제로 반영하는 단계입니다. <strong>'승인상태'가 '확인요청완료'인 학생만 학적반영할 수 있습니다.</strong> 반영 전에 <span class="btn">{승인요청}</span>으로 결재권자의 결재를 완료해야 합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 참여교에서 <span class="btn">{요청확인}</span>으로 '승인상태'가 '확인요청 완료'로 바뀐 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-학적반영]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-학적반영]</code>에서 '학년도', '학기', '성명(공란)' 확인 후 '미반영된자료'를 선택하고 <span class="btn">{조회}</span> → '학적반영목록'에서 '승인상태'가 '확인요청완료'임을 확인하고 공동교육과정 수강생 선택 후 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재가 완료되면 공동교육과정 수강생 선택 후 <span class="btn">{학적반영}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>참여교 학생을 거점교 학적에 실제로 앉혀 수강생편성·출결·성적 등 이후 공동교육과정 업무가 돌아가게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>참여교에서 <code>[학적-공동교육과정관리-공동교육과정학생관리-공동교육과정학생확인요청접수및전송]</code>에서 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재 완료 후 <span class="btn">{요청확인}</span>하면 '승인상태'가 '확인요청'에서 '확인요청 완료'로 변경됨.</li><li><span class="btn">{승인요청}</span> 시 '결재상태'가 '미상신'에서 '상신(진행)'으로 변경되며, 업무승인과정을 거쳐 결재권자의 결재가 완료되면 '완결'로 변경되며, <b><span class="btn">{학적반영}</span> 시 '미반영'의 숫자는 1씩 감소하고 '학적반영'의 숫자는 1씩 증가함.</b></li><li><span class="btn">{학적반영}</span> 후 '학적반영된 자료'를 선택하고 <span class="btn">{조회}</span>하면 공동교육과정 수강생 정보를 확인할 수 있음.</li><li><span class="btn">{명렬표출력}</span>으로 타교수강생 명렬표를 출력할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="B" data-when="승인반영" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE B · 확인과 학적반영">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">시간표 등록 완료 후</span><span class="tag opt">출결자료를 나이스에 반영하는 경우</span></div>
+    <h3>공동교육과정 시간표 확인과 참여교 전송</h3>
+    <p class="desc">공동교육과정 수강생의 시간표를 확인해 참여교로 보내는 업무입니다. <strong>시간표 조회는 편제·과목개설·수강생편성·기초시간표·시간표검증및반영·전체시간표관리까지 사전 업무가 끝나야 가능하며, 출결자료를 나이스에 반영하는 경우에 한합니다.</strong> 한 명씩 <span class="btn">{전송}</span>하거나 <span class="btn">{일괄전송}</span>으로 한꺼번에 보낼 수 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 학적반영이 끝나고 공동교육과정 강의실 전체시간표 관리까지 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-시간표]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-시간표]</code>에서 '학년도', '학기' 확인 후 '학년', '반'을 선택하고 <span class="btn">{조회}</span> → '학생목록'에서 공동교육과정 수강생 선택 후 시간표를 확인하고 <span class="btn">{전송}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>참여교 학생이 소속교에서도 공동교육과정 수업시간을 확인받아 그 시간의 출결이 제대로 처리되게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>시간표 조회를 위한 사전 업무</h4><ul><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code>에서 공동교육과정 과목을 등록함(교과(군) 선택과 공동교육과정 선택에 유의함).</li><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-강의실관리]</code>에서 공동교육과정 강의실을 등록함(선택사항).</li><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code>에서 공동교육과정 과목의 교과담당교사를 등록함.</li><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>의 <span class="btn">{성적수강생편성}</span> 탭에서 공동교육과정 과목에 거점교 수강생과 참여교 수강생을 편성함.</li><li><code>[교육과정-시간표관리-기초시간표관리]</code>에서 공동교육과정 강의실에 시간표을 등록함.</li><li><code>[교육과정-시간표관리-시간표검증및반영]</code>에서 공동교육과정 강의실 전체시간표에 기초시간표를 반영함.</li><li><code>[교육과정-시간표관리-전체시간표관리]</code>에서 공동교육과정 강의실 전체시간표를 관리함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>전송 후 확인</h4><ul><li><span class="btn">{전송}</span> 시 참여교 수강생 시간표는 참여교의 <code>[교육과정-시간표관리-학생별시간표조회]</code>에서 확인할 수 있음.</li><li>거점교 소속 수강생 시간표는 거점교의 <code>[교육과정-시간표관리-학생별시간표조회]</code>에서 확인할 수 있음.</li><li><span class="btn">{일괄전송}</span>으로 공동교육과정을 수강하는 참여교 수강생들의 시간표를 참여교로 일괄로 전송할 수 있음.</li><li>교과담당교사가 공동교육과정 수업일에 <code>[학적-출결관리-출결관리-교과시간별출결등록]</code>에서 출결자료 입력 후 <span class="btn">{저장}</span>하고 <span class="btn">{출결마감}</span> 시 거점교 소속 수강생은 <code>[학적-출결관리-출결관리-일일출결관리(담임용)]</code>에 출결자료가 반영되며, 참여교 수강생의 경우 소속교로 출결자료가 자동으로 전송됨.</li><li>참여교에서 확인 가능한 메뉴는 공동교육과정 업무담당자의 <code>[학적-공동교육과정관리-출결관리]</code>와 학급담임교사의 <code>[학적-출결관리-출결관리-일일출결관리(담임용)]</code>임.</li><li><b>공동교육과정 수업시간 공강인 경우만 출결을 등록할 수 있으며, 나머지 공강 시간은 출결을 등록할 수 없음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="C" data-when="학기중운영" data-who="교과담당교사">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE C · 출결 운영">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">공동교육과정 수업일</span><span class="tag opt">174학점 이내 개설 과목 한정</span><span class="tag">일과 내 출결관리</span></div>
+    <h3>일과 내 개설과목 수업일 출결등록과 출결마감 (174학점 이내)</h3>
+    <p class="desc"><strong>174학점 이내로 개설된 공동교육과정 과목</strong>에 한하여 수업교사가 공동교육과정 수업일에 출결을 등록한다. 거점교 수강생과 참여교 수강생을 함께 등록하며, 마감하면 참여교 수강생 출결자료는 참여교로 자동 전송된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 공동교육과정 수업일마다. 전체시간표 관리와 수강생편성이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사(수업교사)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '일자순', '일자'를 선택하고 <span class="btn">{조회}</span> → 교시별로 '출석상태'를 표기(결과 시 '/' 표기)하고 '비고'에 사유 입력 후 <span class="btn">{저장}</span> → <span class="btn">{출결마감}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>참여교 수강생의 공동교육과정 출결을 소속교 출결자료로 자동 넘겨, 학생이 두 학교에서 따로 결석 처리되는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>마감하면 어디로 가는가</h4><ul><li>공동교육과정 수업일에 <span class="btn">{출결마감}</span> 시 거점교 소속 수강생은 <code>[학적-출결관리-출결관리-일일출결관리(담임용)]</code>에 출결자료가 반영되며, <b>참여교 수강생의 경우 참여교로 출결자료가 자동으로 전송</b>됨.</li><li>참여교 공동교육과정 업무담당자는 <code>[학적-공동교육과정관리-출결관리]</code>에서 <span class="btn">{조회}</span>하여 <span class="btn">{출력}</span>할 수 있음. '성명' 클릭 시 '공동교육과정 출결내역' 창에서 해당 학생의 공동교육과정 출결내역을 동일하게 확인할 수 있음.</li><li>참여교 학급담임교사는 <code>[학적-출결관리-출결관리-일일출결관리(담임용)]</code>에서 공동교육과정 수강생을 클릭하여 공동교육과정 수업일의 출결자료를 확인하고 수기로 등록함.</li><li>교과담당교사가 <code>[학적-출결관리-출결관리-교과시간별출결등록]</code>에서 출결자료 입력 후 <span class="btn">{저장}</span>하고 <span class="btn">{출결마감}</span>한 경우에도 같은 방식으로 반영·전송됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="C" data-when="학기중운영" data-who="학급담임교사">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE C · 출결 운영">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">거점교 출결마감 후 확인 시점</span><span class="tag opt">공강 시간만 등록 가능</span><span class="tag">거점교·참여교 담임 공통</span></div>
+    <h3>공동교육과정 수업시간 결과 사유 입력과 출결마감 (담임용)</h3>
+    <p class="desc">거점교에서 전송·반영된 공동교육과정 수업일 출결을 담임이 학급 출결로 확정하는 업무다. 결과가 있는 경우 사유를 입력해 마감하며, <strong>공동교육과정 수업시간 공강인 경우만 출결을 등록할 수 있고 나머지 공강 시간은 등록할 수 없다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 거점교에서 공동교육과정 수업일 출결마감이 이루어진 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사(참여교·거점교)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-출결관리-출결관리-일일출결관리(담임용)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>공동교육과정 수강생을 클릭하여 공동교육과정 수업일의 출결자료를 확인 → 공동교육과정 수업 시간에 결과 시 사유를 입력 후 <span class="btn">{저장}</span> → <span class="btn">{출결마감}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>타교에서 진행된 수업의 결과 사유까지 담임이 채워 학생의 하루 출결이 소속 학급 기록으로 빠짐없이 남게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>참여교 학급담임교사는 <code>[학급담임-학적-출결관리-출결관리-일일출결관리(담임용)]</code>에서 공동교육과정 수업 시간에 결과 시 사유를 입력 후 <span class="btn">{저장}</span>하고 <span class="btn">{출결마감}</span>함.</li><li>거점교 학급담임교사도 같은 메뉴에서 공동교육과정 수업 시간에 결과 시 사유를 입력 후 <span class="btn">{저장}</span>하고 <span class="btn">{출결마감}</span>함.</li><li><b>공동교육과정 수업시간 공강인 경우만 출결을 등록할 수 있으며, 나머지 공강 시간은 출결을 등록할 수 없음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="A" data-when="학기중운영" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE A · 수강생 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기중, 학적변동 발생 시</span><span class="tag opt">해당 사유가 있을 때만</span></div>
+    <h3>등록한 수강생 정보 수정과 재확인요청 (전출·중도해제·개명)</h3>
+    <p class="desc">이미 등록한 참여교 수강생의 정보가 바뀐 경우에만 하는 업무이다. <strong>공동교육과정 참여교 수강생의 교육기간 및 기본정보가 변경되거나 전출 등의 학적변동으로 ‘수강상태’를 ‘수강중도해제’한 경우에 한함.</strong> 개명한 경우에는 {원적교 학생정보 반영}으로 현행화한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 수강생 등록 이후 교육기간·기본정보 변경이나 전출 등 학적변동이 발생한 때</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-등록]</code>, <code>[학적-공동교육과정관리-공동교육과정학생관리-공동교육과정학생확인요청접수및전송]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>(거점교) ‘성명’을 클릭 → (거점교) ‘타교수강생(공동교육과정) 수정’ 창에서 수강생 정보를 수정하고 <span class="btn">{재확인요청}</span> → (참여교) ‘성명’을 클릭 → (참여교) ‘공동교육과정학생 상세정보’ 창에서 거점교에서 수정한 공동교육과정 수강생 정보를 확인하고 이상없을 시 <span class="btn">{요청확인}</span> → 개명한 경우 거점교에서 <span class="btn">{원적교 학생정보 반영}</span>으로 수강생 정보를 현행화</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>거점교가 가진 수강생 정보와 소속교 학적을 어긋나지 않게 맞춰, 전출·중도해제 학생의 출결과 성적이 잘못 남지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>수정 대상과 절차</h4><ul><li>공동교육과정 참여교 수강생 정보 변경은 <b>교육기간 및 기본정보가 변경되거나 전출 등의 학적변동으로 ‘수강상태’를 ‘수강중도해제’한 경우에 한함.</b></li><li>거점교에서 <span class="btn">{재확인요청}</span> 시 참여교에서는 수정된 정보를 확인하고 <b>추가적인 <span class="btn">{승인요청}</span> 없이 <span class="btn">{요청확인}</span>함.</b></li><li>공동교육과정 참여교 수강생이 개명한 경우 거점교에서 <span class="btn">{원적교 학생정보 반영}</span>으로 수강생 정보를 현행화함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>전출 학생 처리</h4><ul><li>참여교 공동교육과정 수강생이 전출 등의 학적변동이 발생한 경우 거점교는 ‘타교수강생(공동교육과정) 수정’ 창에서 <b>‘종료일자’를 전출일로 수정하고 ‘수강상태’는 ‘수강중도해제’로 변경 후 <span class="btn">{저장}</span>하고 <span class="btn">{재확인요청}</span>함.</b></li><li>참여교는 <code>[학적-공동교육과정관리-공동교육과정학생관리-공동교육과정학생 확인요청 접수 및 전송]</code>에서 ‘종료일자’, ‘수강상태’를 확인하고 <span class="btn">{요청확인}</span>한 <b>이후 해당 학생을 전출 처리함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="C" data-when="학기말정리" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE C · 출결 운영">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말, 과목출석률 산정 전</span><span class="tag opt">2022 개정 교육과정 1·2학년 한정</span><span class="tag opt">174학점 이내 개설 과목 한정</span></div>
+    <h3>학기말 과목 출결 마감 (창의적체험활동 제외)</h3>
+    <p class="desc"><strong>2022 개정 교육과정을 적용받는 1·2학년의 174학점 이내로 개설된 공동교육과정 과목</strong>은 과목출석률 산정을 위해 학기별 과목 출결 마감을 수행해야 한다. 교시별 출결마감이 모두 끝난 뒤에 진행한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 공동교육과정 수업일 교시 출결마감이 모두 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-출결관리-과목별출결관리-학기별과목출결마감(창의적체험활동제외)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년'을 선택하고 <span class="btn">{조회}</span> → '과목교시마감수'와 '시간표총수업수'의 일치 여부를 확인 후 <span class="btn">{학기별과목마감}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>과목출석률을 확정해 최소 성취수준 보장지도와 추가학습 대상 판정의 기준을 세우려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>174학점 이내로 개설된 공동교육과정 과목은 <code>[학적-출결관리-과목별출결관리-학기별과목출결마감(창의적체험활동제외)]</code>에서 '반별일출결마감수'는 '공동'으로 표기됨.</li><li><b>'과목교시마감수'와 '시간표총수업수'가 일치해야 <span class="btn">{학기별과목마감}</span>을 할 수 있음.</b></li><li>과목출석률 도달 여부는 <code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리-최소성취수준보장지도(추가학습)대상자]</code>에서 <span class="btn">{과목별출결현황}</span>으로 확인할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t11" data-num="11" data-stage="C" data-when="학기말정리" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>11</b><span class="gstage" title="원문 STAGE C · 출결 운영">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말</span><span class="tag opt">174학점 초과 개설 과목 한정</span><span class="tag">일과 외 출결관리(거점교 수강생)</span></div>
+    <h3>일과 외 개설과목 정규외 과목별출결 시수 입력 (174학점 초과)</h3>
+    <p class="desc"><strong>174학점을 초과하여 개설된 공동교육과정 과목</strong>은 나이스로 교시 출결을 관리하지 않고 수기로 관리한다. 대신 학기말에 거점교 수강생별로 시수를 직접 등록해 과목출석률을 산정한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 수기 출결장부 정리가 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-출결관리-과목별출결관리-정규외 과목별출결관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '반'을 선택하고 <span class="btn">{조회}</span> → 왼쪽 학생목록에서 해당 학생을 클릭하고 오른쪽에서 '총 수업시수', '현재 수업시수', '결과시수' 입력 후 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>나이스 시간표로 잡히지 않는 일과 외 수업의 출석 실적을 숫자로 남겨, 추가학습 대상 여부와 최소성취유형 판단 근거를 만들려고.</dd></dl>
+    </div>
+<div class="memo"><h4>입력하는 세 가지 시수</h4><ul><li>총수업시수는 개설된 과목의 총 수업 횟수임.</li><li>현재수업시수는 교시 출결 마감한 수업 횟수임.</li><li>결과시수는 결시한 수업 횟수임.</li><li>세 시수를 입력하면 <b>'추가 학습대상여부'가 자동으로 '미대상자' 또는 '대상자'로 나타남.</b> '추가학습 대상여부'에 마우스를 가져가면 설명이 툴 팁으로 나타남.</li></ul></div><div class="memo" style="margin-top:12px"><h4>학기말 성적과의 연결</h4><ul><li>학기말에 거점교 소속 수강생들의 경우 이 메뉴에서 공동교육과정 개설과목에 대해 수강생별로 '총수업시수', '현재수업시수', '결과시수'를 입력하고 '추가학습 대상여부'를 확인 후 <span class="btn">{저장}</span>함.</li><li>174학점을 초과하여 개설된 과목은 '학기말 성적'이 '일과시간 외'로 선택되며, <b>'일과시간 외'의 경우 '최소성취유형'을 설정해야 함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t17" data-num="17" data-stage="E" data-when="학기말정리" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>17</b><span class="gstage" title="원문 STAGE E · 확인과 전송">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말 성적산출 후</span><span class="tag opt">174학점 이내 개설 과목</span></div>
+    <h3>일과 내 개설과목 학기말 성적 확인 (최소성취유형 확인)</h3>
+    <p class="desc">174학점 이내로 개설된 공동교육과정 과목에 해당한다. 이 경우 나이스에서 전체시간표 관리와 수업교사(교과담당교사)의 출결상황 등록이 이루어지므로 '학기말 성적'이 '일과시간 내'로 선택되며, <strong>'일과시간 내'의 경우 '최소성취유형'을 수정할 수 없어 확인만 한다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 학기말 성적산출이 끝나고 전체시간표 관리와 교과담당교사의 출결 등록이 완료된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-자료관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '반'을 선택하고 <span class="btn">{조회}</span> → '학생목록'에서 공동교육과정 참여교 수강생을 클릭 → '성적'-'성적'에서 '일과시간 내'를 확인하고 산출된 학기말 성적과 '최소성취유형', '대체이수 여부', '보충지도사유'를 확인</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>참여교로 넘길 성적이 출결·시간표와 어긋나지 않는지 전송 전에 걸러 내려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'학기말 성적'에서 '일과시간 내'와 '일과시간 외'는 [교육과정-시간표관리-전체시간표관리]에서 <b>전체시간표 등록 여부에 따라 자동으로 선택됨</b>.</li><li>'학기말 성적'에서 <b>'일과시간 내'의 경우 '최소성취유형'을 수정할 수 없음</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t18" data-num="18" data-stage="E" data-when="학기말정리" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>18</b><span class="gstage" title="원문 STAGE E · 확인과 전송">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">정규외 과목별출결 입력 후</span><span class="tag opt">174학점 초과 개설 과목</span></div>
+    <h3>일과 외 개설과목 학기말 성적 확인 (최소성취유형 설정)</h3>
+    <p class="desc">174학점을 초과하여 개설된 공동교육과정 과목에 해당한다. 이 과목은 수기장부로 출결을 관리하므로 '학기말 성적'이 '일과시간 외'로 선택되며, <strong>'일과시간 외'의 경우 '최소성취유형'을 직접 설정해야 한다.</strong> 앞서 거점교 소속 수강생의 시수 입력을 마친 뒤에 진행한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, [학적-출결관리-과목별출결관리-정규외과목별출결관리]에서 '총수업시수', '현재수업시수', '결과시수'를 입력하고 저장한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-자료관리]</code> <code>[학적-출결관리-과목별출결관리-정규외과목별출결관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '반'을 선택하고 <span class="btn">{조회}</span> → '학생목록'에서 공동교육과정 참여교 수강생을 클릭 → '성적'-'성적'에서 '일과시간 외'를 선택하고 산출된 학기말 성적을 확인 후 '최소성취유형'을 설정하고 '대체이수여부', '보충지도사유'를 확인</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>수기로 관리한 출결을 성적에 이어 붙여 학생의 이수·미이수 판정을 정확히 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>최소성취유형 다섯 가지</h4><ul><li>도달 — 과목출석률과 학업성취율 모두 도달인 상태.</li><li>최종이수(학업성취율보장지도) — 과목출석률은 도달이나 학업성취율이 미도달되어 최소 성취수준 보장지도에 참여하여 이수한 상태.</li><li>최종이수(과목출석률보충지도) — 학업성취율은 도달이나 과목출석률이 미도달되어 추가학습에 참여하여 이수한 상태.</li><li>최종이수(학업성취율, 과목출석률보충지도) — 과목출석률과 학업성취율 모두 미도달되었으나 최소 성취수준 보장지도에 참여하여 이수한 상태.</li><li>최종미이수 — 과목출석률과 학업성취율 모두 미도달되어 최소 성취수준 보장지도에 참여하였으나 미이수한 상태이거나 최소 성취수준 보장지도에 참여하지 않은 상태.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>학기말에 거점교 소속 수강생들의 경우 [학적-출결관리-과목별출결관리-정규외과목별출결관리]에서 공동교육과정 개설과목에 대해 수강생별로 '총수업시수', '현재수업시수', '결과시수'를 입력하고 '추가학습 대상여부'를 확인 후 <span class="btn">{저장}</span>함.</li><li><b>'학기말성적'에서 '일과시간 외'의 경우 '최소성취유형'을 설정해야 함</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t13" data-num="13" data-stage="D" data-when="학기말정리" data-who="교과담당교사">
+  <div class="gutter"><b>13</b><span class="gstage" title="원문 STAGE D · 기록 입력">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말, 세특 입력 시기</span><span class="tag">2차 인증 필요</span></div>
+    <h3>과목별 세부능력 및 특기사항 등록</h3>
+    <p class="desc">거점교 수업교사(교과담당교사)가 공동교육과정 과목 수강생별로 세부능력 및 특기사항을 입력하는 업무다. <strong>메뉴 진입 시 2차 인증을 거쳐야 한다.</strong> 여기서 등록한 내용이 자료전송의 '세특' 항목으로 참여교에 넘어간다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 공동교육과정 수업이 진행되어 학생별 관찰 내용이 확보된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-성적-성적처리-과목별세부능력 및 특기사항]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교과담임-성적-성적처리-과목별세부능력 및 특기사항]</code>에서 2차 인증 후 '학년도', '학기' 확인하고 '학년', '과목', '강의실'을 선택하고 <span class="btn">{조회}</span> → '세부능력 및 특기사항'에 학생별로 개별적 특성이 드러나도록 '세부능력 및 특기사항'을 입력하고 <span class="btn">{저장}</span>(문두에 공통문구를 입력함).</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>수강생 한 명 한 명의 개별적 특성을 남겨, 거점교와 참여교 학교생활기록부 교과학습발달상황에 같은 내용이 근거 있게 기재되게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>일괄 입력</h4><ul><li><span class="btn">{엑셀내려받기}</span>로 서식 파일('엑셀', '한셀', 'CSV' 형식)을 다운로드 받아 수강생별 세부능력 및 특기사항을 입력하고 <span class="btn">{엑셀업로드}</span>로 세부능력 및 특기사항을 일괄로 등록할 수 있음(파일 형식 : *.xlsx, *.cell, *.csv).</li></ul></div><div class="memo" style="margin-top:12px"><h4>기재 점검 도구</h4><ul><li>세부능력 및 특기사항에서 마우스 우측 버튼을 클릭하면 '훈령정보조회', '기재유의어조회', '맞춤법검사'를 수행할 수 있음.</li><li>'훈령정보조회'를 선택하면 「2026학년도 학교생활기록부 기재요령」의 관련 내용이 조회되며, '맞춤법검사'를 선택하면 추천단어를 반영할 수 있음.</li><li>'기재유의어조회'를 선택하면 '유의어 목록' 창이 나타나며, <span class="btn">{유의어}</span> 탭과 <span class="btn">{범례}</span> 탭으로 구성되어 있음.</li><li>유의어 목록은 「2026학년도 고등학교 학교생활기록부 기재요령」의 유의사항에서 기재 금지된 사항을 단어(명사) 단위로 작성한 것으로, 단어 자체가 금지된 경우와 문맥에 따라 기재 유의어가 될 확률이 높은 단어를 혼합하여 구성되어 있음.</li><li><b>유의어 목록에 포함되지 않았더라도 기재가 불가한 단어가 포함될 수 있으므로 「2026학년도 고등학교 학교생활기록부 기재요령」을 반드시 확인하여 입력함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t12" data-num="12" data-stage="D" data-when="학기말정리" data-who="교과담당교사">
+  <div class="gutter"><b>12</b><span class="gstage" title="원문 STAGE D · 기록 입력">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말, 세특 입력 시기</span><span class="tag">교과담당교사 수행</span></div>
+    <h3>과목별 독서활동상황 등록</h3>
+    <p class="desc">거점교에서 공동교육과정 과목을 담당하는 수업교사(교과담당교사)가 하는 업무이며, 거점교 소속 수강생과 참여교 수강생 모두를 대상으로 한다. <strong>이전학년도 독서활동상황과 중복된 '도서명(저자)'을 입력하면 저장 시 중복 오류확인 창이 나타난다.</strong> 여기서 등록한 자료가 뒤에 자료관리 확인과 학생생활 전송의 원본이 된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 공동교육과정 수강생 학적반영과 수강생편성이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-성적-성적처리-과목별독서활동]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교과담임-성적-성적처리-과목별독서활동]</code>에서 '학년도', '학기' 확인 후 '학년', '과목', '강의실'을 선택하고 <span class="btn">{조회}</span> → '독서활동상황'에 학생별로 '도서명(저자)' 형식으로 입력하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 그 과목에서 실제로 읽은 책을 기록으로 남겨, 거점교와 참여교 학교생활기록부 독서활동상황에 같은 근거로 반영되게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>해당 학생의 '성명'을 클릭하면 나타나는 '이전 독서활동상황 조회' 창에서 이전학년도 독서활동상황과 중복 여부를 확인할 수 있음.</li><li><b>중복 도서명(저자) 입력 후 <span class="btn">{저장}</span> 시 중복 도서명(저자) 등록 오류확인 창이 나타남.</b></li><li><span class="btn">{일괄입력}</span>으로 한꺼번에 여러 학생에게 같은 독서활동을 입력할 수 있으며, '과목별독서활동 일괄입력' 창에서 <span class="btn">{이어쓰기}</span>는 기존 내용에 추가로 입력되며, <span class="btn">{덮어쓰기}</span>는 기존 내용를 삭제하고 입력됨.</li><li>거점교 소속 수강생의 학교생활기록부 독서활동상황에 반영됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t15" data-num="15" data-stage="D" data-when="학기말정리" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>15</b><span class="gstage" title="원문 STAGE D · 기록 입력">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말, 포상 시점</span><span class="tag opt">거점교 포상규정에 따라 선택</span></div>
+    <h3>공동교육과정 수강생 교과우수상 등록</h3>
+    <p class="desc">거점교 포상규정에 따라 공동교육과정 수강생에게 교과우수상을 수여하는 경우에만 하는 업무이며, 아래 절차는 참여교 수강생에게 등록하는 방법이다. <strong>참여교 수강생의 수상자료는 '학생부 반영여부'를 선택해도 거점교 학교생활기록부 수상경력에 반영되지 않는다.</strong> 등록한 수상내역은 학생생활 자료전송으로 참여교에 넘어간다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 학기말 성적산출이 끝나 교과우수상 대상자가 확정된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-수상경력-수상대장관리]</code>의 <span class="btn">{수상대장관리}</span> 탭</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학생생활-수상경력-수상대장관리]</code>의 <span class="btn">{수상대장관리}</span> 탭에서 '학년도', '교내/교외', '학년', '상태', '수상명', '성명', '상장번호', '상장번호형식' 확인 또는 선택 후 <span class="btn">{조회}</span> → <span class="btn">{개인/단체수상등록}</span>을 클릭하면 나타나는 '개인/단체 수상 등록' 창에서 <span class="btn">{타학교학생추가하기}</span> → '타학교학생수상등록' 창에서 <span class="btn">{본교타교수강생}</span>을 클릭하면 나타나는 '본교 타교수강생 찾기' 창에서 '학년도', '학기', '원적교' 확인 후 '학년', '반'을 선택하고 <span class="btn">{조회}</span>하여 교과우수상 대상 학생을 선택하고 <span class="btn">{확인}</span> → '타학교학생수상등록' 창에서 해당 학생을 선택하고 <span class="btn">{확인}</span> → '개인/단체 수상 등록' 창에서 해당 학생을 선택하고 '개인/단체', '교내/교외', '수상명', '상장명(코드)', '상장번호', '수상년월일', '학년도/학기', '수여기관', '참가대상(참가인원)', '학생부 반영여부', '수상대장 반영여부'를 선택 또는 입력한 후 <span class="btn">{저장}</span> → <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>거점교에서 받은 상을 학생 소속교의 학교생활기록부에 교내상으로 남길 수 있게, 수상 근거를 거점교 수상대장에 정식으로 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>참여교에서 할 일</h4><ul><li><b>'개인/단체 수상 등록' 창에서 공동교육과정 참여교 수강생의 수상자료 등록 시 '학생부 반영여부'가 선택되어도 거점교 학교생활기록부 수상경력에 반영되지 않음.</b></li><li>거점교에서 전송한 수상내역은 참여교에서 <code>[학적-공동교육과정관리-공동교육과정학생 타학교 자료전송확인]</code>의 '수상내역'에 자동 반영되며, <code>[학생생활-수상경력-학급별수상관리]</code>에서 <b>'교외'를 '교내'로 수정 후 '학생부 반영여부' 체크 확인 후 <span class="btn">{저장}</span></b>함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>교내상 입력 기준</h4><ul><li>대안교육 위탁교육기관·직업과정 위탁교육 위탁학생·공동교육과정 수강학생과 국내학교 간 교환학생(도·농 교류 등)이 위탁기관 및 교환학교에서 받은 상은 교내상으로 입력할 수 있음.</li><li>당해 학교의 상장번호 자동채번 설정과 관계없이 직접 입력할 수 있는 <code>[학생생활-수상경력-학급별수상관리]</code>에서 등록하며, '수여기관'에는 위탁기관장을 입력함.</li><li><b>학대 피해학생과 학생미혼모의 경우 위탁교육 기관명이 드러나지 않도록 '수여기관'에 재적교 학교장을 입력함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t14" data-num="14" data-stage="D" data-when="학기말정리" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>14</b><span class="gstage" title="원문 STAGE D · 기록 입력">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말 성적산출과 세특 입력이 끝난 뒤</span><span class="tag opt">거점교 소속 수강생 대상</span></div>
+    <h3>거점교 수강생 학교생활기록부 자료반영 및 조회</h3>
+    <p class="desc">거점교에 소속된 공동교육과정 수강생을 대상으로 하는 업무이며, 참여교 수강생은 자료전송으로 처리한다. <strong>'비고'에 '공동'이 나타나지 않으면 거점교에서 학기말 성적 삭제부터 역과정으로 교육과정 편제 삭제까지 수행한 후 다시 교육과정 편제(공동교육과정 체크)부터 학기말 성적산출까지 수행해야 한다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 학기말 성적산출과 과목별 세부능력 및 특기사항 등록이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생부-학교생활기록부-학교생활기록부-학생부반영]</code>, <code>[학생부-학교생활기록부-학교생활기록부-학생부조회및출력]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학생부-학교생활기록부-학교생활기록부-학생부반영]</code>에서 '학년도', '학년', '반' 확인 후 <span class="btn">{조회}</span> → 학생 목록에서 공동교육과정 수강생을 선택 후 '학생부 반영 항목'에서 '교과학습발달상황', '세부능력및특기사항'을 선택하고 <span class="btn">{개인별반영}</span> → <code>[학생부-학교생활기록부-학교생활기록부-학생부조회및출력]</code>에서 '반별조회' 선택 후 '학년도', '학년', '반'을 확인하고 <span class="btn">{조회}</span> → 학생 목록에서 공동교육과정 수강생을 선택 후 교과학습발달상황의 과목 성적과 비고(공동), 세부능력 및 특기사항을 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>거점교 수강생의 공동교육과정 이수 사실이 '공동' 표기와 함께 학교생활기록부에 제대로 올라갔는지 눈으로 확인해 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>'비고'에 '공동'이 나타나지 않는 경우에는 거점교에서 학기말 성적 삭제부터 역과정으로 교육과정 편제 삭제까지 수행한 후 다시 교육과정 편제(공동교육과정 체크)부터 학기말 성적산출까지 수행해야 함.</b></li><li>독서활동상황은 '학생부반영 항목'에서 '독서활동상황'을 선택 후 <span class="btn">{개인별 반영}</span>하면 반영되며, <code>[학생부-학교생활기록부-학교생활기록부-학생부조회 및 출력]</code>에서 조회함.</li><li>공동교육과정 업무담당교사가 본교(거점학교) 학생들의 과목별 세부능력 및 특기사항을 한번에 확인하려면 <code>[성적-성적조회/통계-학기말성적조회]</code>에서 <span class="btn">{과목별세부능력및특기사항}</span>으로 조회 가능하며, 거점학교 본교생과 참여학교 타교생을 모두 확인할 수 있음(학교업무분장관리 담당자로부터 조회 권한을 부여받아야 함).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t16" data-num="16" data-stage="E" data-when="학기말정리" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>16</b><span class="gstage" title="원문 STAGE E · 확인과 전송">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">교과담당교사 입력 후</span><span class="tag">참여교 수강생 한정</span></div>
+    <h3>자료관리에서 참여교 수강생 독서활동·세부능력및특기사항 확인</h3>
+    <p class="desc">공동교육과정 참여교 수강생의 기록은 거점교 학교생활기록부에 직접 반영되지 않으므로, 거점교 업무담당자가 [자료관리]에서 교과담당교사가 입력한 내용을 눈으로 확인해야 한다. <strong>교과담당교사가 [성적-성적처리-과목별독서활동]과 [성적-성적처리-과목별세부능력및특기사항]에서 입력과 저장을 마친 뒤에 확인할 수 있다.</strong> 독서활동과 세부능력 및 특기사항은 조회하는 항목만 다르고 절차가 같아 한 카드로 묶었다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 교과담당교사가 과목별독서활동과 과목별세부능력및특기사항 입력을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-자료관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '반'을 선택하고 <span class="btn">{조회}</span> → (독서활동) '학생목록'에서 참여교 공동교육과정 수강생을 클릭하고 '학생생활'의 '독서활동'을 선택하여 교과담당교사가 [성적-성적처리-과목별독서활동]에서 등록한 독서활동을 확인 → (세부능력 및 특기사항) '학생목록'에서 공동교육과정 수강생을 클릭하고 '성적' 선택 후 확대 버튼을 클릭하여 교과담당교사가 [성적-성적처리-과목별세부능력및특기사항]에서 등록한 세부능력 및 특기사항을 확인 → 2026학년도 학교생활기록부 기재요령에 따라 이상 유무를 확인</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>참여교로 전송하기 전에 남의 학교 학생부에 들어갈 문장을 거점교가 마지막으로 걸러 내려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{엑셀내려받기}</span>를 클릭하면 '엑셀', '한셀', 'CSV' 파일 중 선택하여 조회하여 인쇄할 수 있음.</li><li>확대 버튼을 클릭하면 '세부능력 및 특기사항'란이 넓어져 전체 세부능력 및 특기사항을 확인할 수 있음.</li><li>거점교(거점센터)에서 전송된 참여교 수강생의 독서활동상황은 참여교의 [학생부-학교생활기록부-학교생활기록부-학생부반영]의 '학생부반영 항목'에서 '독서활동상황'을 선택 후 <span class="btn">{개인별 반영}</span>하면 반영되며, [학생부-학교생활기록부-학교생활기록부-학생부조회 및 출력]에서 조회함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>자료관리 항목별 관련 메뉴</h4><ul><li>수상내역 — [학생생활-수상경력-수상대장관리]에서 등록한 수상자료.</li><li>창의적체험활동 — 누가기록은 입력하지 않으며, 자율･자치활동(1･2학년)/자율활동(3학년)･동아리활동･진로활동･진로희망을 직접 등록함.</li><li>창의적체험활동(과목출결) — (1･2학년) 자율･자치활동은 [학생생활-창의적체험활동-자율･자치활동(자율활동)관리]의 <span class="btn">{출결관리}</span> 탭, 동아리활동은 [학생생활-창의적체험활동-동아리활동관리-동아리활동관리]의 <span class="btn">{출석관리}</span> 탭, 진로활동은 [학생생활-창의적체험활동-진로활동관리]의 <span class="btn">{출결관리}</span> 탭에서 등록한 학점, 총수업시수, 현재수업시수, 결과시수를 확인함.</li><li>봉사활동실적 — 직접 입력함.</li><li>독서활동 — 공통 영역은 직접 등록하며, 교과담당교사는 [성적-성적처리-과목별독서활동].</li><li>성적 — [성적-성적처리-성적산출관리-과목별성적산출].</li><li>세부능력및특기사항 — [성적-성적처리-과목별세부능력및특기사항].</li><li>관찰내용 — [성적-관찰기록관리-관찰내용관리], 나이스플러스(NEIS+)로부터 반영한 관찰내용.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t19" data-num="19" data-stage="E" data-when="전송" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>19</b><span class="gstage" title="원문 STAGE E · 확인과 전송">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말 성적산출·과목 마감 후</span></div>
+    <h3>학기말 성적 및 과목별 세부능력 및 특기사항 전송</h3>
+    <p class="desc">거점교에서 산출한 학기말 성적과 교과담당교사가 등록한 과목별 세부능력 및 특기사항을 참여교로 전송하는 업무다. <strong>참여교에서 [성적-성적처리선행작업-성적산출선행작업관리-성적산출기준명관리]에 학기말 성적산출 기준명이 등록되어 있어야 하며, 등록되지 않은 경우 전송 시 오류가 발생한다.</strong> 참여교에서 학교생활기록부가 마감된 경우에는 자료전송을 할 수 없다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 학기말 성적산출과 해당 과목 마감을 끝낸 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-자료전송]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년'을 선택하고 '마감', '승인', '전송' 확인 후 <span class="btn">{조회}</span> → '타교수강생목록'에서 공동교육과정 참여교 수강생을 선택 후 <span class="btn">{마감}</span> → 수강생을 선택 후 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재가 완료되면 '전송항목 선택'에서 '성적'을 선택 → 공동교육과정 수강생을 선택하고 <span class="btn">{자료전송}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>참여교 학생의 학교생활기록부 교과학습발달상황에 거점교에서 이수한 과목 성적이 빠짐없이 올라가게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>전송항목과 전송 조건</h4><ul><li>참여교로 '성적', '세특', '학생생활'을 분리해서 전송할 수 있으며 <b>기본 선택값은 '성적', '학생생활'</b>임. 성적은 [성적] 학기말성적, 지필평가성적, 수행평가성적, 관찰내용, 세부능력및특기사항은 [성적] 세부능력 및 특기사항, 학생생활은 [학생생활] 수상내역, NCS 이수상황, 창의적체험활동, 창의적체험활동(과목별출결), 봉사활동실적, 독서활동임.</li><li>'성적'과 '세특'은 분리해서 전송할 수 있으며, <b>'성적' 전송 시 성적과 '세특'이 동시에 전송됨</b>. '세특' 전송은 기 전송된 세특이 수정되어 다시 전송하는 경우에 사용함.</li><li>참여교에서 [성적-성적처리-성적산출마감관리]에서 <span class="btn">{성적산출전체마감}</span>을 한 경우에도 거점교에서 참여교 수강생의 '성적'과 '세특'을 전송할 수 있음.</li><li><b>참여교에서 학교생활기록부가 마감된 경우에는 거점교에서 자료전송을 할 수 없음</b>.</li><li>거점교에서 참여교 수강생의 지필평가･수행평가 점수, 세부능력 및 특기사항은 참여교에서 학기말 성적산출 기준명이 등록되지 않아도 전송할 수 있음.</li><li>수행평가 성적 전송은 가능하나 <b>학기말 성적산출 후 해당 과목을 마감해야 정상적으로 전송이 가능함</b>.</li><li><span class="btn">{마감}</span>하면 '마감상태'가 '미마감'에서 '마감'으로, <span class="btn">{승인요청}</span>하면 '승인상태'가 '미상신'에서 '상신(진행중)'으로 변경되고 결재 완료 시 '완결'로, <span class="btn">{자료전송}</span>하면 '전송상태'가 '미전송'에서 '전송'으로 변경됨.</li><li><span class="btn">{수강정보갱신}</span>은 타교수강생 정보가 정상적으로 연계되지 않는 현상을 해결하기 위한 기능임.</li></ul></div><div class="memo" style="margin-top:12px"><h4>성적 처리 방식과 참여교 후속 업무</h4><ul><li>[2022 개정 교육과정(2026학년도 1･2학년)] 공동교육과정 과목으로 이수한 과목은 '교과', '과목', '학점', '원점수/과목평균', '성취도', '성취도별 분포비율', '석차등급', '수강자수'를 산출하되 <b>'석차등급'란에는 '·'을 입력</b>하며, '비고'란에는 '공동'을 입력함(자동 표기됨).</li><li>[2015 개정 교육과정(2026학년도 3학년)] 공동교육과정으로 이수한 과목은 '교과', '과목', '학점', '원점수/과목평균(표준편차)', '성취도(수강자수)'를 입력하고 <b>'석차등급'란은 공란</b>으로 두며, '비고'란에는 과목 개설 유형(공동교육과정)을 입력함(자동 표기됨). 단, 진로 선택 과목(진로 선택으로 편성된 전문 교과 포함), 체육･예술 교과(군)의 일반 선택 과목, 교양 교과(군)의 과목은 해당 교과(과목)의 산출방식을 따름.</li><li>참여교에서는 학기말 성적과 세부능력 및 특기사항이 자동으로 등록되며, [학생부-학교생활기록부-학교생활기록부-학생부반영]에서 '교과학습발달상황'과 '세부능력및특기사항' 자료반영을 통해 교과학습발달상황에 반영함.</li><li>기전송한 과목별 세부능력 및 특기사항에 수정사항이 발생한 경우 교과담당교사가 [성적-성적처리-과목별 세부능력 및 특기사항]에서 수정 후 '전송항목 선택'에서 '세특'을 선택하고 <span class="btn">{자료전송}</span>하면 수정되어 반영됨.</li><li>소속교에서 학기말 성적을 마감한 경우라도 거점교에서 재산출한 학기말 성적을 다시 전송할 수 있음. 다만 <b>소속교 학교생활기록부가 마감되어 있으면 학기말 성적을 전송할 수 없음</b>.</li><li>성적산출기준명 등록 전에는 거점교가 지필평가·수행평가 성적, 과세특만 전송할 수 있고, 등록 후에 학기말 성적까지 전송할 수 있음. 참여교는 [학적-공동교육과정관리-공동교육과정학생관리-공동교육과정학생타학교자료전송확인]에서 수신 확인함.</li><li>거점학교 본교생과 참여학교 타교생의 과목별 세부능력 및 특기사항은 [성적-성적조회/통계-학기말성적조회]의 <span class="btn">{과목별세부능력및특기사항}</span>에서 모두 확인할 수 있으며, 학교업무분장관리 담당자로부터 조회 권한을 부여받아야 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t20" data-num="20" data-stage="E" data-when="전송" data-who="공동교육과정업무담당자">
+  <div class="gutter"><b>20</b><span class="gstage" title="원문 STAGE E · 확인과 전송">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">독서활동·수상경력 등록 후</span><span class="tag opt">성적·세특 전송을 이미 한 경우 마감·승인 생략</span></div>
+    <h3>학생생활(독서활동·수상자료 등) 전송과 전송취소</h3>
+    <p class="desc">거점교에서 교과담당교사가 등록한 독서활동상황과 수상경력 자료를 참여교로 전송하는 업무다. <strong>'학기말 성적 및 과목별 세부능력 및 특기사항 전송' 업무를 이미 수행한 경우 마감과 승인요청 과정은 거치지 않고 '전송항목선택'에서 '학생생활'만 선택해 전송한다.</strong> 잘못 전송한 자료는 전송취소로 되돌린다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 과목별 독서활동상황과 수상경력 등록을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>공동교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-자료전송]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년'을 선택하고 '마감', '승인', '전송' 확인 후 <span class="btn">{조회}</span> → '타교수강생목록'에서 공동교육과정 수강생을 선택 후 <span class="btn">{마감}</span> → 수강생을 선택 후 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재가 완료되면 '전송항목선택'에서 '학생생활'을 선택 → 공동교육과정 수강생을 선택하고 <span class="btn">{자료전송}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>거점교에서 쌓인 독서활동과 수상 기록이 학생의 소속교 학교생활기록부에 남도록 넘기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'1) 학기말 성적 및 과목별 세부능력 및 특기사항 전송' 업무를 수행한 경우 <b>마감과 승인요청 과정은 거치지 않고</b> '전송항목선택'에서 '학생생활'을 선택 후 공동교육과정 수강생을 선택하고 <span class="btn">{자료전송}</span>함.</li><li>'타교수강생목록'에서 공동교육과정 참여교 수강생 성명을 클릭하면 나타나는 '타교 수강생 자료전송' 창에서 참여교로 전송되는 '학생생활'과 '성적' 자료를 확인할 수 있음.</li><li>거점교에서 '성적', '세특', '학생생활'을 <span class="btn">{자료전송}</span>하면 참여교에서 학기말 성적과 과목별 세부능력 및 특기사항은 자동으로 등록되며, <b>독서활동을 제외한 학생생활 자료는 나이스 관련 메뉴에서 확인 후 학교생활기록부에 반영해야 함</b>.</li><li>참여교는 [학적-공동교육과정관리-공동교육과정학생관리-공동교육과정학생 타학교자료 전송확인]에서 수강생 성명을 클릭하면 나타나는 '공동교육과정 타학교 자료내역' 창에서 성적, 세특, 학생생활 전송자료별로 관련 내용을 확인할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>전송취소 시 주의</h4><ul><li>'전송자료' 중 '성적'을 <span class="btn">{전송취소}</span>하면 기존에 전송한 '학기말성적'과 '세부능력및특기사항'이 참여교에서 삭제됨. <b>'지필평가성적'과 '수행평가성적'은 삭제되지 않으므로 참여교에서 직접 삭제함</b>.</li><li>2015 개정 교육과정을 적용받는 3학년의 경우 174학점을 초과하여 개설된 공동교육과정 과목에 한해 공동교육과정 출석시수 부족으로 성적 미산출 대상이나 참여교로 학기말 성적과 과목별 세부능력 및 특기사항을 전송한 경우에 '성적'을 <span class="btn">{전송취소}</span>함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part 2. 학적, Section_13 타교수강생 관리 (공동교육과정) (470–521쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

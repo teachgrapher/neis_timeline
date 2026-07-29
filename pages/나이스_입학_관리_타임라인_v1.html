@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<!-- 입학 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>입학 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>입학 관리</b>
+    <span class="sub">업무 11개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">입학 · Section_19 · pp. 568–581</p>
+    <h1>입학 관리
+      <em>업무 11개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학년말</dd></div>
+      <div><dt>업무담당</dt><dd>입학 업무담당자, 학적 업무담당자</dd></div>
+      <div><dt>메뉴경로</dt><dd>[입학-입학관리]</dd></div>
+      <div><dt>선행조건</dt><dd>신입생 배정자료 및 신입생 명단을 확인함. [학교정보-학교정보-기준년도/학기관리]에서 교무학년도와 교무학기를 현재학년도 2학기로, 수업학년도와 수업학기를 다음 학년도 1학기로 변경함. [학교정보-학교정보-기준/반정보관리]에서 각각 신학년도 학년, 반 정보를 등록함. [입학-입학관리-학적일괄생성]에서 입학대상자의 예비학적을 생성함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>시도교육청 배정자료 수신</h3>
+            <p class="tl-sub">평준화지역 교육감 전형 학교만 해당 · 시도교육청 배정 등록 직후</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 배정자료 확인·전송요청"><span>01</span>배정자료 확인·전송요청</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>입학대상자 명단 등록</h3>
+            <p class="tl-sub">배정자료 조회로 누락자를 확인한 뒤 · 재학생 → 졸업생 → 기타 순서</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t2" title="02 재학생 개별 추가"><span>02</span>재학생 개별 추가</button><button type="button" class="tl-btn" data-go="t3" title="03 졸업생 추가"><span>03</span>졸업생 추가</button><button type="button" class="tl-btn" data-go="t4" title="04 검정고시·기타 추가"><span>04</span>검정고시·기타 추가</button><button type="button" class="tl-btn" data-go="t5" title="05 명단파일 일괄추가"><span>05</span>명단파일 일괄추가</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>명단 점검과 정리</h3>
+            <p class="tl-sub">전송요청 이후 · 학적일괄생성 전에 마쳐야 함</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t6" title="06 미도착 사유 확인"><span>06</span>미도착 사유 확인</button><button type="button" class="tl-btn" data-go="t7" title="07 비대상 처리·삭제"><span>07</span>비대상 처리·삭제</button><button type="button" class="tl-btn" data-go="t8" title="08 입학자 현황 출력"><span>08</span>입학자 현황 출력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>예비학적 생성과 점검</h3>
+            <p class="tl-sub">'본교확인' 대상 저장과 자료 수신 완료가 선행조건</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t9" title="09 예비학적 생성"><span>09</span>예비학적 생성</button><button type="button" class="tl-btn" data-go="t11" title="11 주민번호·졸업일 점검"><span>11</span>주민번호·졸업일 점검</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>오류 발견 시 되돌리기</h3>
+            <p class="tl-sub">학적생성 후 대상자 누락이나 오포함을 확인한 경우에만</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t10" title="10 생성취소·재전송요청"><span>10</span>생성취소·재전송요청</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="배정수신" data-who="입학업무담당자">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 배정자료 수신">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">시도교육청 배정 직후</span><span class="tag opt">평준화지역 교육감 전형</span></div>
+    <h3>시도교육청 배정자료 확인 및 전송 요청</h3>
+    <p class="desc">평준화지역 학교에 해당하는 업무이며, 교육감 전형은 시도교육청에서 대상학생을 일괄 배정해 주므로 학교에서는 배정 결과를 확인하는 것으로 시작한다. <strong>'본교확인'을 '대상'으로 선택해 저장해야 중학교로부터 기본 신상정보(사진 제외), 진로정보, 건강기록부가 넘어온다.</strong> 학교장 전형인 지역은 이 카드가 아니라 {개별추가}, {일괄추가}로 직접 등록한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 신입생 배정자료 및 신입생 명단을 확인하고 시도교육청이 입학생 배정자료를 등록한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>입학 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[입학-입학관리-입학대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[입학-입학관리-입학대상자관리]</code>에서 '입학예정 학년도', '출신학교', '출신교상태', '본교확인', '자료도착', '학적반영', '전송상태' 확인 후 <span class="btn">{조회}</span>함 → <span class="btn">{재학생}</span> 탭에서 배정된 학생의 '본교확인'을 '대상'으로 선택 후 <span class="btn">{저장}</span>함('본교확인일괄선택'을 '대상'으로 선택 후 <span class="btn">{저장}</span>할 수 있음) → <span class="btn">{전송요청}</span>하여 출신 중학교로부터 배정자료의 '전송상태'가 '전송완료'인지 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>신입생이 학교에 오기 전에 출신 중학교가 가진 신상·건강·진로 자료를 미리 받아 두어야 예비학적을 만들 수 있으므로.</dd></dl>
+    </div>
+<div class="memo"><h4>'본교확인' 세 가지 상태</h4><ul><li>대상 — 본교 입학대상자인지를 확인하는 단계로 '대상'으로 선택하여 <span class="btn">{저장}</span>하면 중학교로부터 기본 신상정보(사진 제외), 진로정보(개인정보(진로 관련 사항) 활동 동의서에 동의한 졸업예정자에 한함), 건강기록부 등을 가져와 반영함.</li><li>비대상 — 배정자료는 도착했으나 실제 입학대상자가 아닌 경우이며, '비대상'으로 <span class="btn">{저장}</span> 시 <b>중학교로부터 받은 기본 신상정보(사진 제외), 진로정보, 건강기록부를 삭제하고 입학대상자에서 제외함.</b></li><li>미확인 — 입학대상자에 대한 본교확인 상태가 미확인 상태임.</li><li>'본교확인'은 <b>배정자료가 도착하면 수정이 가능</b>하고, 고등학교에서 직접 입력한 학생의 경우 초기 상태는 '대상'임.</li></ul></div><div class="memo" style="margin-top:12px"><h4>'출신교상태'와 전송요청</h4><ul><li>중학교에서 배정자료를 확인하면 '출신교상태'는 '확인', '본교상태'는 '대상'으로 활성화되고, '자료도착'은 도착일자가 표시됨(도착일자는 배정 학생의 건강기록부 및 기본 신상정보가 출신중학교로부터 배정 고등학교에 도착한 일시임).</li><li>확인 — 출신학교에서 입학대상자의 배정학교와 학적사항을 확인한 상태임.</li><li>미확인 — 출신학교에서 미확인한 경우로 글자에 마우스를 가져가면 출신교의 작업 상태가 말풍선으로 나타나며, '타교배정'인 경우는 해당 학생이 다른 고등학교로 배정된 경우이므로 필요시 중학교 담당자에게 본교 입학대상자 여부를 확인함. 예시로 출신학교가 사전일괄승인을 설정하지 않았거나 <code>[진로지도-동의여부마감관리]</code>에서 진로정보 학생동의서 학년 마감을 하지 않은 경우가 있음.</li><li>오류 — 출신학교 입학대상자의 배정학교나 학적사항이 잘못되었음을 나타냄('오류' 글자 위에 마우스를 올리면 출신학교에서 작성한 오류 사유를 확인할 수 있음).</li><li><span class="btn">{전송요청}</span>은 <b>'본교확인' 항목이 '대상'인 학생 중 전송상태가 '미전송'인 학생</b>에 대해 출신학교에 기본 신상정보(사진 제외), 진로정보, 건강기록부를 요청하는 기능으로, 출신학교에서 '사전일괄승인'을 설정해 둔 경우 자료가 자동 전송됨.</li><li>출신 중학교에서 '사전일괄승인'한 경우 <span class="btn">{전송요청}</span> 시 '출신교상태'는 '확인', '자료도착'은 '도착일자', '전송상태'는 '전송완료'로 표시됨.</li><li>등록된 학생이 본교 입학대상자가 아닐 경우 <span class="btn">{삭제}</span>함. <span class="btn">{삭제}</span> 시 지원학교의 배정결과도 삭제됨.</li><li>중복된 학생 자료는 <span class="btn">{삭제}</span>하되, 삭제가 불가능할 경우 '본교확인'을 '비대상'으로 설정함.</li><li>평준화지역 재배정 결과 반영 시, 해당학교에서 <span class="btn">{개별추가}</span> 또는 <span class="btn">{일괄추가}</span>로 직접 등록함.</li><li><b>학적일괄생성 이후에는 <span class="btn">{개별추가}</span>, <span class="btn">{일괄추가}</span>, <span class="btn">{전송요청}</span>, <span class="btn">{저장}</span>이 표시되지 않으며,</b> “학적일괄생성 작업이 완료되었습니다.”라는 메시지가 출력됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="B" data-when="명단등록" data-who="입학업무담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE B · 입학대상자 등록">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">배정자료 조회 후 누락 학생을 확인한 때</span><span class="tag opt">교육감 전형·학교장 전형 공통</span></div>
+    <h3>{재학생} 탭 입학대상자 개별 추가</h3>
+    <p class="desc">시도교육청이 일괄 배정해주지 않는 학생이 있을 때 쓰는 방식입니다. 소규모 입학생, 해당 학교에 배정된 특수학생, 검정고시 학생, 별도로 배정된 체육특기생, 평준화지역 재배정 결과 반영 대상이 여기에 해당합니다. <strong>당해학년도 중학교 3학년은 졸업처리를 완료했어도 {졸업생} 탭이 아니라 {재학생} 탭에서 검색하여 등록함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 배정자료를 {조회}하여 입학대상자 중 누락된 학생을 확인한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>입학 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[입학-입학관리-입학대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[입학-입학관리-입학대상자관리]</code>에서 '입학예정 학년도', '출신학교', '출신교상태', '본교확인', '자료도착', '학적반영', '전송상태' 확인 후 <span class="btn">{조회}</span>하여 입학대상자 중 누락된 학생 유무를 확인함 → {재학생} 탭에서 <span class="btn">{개별추가}</span>를 클릭하면 나타나는 '개별추가' 창의 '입학담당자 정보'에서 '성명', '연락처'를 입력 → '학생찾기'에서 <span class="btn">{학교찾기}</span>로 출신중학교를 검색하고 '학년', '반', '성명'으로 <span class="btn">{학생찾기}</span> → '입학정보'에서 '과정', '계열', '학과'를 선택 → 학생목록에서 학생을 선택하여 추가한 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>시도교육청 배정자료에 잡히지 않은 학생까지 명단에 올려, 예비학적 생성에서 빠지는 신입생이 생기지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>본교 배정 학생에 대하여 {개별추가}로 학생을 추가하는 경우 '본교확인'은 '대상'으로 설정됨.</li><li>타시도 재학생과 시도내 재학생은 {재학생} 탭에서 {개별추가}하고 졸업생은 {졸업생} 탭에서 {추가}함.</li><li><b>현재학년도 중학교 3학년 학생은 졸업처리를 완료했어도 {재학생} 탭에서 검색하여 등록함.</b> {재학생} 개별 등록 시 졸업처리와 상관없이 당해학년도 중학교 3학년은 재학생으로 추가함.</li><li>이전학년도 졸업생이거나 부정확한 정보로 해당 학생이 없는 경우는 해당 학생을 찾을 수 없다는 메시지가 출력되며, 이 경우 해당 학생의 정보를 확인하고 다시 입력함.</li><li>평준화지역 재배정 결과 반영 시, 해당학교에서 {개별추가} 또는 {일괄추가}로 직접 등록함.</li><li>'일괄추가' 창에서 '미존재'로 남는 학생은 학생정보가 잘못된 경우일 수 있으므로 {개별추가}를 이용하여 해당 학생의 검색 여부를 확인함.</li><li><b>학적일괄생성 이후에는 {개별추가}, {일괄추가}, {전송요청}, {저장}은 표시되지 않으며, “학적일괄생성 작업이 완료되었습니다.”라는 메시지가 출력됨.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="B" data-when="명단등록" data-who="입학업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE B · 입학대상자 등록">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">재학생 등록을 마친 뒤</span><span class="tag opt">이전학년도 졸업생 한정</span></div>
+    <h3>{졸업생} 탭 이전학년도 졸업생 추가</h3>
+    <p class="desc">입학대상자 중 이전학년도에 중학교를 졸업한 학생이 있을 때만 하는 업무입니다. <strong>이전학년도 졸업생은 교육감 전형이라도 시･도교육청에서 전송되지 않으므로 {졸업생} 탭에서 졸업생을 검색하여 추가함.</strong> 당해학년도 중학교 3학년은 이 탭이 아니라 {재학생} 탭에서 등록합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 배정자료 확인과 {재학생} 탭 등록을 끝낸 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>입학 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[입학-입학관리-입학대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[입학-입학관리-입학대상자관리]</code>에서 '입학예정 학년도', '출신학교', '출신교상태', '본교확인', '자료도착', '학적반영', '전송상태' 확인 후 <span class="btn">{조회}</span>함 → {졸업생} 탭에서 <span class="btn">{추가}</span> → '졸업생찾기' 창에서 <span class="btn">{학교찾기}</span>로 출신중학교를 검색하고 '졸업학년도', '성명'을 입력하여 <span class="btn">{학생찾기}</span> → '담당자', '전화번호'를 입력하고 '과정', '계열', '학과'를 선택한 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>시도교육청 배정에서 아예 넘어오지 않는 이전학년도 졸업생을 명단에 올려, 출신중학교로부터 신상·건강 자료를 받아올 길을 열어두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>졸업학년도 정보가 불일치할 경우 해당 학생을 찾을 수 없으므로 학생정보를 확인하여 검색함.</b></li><li>{저장}하면 자동으로 해당 학생의 자료에 대해 출신중학교로 전송요청이 이루어짐.</li><li>삭제 시 지원학교의 배정결과도 삭제되므로 {삭제}는 입력오류 건에만 사용함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="명단등록" data-who="입학업무담당자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 입학대상자 등록">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">재학생·졸업생 등록을 마친 뒤</span><span class="tag opt">검정고시·특례입학·학력인정 대안학교 한정</span></div>
+    <h3>{기타(검정고시, 직접입력)} 탭 입학대상자 추가</h3>
+    <p class="desc">중학교 졸업학력 검정고시 합격자, 특례입학 대상자(외국학교), 학력인정 대안학교 등 나이스를 활용하지 않는 학교 학생이 있을 때만 하는 업무입니다. 출신학교에서 자료를 받아올 수 없으므로 인적사항을 직접 입력합니다. <strong>'구분'에서 '검정고시'를 선택한 경우 '출신학교', '졸업일자'는 입력하지 않음.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, {재학생}·{졸업생} 탭 등록을 끝낸 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>입학 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[입학-입학관리-입학대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[입학-입학관리-입학대상자관리]</code>에서 '입학예정 학년도', '출신학교', '출신교상태', '본교확인', '자료도착', '학적반영', '전송상태' 확인 후 <span class="btn">{조회}</span>함 → {기타(검정고시, 직접입력)} 탭에서 <span class="btn">{추가}</span> → '구분', '입학구분', '출신학교명', '졸업일자', '성명', '성별', '주민등록번호', '과정', '계열', '학과'를 선택하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>나이스에 학적이 없는 경로로 들어오는 신입생도 입학대상자로 잡아, 예비학적과 이후 반편성에서 누락되지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'구분'에서 '검정고시'를 선택하면 중학교 졸업학력 검정고시 합격자, 특례입학 대상자(외국학교)의 인적사항을 입력하여 추가함.</li><li>'구분'에서 '직접입력'을 선택하면 학력인정 대안학교 등 나이스를 활용하지 않는 학교 학생의 인적사항을 입력하여 추가함.</li><li><b>'구분'에서 '검정고시'를 선택한 경우 '출신학교', '졸업일자'는 입력하지 않으며, '입학구분'에서 '검정고시' 또는 '기타(학력인정)'를 선택할 수 있음.</b></li><li>{삭제}로 입학대상자 중 입력오류 건을 삭제할 수 있으며, {삭제} 시 지원학교의 배정결과도 삭제됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="명단등록" data-who="입학업무담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 입학대상자 등록">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">입학대상자 명단 파일이 확정된 직후</span><span class="tag opt">학교장 전형 지역 한정</span></div>
+    <h3>명단 파일로 입학대상자 일괄 추가</h3>
+    <p class="desc">학교장 전형으로 시행하는 지역에서 쓰는 방법으로, 시도교육청별로 운영하는 입학관리 시스템에서 만든 입학대상자 명단 파일을 올려 한 번에 등록합니다. 교육감 전형 지역은 시도교육청 배정자료를 쓰므로 이 업무를 하지 않습니다. <strong>동명이인 학생은 특별히 유의하여 처리함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 입학대상자 명단 파일을 준비한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>입학 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[입학-입학관리-입학대상자관리]</code>, <code>[{시스템관리} 조직코드-조직코드관리-조직도현황]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[입학-입학관리-입학대상자관리]</code>에서 '입학예정 학년도', '출신학교', '출신교상태', '본교확인', '자료도착', '학적반영', '전송상태' 확인 후 <span class="btn">{조회}</span>함 → {재학생} 탭에서 <span class="btn">{일괄추가}</span> → '일괄추가' 창의 '입학담당자정보'에서 '성명', '연락처'를 입력하고 '입학정보'에서 '과정', '계열', '학과'를 선택 → '입학대상자파일 올리기'에서 <span class="btn">{찾아보기}</span>하여 업로드 할 파일을 선택하고 <span class="btn">{작업실행}</span> → '학생목록'에서 <span class="btn">{조회}</span> 후 좌측 하단 목록에서 일괄추가할 학생을 선택하여 '입학등록대상목록'으로 추가한 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교가 직접 뽑은 합격자 명단을 한 번에 올려, 출신중학교로부터 신상·건강 자료를 받아올 대상을 빠짐없이 지정하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>파일 만들기와 학생 확인</h4><ul><li><b>파일 형태는 출신학교코드, 성명, 반코드, 번호, 학년 순으로 반코드는 반드시 2자리로 구성되어야 하며, 파일 내용 중 학년을 생략할 경우 3학년으로 등록됨.</b> 예시) J100001520 홍길동 01 1 3</li><li><code>[{시스템관리} 조직코드-조직코드관리-조직도현황]</code>의 '조직도 목록'에서 '조직검색'에 출신중학교명 입력 후 {검색}하여 나이스코드를 직접 확인할 수 있음.</li><li>업로드 할 파일은 배정할 학과별 또는 소단위로 나누어 각각 업로드하는 것이 편리함.</li><li>'일괄추가' 창의 왼쪽 하단 '존재여부'란에 '미존재'로 표시된 학생은 해당 출신학교에서 학생을 찾을 수 없는 경우이며, 이 경우 오른쪽으로 자료가 이동되지 않음. <b>'미존재'로 남는 경우 학생정보가 잘못된 경우일 수 있으므로 {개별추가}를 이용하여 해당 학생의 검색 여부를 확인함.</b></li><li>학생목록에서 Shift+마우스를 클릭하면 연속으로 선택 가능, Ctrl+마우스를 클릭하면 비연속으로 선택 가능함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>'일괄추가' 창 버튼과 사후 조치</h4><ul><li>{찾아보기}는 일괄추가 할 입학대상자 파일을 선택함.</li><li>{작업실행}은 입학대상자의 출신학교 조회 후 목록에서 보여줌.</li><li>{샘플다운로드}는 입학대상자 예시 파일을 다운로드 받아 입력 내용을 확인함.</li><li>{조회}는 입학대상자 목록을 조회함.</li><li><b>{저장} 시 자동으로 해당 학생의 자료에 대해 출신학교로 {전송요청}이 이루어짐.</b></li><li>{주간/계열/학과일괄변경}은 {일괄추가} 시 '입학정보'를 잘못 등록한 경우 입학생들의 입학정보를 한 번에 변경하는 기능임.</li><li>{삭제}로 입학대상자의 명단을 삭제함.</li><li><b>학적일괄생성 이후에는 {개별추가}, {일괄추가}, {전송요청}, {저장}은 표시되지 않으며, “학적일괄생성 작업이 완료되었습니다.”라는 메시지가 출력됨.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="C" data-when="명단점검" data-who="입학업무담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE C · 명단 점검·정리">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">전송요청 이후</span><span class="tag">명단 점검</span></div>
+    <h3>'출신교상태' 미확인 학생의 미도착 사유 확인</h3>
+    <p class="desc">{전송요청}을 했는데도 <strong>'출신교상태'가 '미확인'으로 남아 있는 입학대상자가 있으면</strong> 출신 중학교의 업무 진행 상태를 확인해야 하는 업무임. 출신학교가 사전일괄승인을 설정하지 않았거나 [진로지도-동의여부마감관리]에서 진로정보 학생동의서 학년 마감을 하지 않은 경우에 해당함.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 배정자료 전송요청을 한 뒤 자료 도착 여부를 확인하는 시점</dd></dl>
+      <dl><dt>누가?</dt><dd>입학 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[입학-입학관리-입학대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>[입학-입학관리-입학대상자관리]에서 '입학예정 학년도', '출신학교', '출신교상태', '본교확인', '자료도착', '학적반영', '전송상태' 확인 후 <span class="btn">{조회}</span>하고 <span class="btn">{전체출력}</span>하여 '비고'에서 출신중학교의 미도착 사유를 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>자료가 오지 않는 원인이 우리 학교 쪽인지 출신 중학교 쪽인지 가려서, 학적일괄생성 전에 누락 없이 자료를 받아두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'출신교상태'는 입학대상자의 출신중학교 확인 상태를 뜻함. '확인'은 출신학교에서 입학대상자의 배정학교와 학적사항을 확인한 상태임.</li><li>'미확인'은 출신학교에서 미확인한 경우로 글자에 마우스를 가져가면 출신교의 작업 상태를 말풍선이 나타남.</li><li><b>'타교배정'인 경우는 해당 학생이 다른 고등학교로 배정된 경우이므로 필요시 중학교 담당자에게 본교 입학대상자 여부를 확인함.</b></li><li>'오류'는 출신학교 입학대상자의 배정학교나 학적사항이 잘못되었음을 나타냄. '오류' 글자 위에 마우스를 올리면 출신학교에서 작성한 오류 사유를 확인할 수 있음.</li><li>중학교에서 배정자료를 확인하면 '출신교상태'는 '확인', '본교상태'는 '대상'으로 활성화되고, '자료도착'은 도착일자가 표시됨. 도착일자는 배정 학생의 건강기록부 및 기본 신상정보가 출신중학교로부터 배정 고등학교에 도착한 일시임.</li><li>출신 중학교에서 '사전일괄승인'한 경우 <span class="btn">{전송요청}</span> 시 '출신교상태'는 '확인', '자료도착'은 '도착일자', '전송상태'는 '전송완료'로 표시됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="C" data-when="명단점검" data-who="입학업무담당자">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE C · 명단 점검·정리">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적일괄생성 전</span><span class="tag opt">해당 건이 있을 때만</span></div>
+    <h3>입학대상자 아닌 학생 삭제 또는 '비대상' 처리</h3>
+    <p class="desc">등록된 학생이 본교 입학대상자가 아니거나 중복·입력오류로 들어온 건이 있을 때만 하는 업무임. <strong>시·도교육청에서 전송한 정보는 삭제가 불가능하므로 본교 입학대상자가 아니라면 '본교확인'을 '비대상'으로 설정함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 입학대상자 명단 등록과 미도착 학생 확인이 끝난 뒤 학적일괄생성 전</dd></dl>
+      <dl><dt>누가?</dt><dd>입학 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[입학-입학관리-입학대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>[입학-입학관리-입학대상자관리]에서 '입학예정 학년도', '출신학교', '출신교상태', '본교확인', '자료도착', '학적반영', '전송상태' 확인 후 <span class="btn">{조회}</span> → 입력오류 건이나 중복된 학생 자료를 선택하여 <span class="btn">{삭제}</span> → 삭제가 불가능한 경우 '본교확인'을 '비대상'으로 선택 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>실제로 우리 학교에 오지 않는 학생이 예비학적으로 넘어가 신입생 명부와 반편성이 어긋나는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>{삭제}와 '비대상'의 차이</h4><ul><li><b>{삭제}로 입학대상자 중 입력오류 건을 삭제할 수 있으며, 삭제 시 지원학교의 배정결과도 삭제됨.</b></li><li><b>중복된 학생 자료는 {삭제}하되, 삭제가 불가능할 경우 '본교확인'을 '비대상'으로 설정함.</b></li><li>'비대상'은 배정자료는 도착했으나 실제 입학대상자가 아닌 경우로, '비대상'으로 <span class="btn">{저장}</span> 시 중학교로부터 온 기본 신상정보(사진 제외), 진로정보(개인정보(진로 관련 사항) 활동 동의서에 동의한 졸업예정자에 한함), 건강기록부를 삭제하고 입학대상자에서 제외함.</li><li>'미확인'은 입학대상자에 대한 본교확인 상태가 미확인 상태임.</li><li>'본교확인'은 배정자료가 도착하면 수정이 가능하고, 고등학교에서 직접 입력한 학생의 경우 초기 상태는 '대상'임.</li></ul></div><div class="memo" style="margin-top:12px"><h4>처리 시점 주의</h4><ul><li><b>예비 학적생성 시 '본교확인' 상태가 '비대상'으로 된 학생의 정보(보건, 학생 기본정보)는 일괄 삭제됨.</b></li><li>본교확인 상태가 '비대상'이었던 학생의 상태를 '대상'으로 수정 후 다시 <span class="btn">{학적생성}</span>을 해도 이 학생의 정보(보건, 학생기본정보)는 이미 삭제되어 학적생성 대상자에서 제외되며, 이러한 경우는 출신학교로 [입학-입학관리-입학대상자관리]에서 다시 자료를 <span class="btn">{전송요청}</span>해야 함.</li><li><b>학적일괄생성 이후에는 {개별추가}, {일괄추가}, {전송요청}, {저장}은 표시되지 않으며, "학적일괄생성 작업이 완료되었습니다."라는 메시지가 출력됨.</b></li><li>평준화지역 재배정 결과 반영 시, 해당학교에서 <span class="btn">{개별추가}</span> 또는 <span class="btn">{일괄추가}</span>로 직접 등록함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="C" data-when="명단점검" data-who="입학업무담당자 학적업무담당자">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE C · 명단 점검·정리">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">명단 등록 완료 후</span><span class="tag">조회·출력</span></div>
+    <h3>입학자 현황 조회 및 저장·출력</h3>
+    <p class="desc">입학대상자 등록과 정리가 끝난 뒤 본교의 입학대상자 현황을 한눈에 확인하는 업무임. <strong>조회된 입학자 현황은 '본교확인'이 '대상'인 학생의 인원수임.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 입학대상자 명단 등록과 '본교확인' 정리가 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>입학 업무담당자, 학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[입학-입학관리-입학자현황조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>[입학-입학관리-입학자현황조회]에서 '입학예정 학년도' 확인 후 <span class="btn">{조회}</span>하여 입학자 현황을 확인하고 필요시 PDF, 워드, 엑셀, 파워포인트, 한글 문서로 저장하거나 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>등록한 명단이 우리가 받기로 한 신입생 규모와 맞는지 학적일괄생성 전에 대조해 확인하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>본교의 입학대상자 현황을 출신 교육청, 출신학교별 재학생과 졸업생, 검정고시, 기타로 구분하여 조회함.</li><li><b>조회된 입학자 현황은 '본교확인'이 '대상'인 학생의 인원수임.</b> '비대상'이나 '미확인' 학생은 집계되지 않으므로 인원이 맞지 않으면 [입학-입학관리-입학대상자관리]에서 '본교확인' 상태를 다시 확인함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="D" data-when="학적생성" data-who="입학업무담당자 학적업무담당자">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE D · 예비학적 생성">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">입학대상자 등록 완료 후</span><span class="tag">반편성 선행 작업</span></div>
+    <h3>입학생 예비학적 일괄 생성</h3>
+    <p class="desc">입학대상자 명단 등록과 배정자료 수신을 모두 마친 뒤 진행하는 업무입니다. <strong>[입학-입학관리-입학대상자관리]에서 '본교확인' 상태가 '대상'인 학생에 대하여만 예비학적을 생성함.</strong> 생성된 학적은 0학년으로 만들어지며 이후 반편성과 진급처리로 이어집니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 입학대상자관리에서 '본교확인'을 '대상'으로 저장하고 출신학교 자료 전송이 완료된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>입학 업무담당자, 학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[입학-입학관리-학적일괄생성]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[입학-입학관리-학적일괄생성]</code>에서 '대상자수(재학생, 졸업생, 검정고시, 기타)', '학적 생성자수' 등을 확인하고 <span class="btn">{학적생성}</span>하여 입학대상자의 학적을 0학년으로 생성함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>신입생이 학교 학적에 들어와 반편성과 학교생활기록부 작성을 시작할 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>[입학-입학관리-입학대상자관리]에서 '본교확인' 상태가 '대상'인 학생에 대하여 예비학적을 생성함.</b> 이때 전송받는 자료는 학교생활기록부 인적사항(사진 제외), 건강기록부, 진로희망 및 창의적 체험활동상황의 진로활동 특기사항(개인정보(진로 관련 사항) 활동 동의서 제출자), 학생･학부모서비스 신청 정보, 국가수준 학업성취도 결과임.</li><li><b>예비 학적생성 시 '본교확인' 상태가 '비대상'으로 된 학생의 정보(보건, 학생 기본정보)는 일괄 삭제됨.</b></li><li><span class="btn">{학적생성}</span>을 하면 '입학생'으로 학적이 생성되고 <span class="btn">{학적생성취소}</span>로 변경되며, <code>[학적-반편성선행작업-진급대상자생성]</code>에서 1학년 진급대상자로 생성하여 반편성을 할 수 있음.</li><li><code>[학적-진급대상자반편성관리-진급대상자반편성관리-대상자생성]</code>에서 <span class="btn">{진급자학적반영}</span>하면 <span class="btn">{생성}</span> 또는 <span class="btn">{생성취소}</span>가 “진급대상자가 생성되어 있습니다.”로 변경됨.</li><li><b>학적일괄생성 이후에는 <span class="btn">{개별추가}</span>, <span class="btn">{일괄추가}</span>, <span class="btn">{전송요청}</span>, <span class="btn">{저장}</span>은 표시되지 않으며, “학적일괄생성 작업이 완료되었습니다.”라는 메시지가 출력됨.</b></li><li>예비 학적생성 이후 <code>[학적-진급대상자반편성관리-진급대상자반편성관리]</code>에서 입학생 반편성과 진급처리를 진행함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t11" data-num="11" data-stage="E" data-when="생성후" data-who="학적업무담당자">
+  <div class="gutter"><b>11</b><span class="gstage" title="원문 STAGE E · 생성 후 점검">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적생성 이후</span><span class="tag opt">필요시</span></div>
+    <h3>주민등록번호 오류·동명이인·졸업일자 점검</h3>
+    <p class="desc">예비학적을 생성한 모든 학교가 이어서 하는 점검 업무입니다. <strong>{학적생성} 이후</strong>에 열리는 진급대상자반편성관리 화면에서 입학생의 주민등록번호 오류와 동명이인을 확인하고, 출신학교 졸업일자가 틀린 경우 기본신상관리에서 수정합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, [입학-입학관리-학적일괄생성]에서 {학적생성}을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-진급대상자반편성관리-진급대상자반편성관리-대상자생성]</code>, <code>[학적-진급대상자반편성관리-진급대상자반편성관리-개별반편성]</code>, <code>[학적-기본학적관리-기본신상관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>[학적-진급대상자반편성관리-진급대상자반편성관리-대상자생성]에서 <span class="btn">{입학대상자관리}</span>를 클릭하면 나타나는 '입학대상자관리' 창에서 <span class="btn">{주민등록번호오류출력}</span>으로 입학생의 주민등록번호 오류 여부를 확인함 → [학적-진급대상자반편성관리-진급대상자반편성관리-개별반편성]의 <span class="btn">{입학생반편성내역개별등록}</span> 탭에서 해당 학교의 입학생의 동명이인을 확인함 → 입학생의 출신학교 졸업일자의 수정은 [학적-기본학적관리-기본신상관리]의 <span class="btn">{학적사항}</span> 탭에서 수정함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>신입생의 학적이 반편성과 학교생활기록부로 넘어가기 전에 사람이 뒤바뀌거나 학력이 잘못 기록되는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{학적생성}</span> 이후 [학적-진급대상자반편성관리-진급대상자반편성관리-대상자생성]에서 <span class="btn">{입학대상자관리}</span>를 클릭하면 나타나는 '입학대상자관리' 창에서 <span class="btn">{주민등록번호오류출력}</span>으로 입학생의 주민등록번호 오류 여부를 확인함.</li><li><span class="btn">{학적생성}</span> 이후 [학적-진급대상자반편성관리-진급대상자반편성관리-개별반편성]의 <span class="btn">{입학생반편성내역개별등록}</span> 탭에서 해당 학교의 입학생의 <b>동명이인</b>을 확인함.</li><li>입학생의 출신학교 졸업일자의 수정은 <b>[학적-기본학적관리-기본신상관리]의 {학적사항} 탭</b>에서 수정함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>이어지는 처리</h4><ul><li>[학적-진급대상자반편성관리-진급대상자반편성관리-대상자생성]에서 <span class="btn">{진급자학적반영}</span>하면 <span class="btn">{생성}</span> 또는 <span class="btn">{생성취소}</span>가 “진급대상자가 생성되어 있습니다.”로 변경됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="D" data-when="생성후" data-who="입학업무담당자 학적업무담당자">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE D · 예비학적 생성">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적생성 이후</span><span class="tag opt">대상자 오류 발견 시</span></div>
+    <h3>학적생성취소 후 자료 재전송요청</h3>
+    <p class="desc">학적생성 후 대상자가 잘못 포함되었거나 빠진 것을 발견한 경우에만 하는 업무입니다. <strong>{학적생성취소}는 예비학적을 생성한 학생의 정보를 초기화함.</strong> 다만 '비대상'이었던 학생은 정보가 이미 삭제되어 취소만으로는 되살아나지 않습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, <span class="btn">{학적생성}</span>을 실행한 뒤 대상자 오류를 확인한 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>입학 업무담당자, 학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[입학-입학관리-학적일괄생성]</code>, <code>[입학-입학관리-입학대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[입학-입학관리-학적일괄생성]</code>에서 <span class="btn">{학적생성취소}</span>하여 예비학적을 생성한 학생의 정보를 초기화함 → <code>[입학-입학관리-입학대상자관리]</code>에서 '본교확인' 상태를 '대상'으로 수정 후 <span class="btn">{전송요청}</span>하여 출신학교로부터 자료를 다시 받음 → 다시 <code>[입학-입학관리-학적일괄생성]</code>에서 <span class="btn">{학적생성}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>삭제된 학생 자료를 출신학교에서 다시 받아, 실제 입학하는 학생이 학적에서 빠지지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{학적생성취소}</span>는 예비학적을 생성한 학생의 정보를 초기화함.</li><li><b>본교확인 상태가 '비대상'이었던 학생의 상태를 '대상'으로 수정 후 다시 <span class="btn">{학적생성}</span>을 해도 이 학생의 정보(보건, 학생기본정보)는 이미 삭제되어 학적생성 대상자에서 제외됨.</b> 이러한 경우는 출신학교로 <code>[입학-입학관리-입학대상자관리]</code>에서 다시 자료를 <span class="btn">{전송요청}</span>해야 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 입학, Section_19 입학 관리 (568–581쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<!-- 1·2차 지필평가 성적처리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1·2차 지필평가 성적처리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(7,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>1·2차 지필평가 성적처리</b>
+    <span class="sub">업무 23개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Part 6. 성적 · Section_02 · pp. 753–795</p>
+    <h1>1·2차 지필평가 성적처리
+      <em>업무 23개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>1･2차 지필평가 실시 후</dd></div>
+      <div><dt>업무담당</dt><dd>교과담당교사, 성적처리업무담당자, 학급담임교사</dd></div>
+      <div><dt>메뉴경로</dt><dd>[교과담임-성적-지필평가], [성적-지필평가조회/통계], [성적-성적처리선행작업], [성적-성적처리], [학급담임-성적-성적처리]</dd></div>
+      <div><dt>선행조건</dt><dd>학생의 OMR 시트(카드)를 리딩하여 [성적-지필/수행선행작업-성적파일올리기]에서 파일을 이관함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>고사기간 중</h3>
+            <p class="tl-sub">문항정보표 담당 교사 교체가 필요한 경우에만 해당.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t3" title="03 기존사용자 변경"><span>03</span>기존사용자 변경</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>성적파일 이관 직후</h3>
+            <p class="tl-sub">OMR 리딩 후 학생답안 파일 이관 완료 · 채점 전.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 문항정보표 작성"><span>01</span>문항정보표 작성</button><button type="button" class="tl-btn" data-go="t2" title="02 정답·배점만 입력"><span>02</span>정답·배점만 입력</button><button type="button" class="tl-btn" data-go="t4" title="04 학생답 서답형 입력"><span>04</span>학생답 서답형 입력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>채점과 점수 확인</h3>
+            <p class="tl-sub">채점은 1회만 · 5와 6 중 한 경로를 택합니다.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t6" title="06 검증 후 채점"><span>06</span>검증 후 채점</button><button type="button" class="tl-btn" data-go="t5" title="05 일괄채점 후 검증"><span>05</span>일괄채점 후 검증</button><button type="button" class="tl-btn" data-go="t7" title="07 결시·학적변동"><span>07</span>결시·학적변동</button><button type="button" class="tl-btn" data-go="t8" title="08 정오표 학생확인"><span>08</span>정오표 학생확인</button><button type="button" class="tl-btn" data-go="t9" title="09 결시생명단"><span>09</span>결시생명단</button><button type="button" class="tl-btn" data-go="t10" title="10 성적처리이력"><span>10</span>성적처리이력</button><button type="button" class="tl-btn" data-go="t21" title="21 일람표·정오표"><span>21</span>일람표·정오표</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>이의신청 후 마감</h3>
+            <p class="tl-sub">성적 이상 유무 확인 완료 후 · 강의실 마감이 문항분석을 실행.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t11" title="11 강의실별 마감"><span>11</span>강의실별 마감</button><button type="button" class="tl-btn" data-go="t12" title="12 마감정보·승인요청"><span>12</span>마감정보·승인요청</button><button type="button" class="tl-btn" data-go="t23" title="23 문항분석 통계"><span>23</span>문항분석 통계</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>성적산출 선행작업</h3>
+            <p class="tl-sub">지필평가 마감 후 · 성적구분은 학생부 미반영.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t13" title="13 산출 기준명 등록"><span>13</span>산출 기준명 등록</button><button type="button" class="tl-btn" data-go="t14" title="14 산출대상 등록"><span>14</span>산출대상 등록</button><button type="button" class="tl-btn" data-go="t15" title="15 산출 학생 관리"><span>15</span>산출 학생 관리</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">06</p>
+            <h3>산출 단위 선택</h3>
+            <p class="tl-sub">학교 학업성적관리규정에 따라 통합 또는 분리 중 하나만 적용.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t16" title="16 통합산출"><span>16</span>통합산출</button><button type="button" class="tl-btn" data-go="t17" title="17 분리산출"><span>17</span>분리산출</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">07</p>
+            <h3>산출과 통지</h3>
+            <p class="tl-sub">선행작업 완료 후 · 산출 뒤 조회와 통지표 출력.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t18" title="18 과목별 성적산출"><span>18</span>과목별 성적산출</button><button type="button" class="tl-btn" data-go="t19" title="19 산출 마감·서비스"><span>19</span>산출 마감·서비스</button><button type="button" class="tl-btn" data-go="t22" title="22 성적일람표·석차"><span>22</span>성적일람표·석차</button><button type="button" class="tl-btn" data-go="t20" title="20 성적통지표 출력"><span>20</span>성적통지표 출력</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t3" data-num="3" data-stage="A" data-when="고사직후" data-who="성적처리업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE A · 채점 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">고사기간 중</span><span class="tag opt">메뉴 권한 필요</span></div>
+    <h3>문항정보표 기존사용자 변경</h3>
+    <p class="desc">고사기간 중 문항정보표에 대한 '기존사용자'를 변경해야 할 경우에만 해당한다. <strong>'시행일자'의 '종료일'까지는 최초 등록한 교과담당교사만 문항정보표를 작성·열람·수정·출력할 수 있으므로, 담당 교사가 바뀌면 사용자를 변경해야 한다.</strong> 이 메뉴에 대한 권한이 필요하다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>고사기간 중, 문항정보표를 최초 등록한 교과담당교사가 계속 관리할 수 없게 된 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-지필평가-문항정보표사용자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>[성적-지필평가-문항정보표사용자관리]에서 문항정보표에 대한 '기존사용자'를 변경함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>담당 교사가 바뀌어도 고사기간 중에 문항정보표가 잠겨 채점이 멈추는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>[성적-지필/수행선행작업-지필평가고사관리]의 '시행일자'에 등록한 '종료일'까지 문항정보표의 작성/열람/수정/출력은 최초 등록한 교과담당교사만 관리할 수 있음.</li><li>교과담당교사가 2인 이상인 경우 최초 등록한 교과담당교사만 접근이 가능하나, '시행일자' 종료 이후부터는 해당 학년의 교과목 권한이 있는 사용자 모두 문항정보표의 작성/열람/수정/출력이 가능함.</li><li>고사기간 중 '기존사용자'를 변경해야 할 경우 [성적-지필평가-문항정보표사용자관리]에서 사용자를 변경함(<b>해당 메뉴에 대한 권한이 필요함</b>).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="고사직후" data-who="교과담당교사">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 채점 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">고사 직후</span><span class="tag opt">추정 분할점수 산출 과목</span></div>
+    <h3>문항정보표 작성·마감 — 성취기준을 가져오는 과목</h3>
+    <p class="desc">과목별 평가 계획에 따라 추정 분할점수를 산출하는 과목이 해당한다. 이 경우 <strong>[교과담임-성적-지필/수행선행작업-성취평가기준관리]에서 성취기준이 먼저 등록되어 있어야 하며, 문항정보표에 '내용영역', '성취기준', '난이도'를 모두 입력해야 한다.</strong> 세 항목 중 하나라도 비어 있으면 마감할 수 없다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>고사 종료 후 학생의 OMR 시트(카드)를 리딩하여 [성적-지필/수행선행작업-성적파일올리기]에서 파일을 이관한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-성적-지필평가-문항정보표관리]</code>, <code>[교과담임-성적-지필/수행선행작업-성취평가기준관리-성취기준관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>[교과담임-성적-지필평가-문항정보표관리]에서 '학년도', '학기' 확인 후 '고사', '학년', '과목' 선택하고 <span class="btn">{조회}</span> → <span class="btn">{선택형(진위형, 배합형, 선다형)}</span>, <span class="btn">{서답형(완성형, 단답형, 서술형, 논술형)}</span> 탭에서 문항별 '내용영역', '난이도', '배점', '정답' 입력 → '성취기준'의 '등록'을 클릭하여 '문항정보표-성취기준자료 가져오기' 창에서 성취기준 선택 후 <span class="btn">{선택}</span> → <span class="btn">{저장}</span> → <span class="btn">{마감}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>내용영역·성취기준·난이도·배점 정보를 남겨 두어야 추정 분할점수를 산출할 근거가 생기고, 학생 성적을 성취수준으로 해석할 수 있다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 성취기준과 마감 조건</h4><ul><li>문항정보표의 '내용영역', '성취기준', '난이도'의 경우 입력 시 <b>모두 입력해야 {마감}할 수 있음</b>.</li><li>'성취기준'을 '등록'하기 위해서는 [교과담임-성적-지필/수행선행작업-성취평가기준관리-성취기준관리]에서 학기별 성취기준을 먼저 등록해야 하며, '성취기준'은 <b>500Byte 이내에서 최대 6개까지</b> 선택하여 등록할 수 있음.</li><li>'성취기준'을 등록하지 않으면 '성취기준'란에는 '등록'이라고 나타나고, 등록하면 '등록'이 등록한 성취기준 개수로 변경됨.</li><li>{마감} 시 '과목점수'의 합계가 [교과담임-성적-지필/수행선행작업-반영비율/만점관리]에서 등록한 만점과 <b>일치하지 않으면 오류 메시지가 나타남</b>.</li><li>문항정보표의 {마감} 이후 [교과담임-성적-분할점수-분할점수관리-지필평가추정분할점수산출관리]에서 과목별 평가 계획에 따라 추정 분할점수를 산출할 수 있음(문항정보표에 '내용영역', '성취기준', '난이도' 등을 모두 입력하는 경우에 해당함).</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 권한과 재채점</h4><ul><li>[성적-지필/수행선행작업-지필평가고사관리]의 '시행일자'에 등록한 '종료일'까지 문항정보표의 작성/열람/수정/출력은 <b>최초 등록한 교과담당교사만</b> 관리할 수 있음. 교과담당교사가 2인 이상인 경우에도 최초 등록한 교사만 접근이 가능하나, '시행일자' 종료 이후부터는 해당 학년의 교과목 권한이 있는 사용자 모두 작성/열람/수정/출력이 가능함.</li><li>[교과담임-성적-지필평가-지필평가채점]에서 채점 이후 문항정보표를 수정하는 경우 <b>기존 채점 결과(서답형 점수 포함) 및 정오표가 삭제되므로 다시 채점을 해야 함</b>. 단, 서답형 파일만 수정하는 경우는 문항정보표 수정으로 인식되지 않아 기존 채점 결과가 유지됨.</li><li>재채점 시 [교과담임-성적-지필평가-지필평가채점]에서 '직전성적관리 서답형'을 선택 후 채점을 하면 기존 입력된 서답형 점수가 복구됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="고사직후" data-who="교과담당교사">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 채점 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">고사 직후</span><span class="tag opt">추정 분할점수를 산출하지 않는 과목</span><span class="tag">서답형 100% 과목 포함</span></div>
+    <h3>정답·배점만 입력하는 과목의 문항정보표 처리</h3>
+    <p class="desc">추정 분할점수를 산출하지 않는 과목은 '내용영역', '성취기준', '난이도' 없이 '정답'과 '배점'만 입력해 처리한다. <strong>서답형 100% 과목의 경우 '과목점수'에서 '서답형 만점/배점합'에 100점을 등록한다.</strong> 만점 오류를 미리 걸러내려면 선택형·서답형 만점을 먼저 {과목점수저장}한 뒤 문항별 배점을 입력해 '배점합'과 비교한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>고사 종료 후 학생의 OMR 시트(카드)를 리딩하여 [성적-지필/수행선행작업-성적파일올리기]에서 파일을 이관한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-성적-지필평가-문항정보표관리]</code>, <code>[교과담임-성적-지필/수행선행작업-반영비율/만점관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>[교과담임-성적-지필평가-문항정보표관리]에서 '학년도', '학기' 확인 후 '고사', '학년', '과목' 선택하고 <span class="btn">{조회}</span> → 선택형, 서답형의 만점을 입력 후 <span class="btn">{과목점수저장}</span> → <span class="btn">{선택형(진위형, 배합형, 선다형)}</span>, <span class="btn">{서답형(완성형, 단답형, 서술형, 논술형)}</span> 탭에서 문항별 '배점', '정답' 입력 → <span class="btn">{저장}</span> → <span class="btn">{마감}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>OMR로 리딩한 학생 답을 정답·배점과 맞춰 자동 채점할 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 만점과 저장</h4><ul><li>{과목점수저장}은 선택형, 서답형의 만점을 입력 후 {과목점수저장}하고 문항별 배점을 입력하면 선택형, 서답형의 만점이 '배점합'에서 자동 계산되어 표시되므로 비교가 가능하여 만점오류 예방이 가능함.</li><li>{마감} 시 '과목점수'의 합계가 [교과담임-성적-지필/수행선행작업-반영비율/만점관리]에서 등록한 만점과 <b>일치하지 않으면 오류 메시지가 나타남</b>.</li><li>{저장}은 중간 저장 기능으로 {조회}하면 생성되는 {정답배점출력}이 가능함.</li><li>서답형 100% 과목의 경우 '과목점수'에서 <b>'서답형 만점/배점합'에 100점을 등록함</b>. 해당 과목은 [교과담임-성적-지필평가-지필평가성적관리]에서 강의실별 {마감} 후 [교과담임-성적-지필평가조회-학생별 학생답정오표조회]에서 '서답형점수', '과목점수'가 조회됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 수정·삭제·복사</h4><ul><li>수정하고자 하는 문항을 선택하고 {행값지우기}하면 해당 문항의 입력 내용을 삭제할 수 있음.</li><li>{삭제}하면 대상으로 '문항정보표'와 '지필평가 정답/배점'을 선택하고 삭제유형으로 '전체', '선택형', '서답형'을 선택하여 삭제할 수 있음.</li><li>문항정보표의 {마감} 이후 {출력}, {검증}, {채점}이 가능하며, {타학과복사}가 활성화되어 타학과에 문항정보표를 복사할 수 있음. 단, <b>교과목 코드와 학점이 동일해야 하며, 다른 사용자가 정답/배점 또는 문항정보표를 이미 등록했거나 마감했다면 타과복사할 수 없음</b>.</li><li>지필고사 채점 이후 문항정보표의 내용(과목만점, 정답/배점 등)이 변경되는 경우 채점 정보 및 기존 입력되었던 성적이 삭제되니 <b>반드시 재채점 해야 함</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="A" data-when="고사직후" data-who="교과담당교사">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE A · 채점 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">성적파일 이관 직후</span><span class="tag opt">서답형 출제 과목</span></div>
+    <h3>지필평가 학생 답 확인 및 서답형 점수 입력</h3>
+    <p class="desc">업로드된 OMR 시트(카드) 마킹 내용을 학생별로 확인하는 업무다. <strong>선택형 문항은 입력 및 수정이 불가능하며, 확인만 할 수 있다.</strong> 학생 답안카드에 서답형 점수를 마킹하지 않았다면 여기 또는 [지필평가성적관리]에서 서답형 점수를 직접 입력해야 한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학생의 OMR 시트(카드)를 리딩하여 [성적-지필/수행선행작업-성적파일올리기]에서 파일을 이관한 뒤, 채점 전.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-성적-지필평가-지필평가학생답관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>[교과담임-성적-지필평가-지필평가학생답관리]에서 '학년도', '학기' 확인 후 '고사', '학년', '과목', '강의실'을 선택하고 <span class="btn">{조회}</span> → 학생 '성명'을 선택하여 OMR 시트(카드) 마킹 내용 확인 → '서답형점수/문항별점수합' 점수 입력하여 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>리딩 과정에서 답안카드가 누락되거나 잘못 읽히지 않았는지 채점 전에 학생별로 눈으로 확인하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>선택형 문항은 입력 및 수정이 불가능함</b>.</li><li>서답형 점수 입력 방법은 다음과 같음. 방법 1) [교과담임-성적-지필평가-지필평가성적관리]에서 '서답형점수/문항별점수합'란에 서답형 점수를 직접 입력할 수 있음. 방법 2) 학생 답안카드에 학생들의 서답형 점수를 마킹하여 [교과담임-성적-지필/수행선행작업-성적파일올리기]에서 학생들의 답안카드를 {파일업로드/이관}하면 '서답형점수/문항별점수합'란에 학생들의 서답형 점수가 나타남.</li><li>여기에서 서답형 점수를 입력하거나 학생답안카드에 서답형 점수를 마킹하는 경우, 채점 시 <b>'학생답안 서답형'</b>을 선택함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="B" data-when="채점직후" data-who="교과담당교사">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE B · 채점">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">고사 종료 후 학생답안 파일 이관 직후</span><span class="tag opt">권장 경로</span></div>
+    <h3>검증으로 무표기·대상자 확인한 뒤 채점하기</h3>
+    <p class="desc">채점을 한 번만 수행하려면 이 경로를 택한다. 강의실별로 ‘총 수강학생’, ‘채점대상’, ‘제외대상’과 ‘무표기 문항번호’를 먼저 확인하고 나서 채점하므로, <strong>답안카드 누락을 채점 전에 잡을 수 있다</strong>. 서답형 100점 만점으로 치르는 경우에는 서답형 채점 방식 선택 과정을 생략한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, [성적-지필/수행선행작업-성적파일올리기]에서 학생답안 파일 이관이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-성적-지필평가-지필평가채점]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’ 확인 후 ‘고사’, ‘학년’, ‘과목’을 선택하고 <span class="btn">{조회}</span> 함 → 해당 ‘강의실’을 클릭하여 ‘총 수강학생’, ‘채점대상’, ‘제외대상’ 확인하고 <span class="btn">{검증}</span> 후 <span class="btn">{확인}</span> 함 → ‘지필평가 검증’ 창에서 지필평가 학생답안의 ‘무표기 문항번호’ 확인 후 <span class="btn">{닫기}</span> 하여 서답형 문항 채점 방식(‘학생답안 서답형’ 또는 ‘성적관리 서답형’)을 선택하고 <span class="btn">{채점}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>누락·무표기를 채점 전에 바로잡아 재채점으로 성적 수정이력이 남는 일을 피하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>채점 전에 대상자 수에 오류가 없는지 확인함(OMR 시트(카드) 리딩 시 학생 답안카드가 누락될 수 있음).</li><li>채점을 다시 하면 [학교정보-성적/학생부수정이력-성적처리이력조회]에서 성적 수정이력이 조회되므로 <b>정답 및 배점을 수정한 경우를 제외하고 채점은 1회만 수행</b>하도록 함.</li><li>특정 학생의 답안이 잘못된 경우, <b>학생별 채점이 아니라 해당 강의실을 다시 채점</b>함.</li><li>지필고사 채점 이후 문항정보표의 내용(과목만점, 정답/배점 등)이 변경되는 경우 채점 정보 및 기존 입력되었던 성적이 삭제되니 <b>반드시 재채점</b> 해야 함.</li><li>재채점 시 [교과담임-성적-지필평가-지필평가채점]에서 ‘직전성적관리 서답형’을 선택 후 채점을 하면 기존 입력된 서답형 점수가 복구됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="채점직후" data-who="교과담당교사">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 채점">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">고사 종료 후 학생답안 파일 이관 직후</span><span class="tag opt">검증 후 채점으로 대체 가능</span></div>
+    <h3>일괄채점하고 뒤이어 검증하기</h3>
+    <p class="desc">성적처리업무담당자가 고사종료 후 리딩한 학생답안 파일을 업로드하면 교과담당교사가 채점을 실시한다. 여러 강의실을 한 번에 처리할 때 쓰는 경로이며, <strong>채점 전에 대상자 수에 오류가 없는지 확인해야 한다</strong>. 서답형 100점 만점으로 치르는 경우에는 서답형 채점 방식 선택 과정을 생략한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, [성적-지필/수행선행작업-성적파일올리기]에서 학생답안 파일 이관이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-성적-지필평가-지필평가채점]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’ 확인 후 ‘고사’, ‘학년’, ‘과목’을 선택하고 <span class="btn">{조회}</span> 함 → 문항 채점 방식(‘학생답안 서답형’ 또는 ‘성적관리 서답형’)을 선택하고 ‘강의실’ 선택 후 <span class="btn">{일괄채점}</span> 하여 <span class="btn">{확인}</span> 하고 <span class="btn">{확인}</span> 함 → ‘강의실’을 클릭하여 ‘총 수강학생’, ‘채점대상’, ‘제외대상’ 확인 후 <span class="btn">{검증}</span> 하여 <span class="btn">{확인}</span> 하고 ‘지필평가 검증’ 창에서 지필평가 학생답안의 ‘무표기 문항번호’ 확인 후 <span class="btn">{닫기}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>리딩 과정에서 답안카드가 누락되거나 무표기가 남은 학생을 걸러내 학생의 실제 답안대로 점수가 매겨지게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>채점 전에 대상자 수에 오류가 없는지 확인함(OMR 시트(카드) 리딩 시 학생 답안카드가 누락될 수 있음).</li><li>채점을 다시 하면 [학교정보-성적/학생부수정이력-성적처리이력조회]에서 성적 수정이력이 조회되므로 <b>정답 및 배점을 수정한 경우를 제외하고 채점은 1회만 수행</b>하도록 함.</li><li>특정 학생의 답안이 잘못된 경우, <b>학생별 채점이 아니라 해당 강의실을 다시 채점</b>함.</li><li>서답형 출제가 있는 경우 채점하는 방법이며, 서답형 100점 만점으로 치르는 경우에는 본 과정을 생략함.</li><li>지필고사 채점 이후 문항정보표의 내용(과목만점, 정답/배점 등)이 변경되는 경우 채점 정보 및 기존 입력되었던 성적이 삭제되니 <b>반드시 재채점</b> 해야 함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>서답형 채점 방식 세 가지</h4><ul><li>‘학생답안 서답형’ — [성적-지필평가-지필평가학생답관리]에서 서답형 점수를 입력하거나 학생답안카드에 서답형 점수를 마킹하는 경우에 사용함.</li><li>‘성적관리 서답형’ — [성적-지필평가-지필평가성적관리]에서 서답형 점수를 입력하는 경우에 사용함.</li><li>‘직전성적관리 서답형’ — 실수로 ‘학생답안 서답형’을 선택하고 채점하여 [성적-지필평가-지필평가성적관리]의 서답형 점수가 삭제되었을 때, 가장 마지막에 저장했던 [성적-지필평가-지필평가성적관리]의 서답형 점수로 복구하여 처리하고자 할 때 사용함.</li><li>재채점 시 [교과담임-성적-지필평가-지필평가채점]에서 ‘직전성적관리 서답형’을 선택 후 채점을 하면 기존 입력된 서답형 점수가 복구됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="B" data-when="채점직후" data-who="교과담당교사">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE B · 채점">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">채점 직후, 강의실 마감 전</span></div>
+    <h3>지필평가 성적 관리 — 결시명칭·고사별 학적변동 입력</h3>
+    <p class="desc">모든 과목의 교과담당교사가 채점 후에 반드시 거치는 업무다. 교과담당교사가 학생들의 점수와 결시명칭, 학적변동 등을 확인하고, 학생답안이 없는 결시생과 학적변동 학생은 ‘결시명칭’ 또는 ‘고사별 학적변동’을 선택하여 입력하고 저장해야 한다. <strong>학생들의 서답형 점수를 OMR 시트(카드)에 마킹하여 업로드하지 않으면 직접 입력해야 한다</strong>.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 채점 후, [교과담임-성적-지필평가-지필평가채점]에서 채점이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-성적-지필평가-지필평가성적관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’ 확인 후 ‘고사’, ‘학년’, ‘과목’, ‘강의실’을 선택하고 <span class="btn">{조회}</span> 함 → ‘서답형’ 점수를 입력 또는 확인하고 ‘선택형’ 및 ‘서답형’의 점수가 공란인 학생의 경우 ‘결시명칭’ 또는 ‘고사별 학적변동’에서 해당 내용을 선택하여 <span class="btn">{저장}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>점수가 비어 있는 학생이 결시인지 학적변동인지 구분해 두어야 과목평균과 결시생 인정점이 실제 응시 상황대로 계산되게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>선택형 답안이 임의로 변경되는 것을 방지하기 위해 [선택형 잠김] 상태로 되어 있음. 선택형 점수를 수정하기 위해서는 <span class="btn">{잠금/해제}</span> 를 클릭하여 [선택형 잠김] 상태를 해제하여야 함.</li><li>결시자 카드를 사용하는 학교에서는 ‘결시명칭’과 ‘고사별 학적변동’이 정확하게 등록되어 있는지 확인함.</li><li><b>점수가 없는 학생(미응시자)의 경우 반드시 ‘결시명칭’ 또는 ‘고사별 학적변동’ 여부를 확인하고 입력해야 함</b>. 위탁학생은 학생 성명 옆에 위탁교육구분이 표시되며, 이 경우 ‘점수’, ‘결시명칭’ 또는 ‘고사별 학적변동’ 중 아무런 정보가 없어도 마감됨.</li><li>전입생 성적의 경우 [학적-전입관리-전입자료관리-지필평가성적관리]에서 입력해야 과목평균 등 계산 시 전입생 점수 제외하여 평균 점수 계산이 됨.</li><li>지필평가가 서답형 100%일 경우 [성적-지필평가-지필평가성적관리]에서 서답형 항목에 학생의 점수를 입력하거나, OMR 시트(카드)의 서답형 점수란에 학생의 점수를 마킹 후 점수카드를 리딩 파일업로드하여 ‘학생답안 서답형’으로 채점함([성적-지필평가-지필평가성적관리]에서 확인함).</li></ul></div><div class="memo" style="margin-top:12px"><h4>마감 이후 자동 처리와 부정행위자 입력</h4><ul><li>[교과담임-성적-지필평가-지필평가마감관리]에서 해당 과목의 모든 강의실 <span class="btn">{마감}</span> 과 동시에 문항분석이 자동으로 실행됨.</li><li>마감 후 [교과담임-성적-지필/수행선행작업-지필평가과목관리]에 교과목별 ‘응시생수’, ‘총점’, ‘평균’, ‘표준편차’가 자동으로 등록되어 학기말 성적처리 시 결시생 인정점 부여에 활용됨.</li><li>부정행위자 점수 및 관련 내용은 [선택형 잠김]을 <span class="btn">{잠금해제}</span> 후 당해 학교의 학업성적관리규정에 따른 점수 입력 및 ‘비고’란에 부정행위 관련 내용 입력 후 <span class="btn">{저장}</span> 함. <b>재채점 시 입력한 점수 및 ‘비고’란의 기재 내용이 삭제되어 다시 입력해야 함</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="C" data-when="채점직후" data-who="교과담당교사 학급담임교사">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE C · 확인과 마감">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">채점 직후</span><span class="tag opt">권장 경로</span></div>
+    <h3>교과목별학생답정오표로 학생 확인받기</h3>
+    <p class="desc">채점이 끝난 지필평가 결과를 학생 개인별로 출력해 이상 유무를 확인받는 업무입니다. <strong>[교과담임-성적-지필평가-지필평가성적관리]에 '선택형', '서답형' 점수가 입력되어 있어야</strong> 조회됩니다. 강의실별 일람표는 선택형과 서답형이 구분되지 않으므로 이 표를 쓰는 것이 효율적입니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>채점 후 학생 확인 기간, 지필평가성적관리에 선택형·서답형 점수가 입력된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사, 학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-성적-지필평가조회/통계-지필평가조회-교과목별학생답정오표]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '고사', '학년', '과목', '강의실'과 출력방식을 선택하고 <span class="btn">{조회}</span> → '교과목별학생답정오표조회' 창에서 내용 확인 후 저장 또는 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>출제 오류나 채점 오류를 학생 본인의 눈으로 걸러내 마감 뒤에 번지는 성적 정정을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>[성적-지필평가조회/통계-지필평가조회]에서 '교과목별일람표조회-강의실별'을 조회할 경우 학생이 획득한 선택형 점수와 서답형 점수가 구분되어 표기되지 않고 합계 점수만 조회되므로 [교과목별학생답정오표]를 활용하는 것이 효율적임. 단, <b>[교과목별학생답정오표]에서 결시자는 조회되지 않음.</b></li><li>지필평가의 '교과목별 학생답 정오표'의 경우 나이스에서는 채점과 동시에 확인이 가능하며, <b>나이스플러스(학생/학부모서비스)에서는 해당 과목의 마감이 되어야만 조회가 가능함.</b></li><li>지필평가의 '교과목별 학생답 정오표'의 '기타 점수'란의 점수는 [교과담임-성적-지필평가-지필평가성적관리]의 '기타점수'와 '기타2점수'가 합산된 점수임.</li><li>'교과목별학생답정오표'에서 조회 시 '비고추가'를 선택하면 당해 '비고'란이 추가되어 학생 확인 시 서명 기재란 등으로 활용할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="C" data-when="채점직후" data-who="성적처리업무담당자 교과담당교사">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE C · 확인과 마감">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">채점 직후</span></div>
+    <h3>결시생명단 조회로 결시 처리 점검</h3>
+    <p class="desc">지필평가 기간의 결시생을 학년 단위로 모아 확인하는 업무입니다. 정오표에는 결시자가 조회되지 않으므로 <strong>결시 처리 누락은 이 명단으로만 확인</strong>할 수 있습니다. 강의실별 마감 전에 결시명칭과 고사별 학적변동이 빠진 학생이 없는지 점검하는 데 씁니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>채점 후 성적 마감 전, 지필평가성적관리에 결시명칭 또는 고사별 학적변동을 입력한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자, 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-지필평가조회/통계-지필평가조회-결시생명단]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '고사', '학년'을 선택하고 <span class="btn">{조회}</span> → '결시생명단조회' 창에서 결시생을 확인하고 저장 또는 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>결시명칭이나 학적변동이 빠진 학생을 마감 전에 찾아내 인정점 부여와 성적산출에서 누락이 생기지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{전체조회}</span> 하면 전체 학년의 결시생 명단을 확인함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="C" data-when="채점직후" data-who="성적처리업무담당자">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE C · 확인과 마감">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">채점 직후</span></div>
+    <h3>성적처리이력조회로 수정 흔적 확인</h3>
+    <p class="desc">채점이나 점수 입력을 다시 한 흔적이 남아 있는지 확인하는 업무입니다. <strong>채점을 다시 하면 성적 수정이력이 조회되므로 정답 및 배점을 수정한 경우를 제외하고 채점은 1회만 수행</strong>해야 합니다. 학생 확인 과정에서 정정이 발생한 과목을 사후에 점검할 때 엽니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>채점 및 점수 입력 이후, 성적 이상 유무 확인 단계</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학교정보-성적/학생부수정이력-성적처리이력조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>[학교정보-성적/학생부수정이력-성적처리이력조회]에서 성적 수정이력을 조회하여 재채점 및 성적 수정 내역을 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>성적이 언제 누구 손에 의해 바뀌었는지 근거를 남겨 성적 정정 절차의 정당성을 확보하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>채점을 다시 하면 [학교정보-성적/학생부수정이력-성적처리이력조회]에서 성적 수정이력이 조회되므로 <b>정답 및 배점을 수정한 경우를 제외하고 채점은 1회만 수행하도록 함.</b></li><li>특정 학생의 답안이 잘못된 경우, 학생별 채점이 아니라 해당 강의실을 다시 채점함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t21" data-num="21" data-stage="E" data-when="채점직후" data-who="성적처리업무담당자 교과담당교사 학급담임교사">
+  <div class="gutter"><b>21</b><span class="gstage" title="원문 STAGE E · 통지와 조회">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">채점 직후부터</span><span class="tag">조회·출력 묶음</span></div>
+    <h3>지필평가 일람표·정오표·결시생 표 조회 및 출력</h3>
+    <p class="desc">지필평가 결과와 이상 유무, 결시생을 확인하는 조회 메뉴 묶음입니다. 표 종류는 여러 개지만 절차는 모두 조건 선택 후 <span class="btn">{조회}</span>하고 저장 또는 출력하는 흐름으로 같습니다. <strong>[학생별학생답정오표]는 [교과담임-성적-지필평가-지필평가마감관리]에서 강의실별 마감이 완료된 과목만 {미리보기}로 확인할 수 있습니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, [교과담임-성적-지필평가-지필평가성적관리]에 '선택형', '서답형' 점수가 입력된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자, 교과담당교사, 담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-지필평가조회/통계-지필평가조회-교과목별일람표조회-강의실별]</code>, <code>[교과목별일람표조회-전체학급]</code>, <code>[학급별일람표조회-전체교과목]</code>, <code>[결시생명단]</code>, <code>[결시생인정점]</code>, <code>[교과목별학생답정오표]</code>, <code>[학생별학생답정오표]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>해당 조회 메뉴에서 '학년도', '학기' 확인 후 '고사', '학년', '과목', '강의실'(표에 따라 '반' 또는 '학년'까지) 선택하고 <span class="btn">{조회}</span>하여 조회 창에서 내용 확인 후 저장 또는 출력함 → 다만 <code>[학생별학생답정오표]</code>는 '고사', '학년', '반'을 선택하고 <span class="btn">{조회}</span>한 뒤 학생 선택 후 <span class="btn">{미리보기}</span>하여 저장 또는 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>채점 결과를 학생·학부모에게 내보내기 전에 담당자가 눈으로 한 번 더 걸러 내려고.</dd></dl>
+    </div>
+<div class="memo"><h4>어떤 표를 언제 여는가</h4><ul><li><code>[교과목별일람표조회-강의실별]</code> — 강의실 단위로 점수를 훑어볼 때. '학과평균표시'를 선택하면 '전체응시생수', '학과총점', '학과평균'이 나타나고, '개별출력'을 선택하면 개인별로 일람표가 조회됨. <span class="btn">{전과목출력}</span>하면 부여받은 '학년' 권한 범위 내에서 교과목별 일람표가 조회됨.</li><li><code>[교과목별일람표조회-전체학급]</code> — 한 과목을 학급 구분 없이 전체로 볼 때. 여러 장으로 조회될 때 '한페이지출력'을 선택하면 일람표가 한 페이지에 맞게 조회됨.</li><li><code>[결시생명단]</code> — 결시 처리가 빠짐없이 되었는지 볼 때. <span class="btn">{전체조회}</span>하면 전체 학년의 결시생 명단을 확인함(권한을 부여받은 학년의 권한 내에서 조회됨).</li><li><code>[교과목별학생답정오표]</code> — 학생 확인용으로 나눠 줄 때. '개별출력'을 선택하고 <span class="btn">{조회}</span>하면 학생 개인별 정오표 출력이 가능함.</li><li><code>[학생별학생답정오표]</code> — 학생 한 명의 전 과목 정오표를 묶어 줄 때. '양면인쇄'를 선택하면 출력 후 <span class="btn">{설정더보기}</span>에서 '양면 인쇄'가 기본으로 설정됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li><code>[성적-지필평가조회/통계-지필평가조회]</code>에서 '교과목별일람표조회-강의실별'을 조회할 경우 학생이 획득한 선택형 점수와 서답형 점수가 구분되어 표기되지 않고 합계 점수만 조회되므로 <b>[교과목별학생답정오표]를 활용하는 것이 효율적임.</b> 단, [교과목별학생답정오표]에서 결시자는 조회되지 않음.</li><li>지필평가의 '교과목별 학생답 정오표'는 나이스에서는 채점과 동시에 확인이 가능하며, <b>나이스플러스(학생/학부모서비스)에서는 해당 과목의 마감이 되어야만 조회가 가능함.</b></li><li>'교과목별 학생답 정오표'의 '기타 점수'란의 점수는 <code>[교과담임-성적-지필평가-지필평가성적관리]</code>의 '기타점수'와 '기타2점수'가 합산된 점수임.</li><li>'교과목별학생답정오표'에서 조회 시 '비고추가'를 선택하면 '비고'란이 추가되어 학생 확인 시 서명 기재란 등으로 활용할 수 있음.</li><li>일람표에서 조회되는 '학과평균'은 '결시자 제외'하여 산출되나 결시생인정점에서 활용하는 '평균'은 '결시자 제외', '전입생 성적 제외', '현장실습생 인정점 부여 제외'하여 산출됨에 따라 <b>차이가 발생할 수 있음.</b></li><li>1차 지필평가 고사기간에 미인정결시하고 전출하는 학생이 있으면 전출교의 학업성적관리규정에 따라 전출교의 당해고사(1차 지필평가)를 기준으로 인정점을 수기로 산출함. <code>[학적-전출관리-전출관리-전출자료전송]</code>에서 해당 학생을 선택한 후 '유의사항'란에 미인정결시 과목과 인정점을 입력하고 전출자료를 전송하며, 글자수 제한으로 모두 입력할 수 없는 경우에는 '참고파일업로드'에 점수 파일을 업로드하거나 K-에듀파인의 업무관리를 통해 공문으로 전입교에 발송함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t11" data-num="11" data-stage="C" data-when="마감시점" data-who="교과담당교사">
+  <div class="gutter"><b>11</b><span class="gstage" title="원문 STAGE C · 확인과 마감">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">이의신청 기간 이후</span></div>
+    <h3>교과목별·강의실별 성적 마감</h3>
+    <p class="desc">교과담당교사가 자기 과목의 강의실을 하나씩 마감하는 업무입니다. <strong>성적 이상 유무에 대한 확인(출제 오류 확인, 학생 확인 등)이 완료된 뒤</strong>에 진행합니다. 해당 과목의 모든 강의실을 마감하면 문항분석이 자동으로 실행됩니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>성적 이의신청기간 이후 과목별 성적 확인이 완료된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-성적-지필평가-지필평가성적관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '고사', '학년', '과목'을 선택하고 <span class="btn">{조회}</span> → '결시명칭' 또는 '고사별 학적변동' 확인 후 <span class="btn">{마감}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>과목 성적을 더 이상 손대지 않는 상태로 확정해 문항분석과 학기말 인정점 산출의 기초자료를 만들려고.</dd></dl>
+    </div>
+<div class="memo"><h4>마감 전 확인</h4><ul><li>성적 이의신청기간 이후 과목별 성적 확인이 완료된 경우 강의실 <span class="btn">{마감}</span> 을 하며, <span class="btn">{마감}</span> 시 하단의 '수강생', '응시생', '결시생', '고사별 학적변동수'를 확인함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>마감 후 자동 처리</h4><ul><li>[교과담임-성적-지필평가-지필평가성적관리]에서 <b>해당 과목의 모든 강의실 {마감}과 동시에 문항분석이 자동으로 실행</b>되며, 교과목별 '응시생수', '총점', '평균', '표준편차'가 자동으로 등록되어 학기말 성적처리 시 결시생 인정점 부여에 활용됨.</li><li><span class="btn">{마감}</span> 이후 문항분석이 정상적으로 이루어지지 않은 경우에는 마감을 취소하는 과정에서 학생답안을 다시 업로드하거나 문항정보표를 수정한 경우로 다시 채점을 수행하여 <span class="btn">{마감}</span> 을 해야 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t12" data-num="12" data-stage="C" data-when="마감시점" data-who="성적처리업무담당자">
+  <div class="gutter"><b>12</b><span class="gstage" title="원문 STAGE C · 확인과 마감">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">모든 강의실 마감 후</span></div>
+    <h3>지필평가마감관리에서 마감정보저장 및 승인요청</h3>
+    <p class="desc">모든 교과담당교사의 강의실별 마감을 확인하고 고사 단위로 마감을 확정한 뒤 결재를 올리는 업무입니다. <strong>모든 강의실별 마감여부가 완료되어야</strong> 이후 성적산출 대상 선택이 활성화됩니다. 성적처리업무담당자가 마지막에 처리합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>교과목별·강의실별 마감이 모두 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-지필평가-지필평가마감관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '고사', '학년'을 선택하고 <span class="btn">{조회}</span> → 모든 '강의실별 마감여부'를 확인하고 <span class="btn">{마감정보저장}</span> 하여 <span class="btn">{확인}</span> 후 <span class="btn">{확인}</span> → <span class="btn">{승인요청}</span> 으로 '기안문서상신' 창에서 '내용', '결재선', 상신할 문서 입력 및 선택하여 <span class="btn">{상신}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교 전체의 고사 성적을 한 시점에 확정하고 결재로 근거를 남겨 이후 성적산출 단계로 넘어갈 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>반드시 모든 교과담당교사가 [교과담임-성적-지필평가-지필평가성적관리]에서 '결시명칭' 또는 '고사별 학적변동'을 입력하여 강의실별로 {마감}을 하도록 안내함.</b></li><li>학기 중 또는 학기말 성적산출이 된 상태에서 마감 취소 후 지필고사에 대한 마감을 취소하는 경우 <b>학기 중 또는 학기말 성적이 삭제되므로</b> 지필고사에 대한 마감 상태 변경 이후에는 반드시 학기 중 또는 학기말 성적산출 여부 확인하여 재산출을 진행하여야 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t23" data-num="23" data-stage="E" data-when="마감시점" data-who="성적처리업무담당자">
+  <div class="gutter"><b>23</b><span class="gstage" title="원문 STAGE E · 통지와 조회">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">모든 강의실 마감 직후</span><span class="tag">조회·출력 묶음</span></div>
+    <h3>도수분포표·구간비교표·정답률비교표·문항분석표·성적집계표 조회</h3>
+    <p class="desc">학생들의 지필평가 성적 관련 각종 통계자료를 조회 및 출력하는 묶음입니다. <strong>[교과담임-성적-지필평가-지필평가성적관리]에서 해당 과목의 모든 강의실 {마감}과 동시에 문항분석이 자동으로 실행되므로</strong> 마감이 끝나야 문항분석표와 정답률이 제대로 조회됩니다. 표마다 조회 조건만 다르고 절차는 같습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 해당 과목의 모든 강의실 마감으로 문항분석이 실행된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-지필평가조회/통계-지필평가통계-도수분포표]</code>, <code>[구간비교표]</code>, <code>[정답률비교표]</code>, <code>[문항분석표]</code>, <code>[성적집계표]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>해당 통계 메뉴에서 '학년도', '학기' 확인 후 '고사', '학년'과 표에 따라 '과목', '강의실'을 선택하거나 '급간' 또는 '점수'를 입력하고 <span class="btn">{조회}</span>하여 조회 창에서 내용 확인 후 저장 또는 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>출제 난이도와 문항 타당도를 수치로 따져 교과협의록과 다음 고사 출제에 반영하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>어떤 표를 언제 여는가</h4><ul><li><code>[도수분포표]</code> — 점수 분포를 보고 난이도를 가늠할 때. '고사', '학년', '과목'을 선택하고 '급간'을 입력하여 조회함.</li><li><code>[구간비교표]</code> — 학년 전체를 점수 구간으로 비교할 때. '고사', '학년'과 '점수'를 입력하여 조회함.</li><li><code>[정답률비교표]</code> — 문항별 정답률을 과목 단위로 비교할 때. '고사', '학년', '과목'을 선택하여 조회함.</li><li><code>[문항분석표]</code> — 강의실 단위로 문항을 분석할 때. '고사', '학년', '과목', '강의실'을 선택하여 조회함.</li><li><code>[성적집계표]</code> — 고사 결과를 집계해 볼 때.</li></ul></div><div class="memo" style="margin-top:12px"><h4>문항분석표·정답률이 일부만 조회될 때</h4><ul><li><code>[교과담임-성적-지필평가-지필평가성적관리]</code>에서 해당 과목의 모든 강의실 <span class="btn">{마감}</span>과 동시에 문항분석이 자동으로 실행됨.</li><li><b>지필평가 채점 이후 학생 답이 갱신되거나 문항정보표 변경이력이 발생하는 경우 정답률비교표가 조회되지 않음.</b> <code>[교과담임-성적-지필평가-지필평가채점]</code>에서 해당과목을 선택하고 <span class="btn">{조회}</span>하여 강의실별로 최종 채점일을 확인하고 미채점 학급에 대해 <span class="btn">{채점}</span> 후 <code>[교과담임-성적-지필평가-지필평가성적관리]</code>에서 <span class="btn">{마감}</span>함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t13" data-num="13" data-stage="D" data-when="성적산출" data-who="성적처리업무담당자">
+  <div class="gutter"><b>13</b><span class="gstage" title="원문 STAGE D · 산출 준비와 산출">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">지필평가 마감 직후</span><span class="tag opt">1차·2차 각각 등록</span></div>
+    <h3>성적산출 기준명 등록 — 학생부 미반영으로 지정</h3>
+    <p class="desc">1･2차 지필평가 성적을 산출하려는 모든 학교가 가장 먼저 하는 작업이다. <strong>1차 지필평가와 2차 지필평가의 성적처리 시 '성적구분'은 '학생부 미반영'을 선택</strong>하며, '성적구분'이 '학기말'인 산출기준은 한 학기에 한 개만 등록할 수 있다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, [성적-지필평가-지필평가마감관리]에서 해당 지필평가가 마감된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출기준명관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 <span class="btn">{조회}</span>하여 <span class="btn">{등록}</span>함 → '성적산출기준명 등록' 창에서 '기준명' 입력 후 '성적구분'은 학생부미반영(1차 지필평가 또는 2차 지필평가)으로 선택하여 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>이후 모든 산출 화면이 이 기준을 축으로 돌아가므로, 1차와 2차의 성적을 서로 섞이지 않게 갈라 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>성적산출기준은 성적처리의 기준이 되며, 각 성적산출기준은 다른 기준과 관계없이 독립적으로 성적을 산출하며, 학기 기준으로 전 학년 공통으로 적용됨.</li><li>성적산출기준명은 [성적산출대상(고사/영역)관리] 이후부터 '산출기준' 조회 조건으로 활용되며, 성적산출기준명이 등록된 후 학급담임교사는 [학급담임-성적-성적처리-성적통지표(가정통신문)관리]에서 개인별 또는 전체 가정통신문을 등록할 수 있음.</li><li><b>성적산출 기준명을 삭제할 경우 학급담임교사가 [학급담임-성적-성적처리-성적통지표(가정통신문)관리]에서 입력한 가정통신문 내용이 삭제됨.</b></li><li>여기서 '성적산출'이라 함은 과목별 석차, 성취도, 석차등급, 과목평균, 과목표준편차를 산출하는 것을 말하며, <b>1･2차 지필평가별 성적산출 시에는 성취도와 석차등급이 산출되지 않음.</b></li><li>'성적구분'이 '학기말'인 산출기준은 한 학기에 한 개만 등록 가능하며, 이 '학기말' 산출기준의 성적이 학교생활기록부 교과학습발달상황란에 반영됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>미인정결시 전출생 처리</h4><ul><li>1차 지필평가에서 미인정결시한 학생이 전출을 가는 경우 반드시 미인정 결시생의 인정점을 산출하여 전입교에 함께 전송함.</li><li>미인정결시한 전출생의 전출자료 전송 시 [학적-전출관리-전출관리-전출자료전송]에서 '유의사항'란에 미인정 결시과목과 인정점 입력 후 전출자료(필요 시 참고파일 업로드 가능함)를 송부하거나 공문 등의 방식으로 보낼 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t14" data-num="14" data-stage="D" data-when="성적산출" data-who="성적처리업무담당자">
+  <div class="gutter"><b>14</b><span class="gstage" title="원문 STAGE D · 산출 준비와 산출">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">강의실별 마감과 마감정보저장 완료 후</span></div>
+    <h3>성적산출 대상(고사/영역) 등록 및 반영비율일괄적용</h3>
+    <p class="desc">산출기준명을 등록한 뒤 어느 고사를 산출에 넣을지 지정하는 작업이다. <strong>'고사/영역명'의 체크 박스는 교과담당교사가 [교과담임-성적-지필평가-지필평가성적관리]에서 강의실별 {마감}을 하고, 성적처리 업무담당자는 [성적-지필평가-지필평가마감관리]에서 {마감정보저장}이 완료된 이후 활성화</strong>되므로 마감이 끝나기 전에는 선택할 수 없다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 성적산출 기준명 등록과 지필평가 마감이 모두 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출대상(고사/영역)관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '산출기준'을 선택하고 <span class="btn">{조회}</span>하여 <span class="btn">{등록}</span>함 → '성적산출대상(고사/영역) 등록' 창에서 산출할 '고사/영역명'을 선택하여 <span class="btn">{등록}</span> 후 <span class="btn">{닫기}</span>하고 <span class="btn">{반영비율일괄적용}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>1차 또는 2차 지필평가 점수만으로 과목별 석차가 나오도록 산출에 넣을 고사와 그 비중을 못박아 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>1･2차 지필평가별 과목별 석차산출을 위한 평가 '반영비율'은 100%로 설정(평가계획에 따른 실제 반영비율 설정 가능)하며, <span class="btn">{반영비율일괄적용}</span>하면 성적산출을 위해 등록한 모든 과목의 반영비율이 '100%'로 일괄 적용됨.</li><li><b>1차 지필평가 성적산출 시 '1차 지필평가'만 선택하여 반영비율을 '100%'로 저장, 2차 지필평가 성적산출 시 '2차 지필평가'만 선택하여 반영비율을 '100%'로 저장함.</b></li><li>과목별 반영비율은 [교과담임-성적-지필/수행선행작업-지필평가과목관리], [수행평가영역관리] 또는 [교과담임-성적-지필/수행선행작업-반영비율/만점관리]에서 입력했던 지필평가와 수행평가의 반영비율이 기본값으로 설정됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t15" data-num="15" data-stage="D" data-when="성적산출" data-who="성적처리업무담당자">
+  <div class="gutter"><b>15</b><span class="gstage" title="원문 STAGE D · 산출 준비와 산출">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">성적산출대상 등록 직후</span></div>
+    <h3>성적산출 학생 대상자가져오기 및 포함여부 설정</h3>
+    <p class="desc">산출대상 고사를 등록한 뒤 과목별로 수강자 명단을 불러와 산출에 넣을 학생을 확정하는 작업이다. <strong>지필평가 기간 중이나 이후의 자퇴생이 평가를 치른 과목에 대해서는 수강자수에 '포함'하여 성적을 산출</strong>한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 성적산출 대상(고사/영역) 등록이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '산출기준', '과목', '포함여부'를 선택하고 <span class="btn">{조회}</span>함 → <span class="btn">{대상자가져오기}</span>하여 <span class="btn">{확인}</span> 후 <span class="btn">{확인}</span>하여 해당 반을 클릭하고, 대상학급 학생의 '대상자포함여부' 설정 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>석차의 모집단인 수강자수를 학교 학업성적관리규정대로 정확히 맞춰 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>{대상자가져오기} 중 오류가 발생하는 경우는 {대상자자료검증}을 활용하여 성적산출 대상자에 대한 복수개설과목 오류를 확인함.</b></li><li>결시자의 경우 '대상자포함여부'에서 '포함'을 하여도 점수정보가 없으므로 성적산출에서 자동으로 제외됨(1･2차 지필평가).</li><li>지필평가 기간 중이나 이후의 자퇴생이 평가를 치른 과목에 대해서는 수강자수에 '포함'하여 성적을 산출함.</li><li>외부교육기관에서 위탁교육을 받는 학생일 경우, 학생 성명 옆에 위탁교육구분(예 : [직업과정위탁교육], [대안교육위탁기관], [병원학교], [학교 밖 교육] 등)이 표시되며, 이는 성적처리 시 참조용 자료임.</li></ul></div><div class="memo" style="margin-top:12px"><h4>위탁학생 포함여부</h4><ul><li>위탁학생 중 재적교 수강학생에 편성되어 학교에서 실시되는 지필평가에 응시한 학생은 성적산출대상에 '포함'으로 선택해야 하며, 결시인 경우에는 사유에 따라 결시명칭을 입력함.</li><li><b>위탁학생 중 재적교 수강학생에 편성되어 있으나 위탁교육기관에서 학기말 성적산출을 하는 경우 해당 위탁학생의 대상자포함여부를 '포함안함'으로 선택함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t16" data-num="16" data-stage="D" data-when="성적산출" data-who="성적처리업무담당자">
+  <div class="gutter"><b>16</b><span class="gstage" title="원문 STAGE D · 산출 준비와 산출">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">성적산출 학생 관리 이후</span><span class="tag opt">학년·학과 구분 없이 한 모집단으로 볼 때</span></div>
+    <h3>성적산출 단위 — 통합산출로 처리</h3>
+    <p class="desc">동일 교과목 수강생 전체를 한 모집단으로 묶어 성적을 산출할 과목에 해당한다. <strong>학년 또는 학과와 관계없이 동일학기, 학점(단위수), 학습내용이 동일한 경우 통합하여 산출</strong>한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 성적산출 학생 관리까지 마친 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출단위관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '산출기준'을 선택하고 <span class="btn">{조회}</span>함 → 산출대상 '과목명' 클릭하고 '분리산출여부'에서 '통합산출'을 선택하여 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>같은 내용을 배운 학생을 한 집단으로 묶어 석차의 모집단을 일관되게 유지하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>동일 성적산출단위에 포함된 산출대상은 문항정보표의 배점 정보, 학기말 반영비율, 만점, 고사/영역명, 동점자처리규정, 성취율이 동일하게 설정되어야 함.</b></li><li>통합산출(2026학년도 1･2학년만 가능함) — 1학년 학생과 2학년 학생이 1학년에서 과목 개설한 교과목을 수강하는 경우 1학년 성적 파일과 2학년 성적 파일을 각각 올려야 함.</li><li>[성적-지필/수행선행작업-성적파일올리기]에서 조회 조건의 '과정/계열', '학년/학과', '지필/수행', '고사/영역'은 타학년이 실제로 수강한 학년의 과목에 대한 조건을 설정함.</li><li>수강한 과목의 학년과 다른 학년의 성적 파일을 업로드 할 경우 자동으로 '타학년'으로 표시됨.</li><li>학기 중 성적(1･2차 지필평가)의 경우 석차등급 또는 성취도를 산출하지 않으며 통합산출과 분리산출은 수강자수를 묶기 위한 기준으로만 활용함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t17" data-num="17" data-stage="D" data-when="성적산출" data-who="성적처리업무담당자">
+  <div class="gutter"><b>17</b><span class="gstage" title="원문 STAGE D · 산출 준비와 산출">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">성적산출 학생 관리 이후</span><span class="tag opt">학업성적관리규정으로 수강자수를 정한 경우</span></div>
+    <h3>성적산출 단위 — 학년·계열·학과별 분리산출로 처리</h3>
+    <p class="desc">교육과정 특성상 수강자수를 갈라야 하는 과목에 해당한다. <strong>시･도교육청 학업성적관리 시행지침에 따라 학교별 학업성적관리규정으로 수강자수를 정하는 경우</strong> 학년별, 계열별, 학과별로 분리하여 산출한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 성적산출 학생 관리까지 마친 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출단위관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '산출기준'을 선택하고 <span class="btn">{조회}</span>함 → 산출대상 '과목명' 클릭하고 '분리산출여부'에서 '분리산출'을 선택 후 '성적산출처리단위'에서 해당 유형을 선택하여 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교육과정이 다른 집단을 한 줄로 세우지 않도록 학교 규정에 맞는 모집단으로 갈라 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>수강자 분리산출(예시) — 일반고등학교 A(10명), B(10명), C(10명), 산업수요 맞춤형 고등학교 D학과(12명), E학과(8명) 총 50명이 직업과정을 운영하는 학교 등에서 '드론 운용'을 수강하였을 경우 수강자수는 일반고등학교는 30명, 산업수요 맞춤형 고등학교는 D학과 12명, E학과 8명으로 분리하여 산출할 수 있음.</li><li><b>실무과목의 능력단위과목 학점(단위수)이 다르면 '계열별' 혹은 '학과별'로만 '분리산출'할 수 있음.</b></li><li>동일 성적산출단위에 포함된 산출대상은 문항정보표의 배점 정보, 학기말 반영비율, 만점, 고사/영역명, 동점자처리규정, 성취율이 동일하게 설정되어야 함.</li><li>학기 중 성적(1･2차 지필평가)의 경우 석차등급 또는 성취도를 산출하지 않으며 통합산출과 분리산출은 수강자수를 묶기 위한 기준으로만 활용함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t18" data-num="18" data-stage="D" data-when="성적산출" data-who="성적처리업무담당자 학급담임교사">
+  <div class="gutter"><b>18</b><span class="gstage" title="원문 STAGE D · 산출 준비와 산출">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">성적처리선행작업 완료 후</span></div>
+    <h3>과목별 성적산출 및 마감함</h3>
+    <p class="desc">선행작업이 모두 끝난 과목의 석차(동석차)를 실제로 뽑는 작업이다. <strong>[성적-성적처리선행작업]이 완료되어야</strong> 하며, 산출 전에 지필/수행 점수누락자를 먼저 확인한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, [성적-성적처리선행작업]이 완료된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자, 학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-성적산출관리-과목별성적산출]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '산출기준', '과목'을 선택하고 <span class="btn">{지필/수행점수누락자보기}</span>함 → '지필/수행 점수누락자' 창에서 점수 누락 학생을 확인하고 <span class="btn">{닫기}</span> 후 <span class="btn">{성적산출준비}</span>하여 성적산출 대상자 및 성적산출단위 등을 확인하고 <span class="btn">{산출함}</span>하여 <span class="btn">{확인}</span> 후 <span class="btn">{닫기}</span>하여 <span class="btn">{마감함}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생과 학부모에게 보여줄 과목별 석차를 확정하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>1･2차 지필평가 성적처리 시 결시로 인해 성적이 누락된 학생은 1･2차 지필평가 성적을 산출할 때, 자동으로 산출대상에서 제외됨.</b></li><li>[성적-성적처리-성적산출관리-과목별성적산출]에서 <span class="btn">{산출함}</span>하여 과목별 성적산출이 완료되면 조회 기준('환산점기준' 또는 '받은점수기준')을 선택하여 성적일람표를 강의실별로 조회하고 출력할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t19" data-num="19" data-stage="D" data-when="성적산출" data-who="성적처리업무담당자">
+  <div class="gutter"><b>19</b><span class="gstage" title="원문 STAGE D · 산출 준비와 산출">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">과목별 성적산출 직후</span></div>
+    <h3>성적산출 마감관리 및 학생/학부모서비스반영</h3>
+    <p class="desc">모든 과목의 산출이 끝난 뒤 마감 여부를 확인하고 결과를 학생･학부모에게 열어 주는 작업이다. <strong>{승인요청}은 학기말(학생부 반영) 성적산출기준에 대해서만 사용</strong>하므로 1･2차 지필평가에서는 사용하지 않는다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 과목별 성적산출을 마친 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-성적산출마감관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '산출기준'을 선택하고 <span class="btn">{조회}</span>함 → 모든 과목에 대한 '마감여부'를 확인 후 선택하여 <span class="btn">{저장}</span>하고 <span class="btn">{확인}</span>하여 '학생/학부모서비스반영' 창에서 '학생/학부모서비스 성적기준' 클릭하여 <span class="btn">{반영}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>확정한 성적을 학생과 학부모가 직접 확인할 수 있는 상태로 넘기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>[성적-성적처리-성적통지표(가정통신문)관리]에서 가정통신문을 입력한 이후에 <span class="btn">{학생/학부모서비스반영}</span>하면 입력된 가정통신문도 학부모서비스를 통해 제공되며, <b>반영 이후에 입력한 가정통신문을 학부모에게 제공하기 위해서는 다시 {학생/학부모서비스반영} 해야 함</b>(기타고사의 경우 {학생/학부모서비스반영} 반영과 관계없이 학생/학부모서비스에 제공됨).</li><li><span class="btn">{반영결과보기}</span>하면 학생/학부모서비스 반영결과를 확인할 수 있고, 학생/학부모서비스 반영결과를 선택하여 삭제할 수 있음.</li><li><b>[성적-성적처리-성적산출마감관리]에서 {승인요청}은 학기말(학생부 반영) 성적산출기준에 대해서만 사용함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t22" data-num="22" data-stage="E" data-when="성적산출" data-who="성적처리업무담당자 교과담당교사 학급담임교사">
+  <div class="gutter"><b>22</b><span class="gstage" title="원문 STAGE E · 통지와 조회">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">산출 직후</span><span class="tag">조회·출력 묶음</span></div>
+    <h3>학기말성적조회 성적일람표·과목별석차 조회 및 출력</h3>
+    <p class="desc">석차가 산출된 뒤에 여는 조회 메뉴 묶음입니다. <strong>[성적-성적처리-성적산출관리-과목별성적산출]에서 {산출함}하여 과목별 성적산출이 완료되면</strong> 조회 기준('환산점기준' 또는 '받은점수기준')을 선택하여 성적일람표를 강의실별로 조회하고 출력할 수 있습니다. 표마다 조회 조건만 다르고 절차는 같습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 과목별 성적산출이 완료된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리업무담당자, 교과담당교사, 담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적조회/통계-학기말성적조회-성적일람표]</code>, <code>[과목별석차]</code>, <code>[성적일람표 전과목]</code>, <code>[성적일람표 전과목/전학생]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>해당 조회 메뉴에서 '학년도', '학기' 확인 후 '학년', '산출기준'과 표에 따라 '과목', '강의실' 또는 '반', 그리고 점수 기준(및 출력 조건)을 선택하고 <span class="btn">{조회}</span>하여 조회 창에서 내용 확인 후 저장 또는 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>산출된 석차가 의도한 산출기준·산출단위대로 나왔는지 실제 표로 확인하고 교과협의·상담 자료로 쓰려고.</dd></dl>
+    </div>
+<div class="memo"><h4>어떤 표를 언제 여는가</h4><ul><li><code>[성적일람표]</code> — 과목·강의실 단위로 산출 결과를 확인할 때. 조회 기준으로 '환산점기준' 또는 '받은점수기준'을 선택함.</li><li><code>[과목별석차]</code> — 한 과목의 석차 순서를 확인할 때. '학년', '산출기준', '과목'과 점수 기준을 선택함.</li><li><code>[성적일람표전과목]</code> — 한 반 학생의 전 과목을 한 장으로 볼 때. '학년', '산출기준', '반'과 점수 기준, 출력 조건을 선택함.</li><li><code>[성적일람표전과목/전학생]</code> — 학년 전체를 한 번에 볼 때. '학년', '산출기준'만 선택하여 조회함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>나이스에서는 학과별 전 과목 총점에 대한 순위를 제공하지 않으나 <code>[성적-성적조회/통계-학기말성적조회-성적일람표 전 과목/전 학생]</code>에서 조회된 화면을 엑셀 또는 한셀 파일로 내려받아 학과별 과목 총점에 대해 RNAK 함수를 활용하여 순위를 산출할 수 있음. 단, <b>해당 학급에 대한 자료 권한이 부여되어 있어야 함.</b></li><li>1･2차 지필평가별 성적산출 시에는 <b>성취도와 석차등급이 산출되지 않음.</b> '성적산출'이라 함은 과목별 석차, 성취도, 석차등급, 과목평균, 과목표준편차를 산출하는 것을 말함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t20" data-num="20" data-stage="E" data-when="통지" data-who="학급담임교사">
+  <div class="gutter"><b>20</b><span class="gstage" title="원문 STAGE E · 통지와 조회">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">성적산출 마감 후</span><span class="tag">학급담임 업무</span></div>
+    <h3>가정통신문 입력 및 성적통지표 출력</h3>
+    <p class="desc">학급담임교사가 반 학생의 성적통지표를 만드는 업무입니다. <strong>성적산출기준명이 등록된 후부터 개인별 또는 전체 가정통신문을 등록할 수 있습니다.</strong> 산출기준이 학기말 성적이 아닌 1･2차 지필평가에서는 성취도와 석차등급이 통지표에 나오지 않습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 성적산출기준명이 등록되고 과목별 성적산출과 마감이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-성적-성적처리-성적통지표(가정통신문)관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학급담임-성적-성적처리-성적통지표(가정통신문)관리]</code>에서 '학년도', '학기', '학년', '산출기준', '반' 확인 후 <span class="btn">{조회}</span> → '성명' 클릭하여 <span class="btn">{개인가정통신문}</span> 또는 <span class="btn">{전체 가정통신문}</span> 탭에서 '내용' 입력 후 <span class="btn">{저장}</span> → 출력할 학생과 '옵션'을 선택 후 <span class="btn">{미리보기}</span>하여 '성적통지표(가정통신문)관리' 창에서 저장 또는 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생과 학부모가 이번 고사 결과와 담임의 안내를 한 장으로 받아 볼 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>성적통지표의 출결상황은 <code>[학급담임-학적-출결관리-출결관리-반별월출결마감관리]</code>에서 <b>마감된 월(일)까지의 출결상황</b>이 나타남.</li><li>산출기준이 학기말 성적이 아닌 경우에는 성취도, 석차등급이 나오지 않음. 2022 개정 교육과정을 적용받는 2026학년도 1･2학년 성적통지표는 성취도, 성취도별분포비율, 석차등급이 미표기되고, 2015 개정 교육과정을 적용받는 2026학년도 3학년 성적통지표는 성취도, 석차등급이 미표기됨.</li><li><code>[성적-성적처리-성적통지표(가정통신문)관리]</code>에서 가정통신문을 입력한 이후에 <span class="btn">{학생/학부모서비스반영}</span>하면 입력된 가정통신문도 학부모서비스를 통해 제공되며, <b>반영 이후에 입력한 가정통신문을 학부모에게 제공하기 위해서는 다시 {학생/학부모서비스반영}해야 함.</b></li><li><b>성적산출 기준명을 삭제할 경우</b> 학급담임교사가 <code>[학급담임-성적-성적처리-성적통지표(가정통신문)관리]</code>에서 입력한 가정통신문 내용이 삭제됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part 6. 성적, Section_02 1·2차 지필평가 성적처리 (753–795쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

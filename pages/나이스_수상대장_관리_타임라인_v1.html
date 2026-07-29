@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<!-- 수상대장 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>수상대장 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>수상대장 관리</b>
+    <span class="sub">업무 7개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">학생생활 · Section_04 · pp. 685–693</p>
+    <h1>수상대장 관리
+      <em>업무 7개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>연중</dd></div>
+      <div><dt>업무담당</dt><dd>수상 업무담당교사</dd></div>
+      <div><dt>메뉴경로</dt><dd>[학생생활-수상경력-수상대장관리]</dd></div>
+      <div><dt>선행조건</dt><dd>머리말에 선행처리 표기 없음. 후행처리 — 등록된 상장양식에 맞게 수상자를 등록함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>수상 등록 전 사전 준비</h3>
+            <p class="tl-sub">수상자 등록보다 먼저 · 연간 시상 계획의 수상명 확정 후 착수</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 상장양식 등록"><span>01</span>상장양식 등록</button><button type="button" class="tl-btn" data-go="t3" title="03 상장번호 설정"><span>03</span>상장번호 설정</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>상장 모양 다듬기</h3>
+            <p class="tl-sub">학교 로고·글꼴을 손볼 학교만 해당 · 상장양식 등록 이후</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t2" title="02 출력속성·배경편집"><span>02</span>출력속성·배경편집</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>수상 등록 후 출력 준비</h3>
+            <p class="tl-sub">수상내용이 수상대장에 조회되는 상태 · 인쇄 직전 정리</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 수상대장 정렬"><span>04</span>수상대장 정렬</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>시상 직전 인쇄</h3>
+            <p class="tl-sub">양식 등록과 수상내용 등록이 모두 끝난 뒤</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 수상대장서 인쇄"><span>05</span>수상대장서 인쇄</button><button type="button" class="tl-btn" data-go="t6" title="06 단체상장 출력"><span>06</span>단체상장 출력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>사후 정정</h3>
+            <p class="tl-sub">수상 담당자가 본교에 없고 결재 완료된 문서를 고칠 때만 해당</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t7" title="07 결재문서 삭제·수정"><span>07</span>결재문서 삭제·수정</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="양식준비" data-who="수상업무담당교사">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 상장양식">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">연중 수시</span><span class="tag">수상자 등록 선행</span></div>
+    <h3>상장양식 등록 및 수정·삭제</h3>
+    <p class="desc">교내상을 시상하는 모든 학교가 해당하며, 수상자를 등록하기 전에 상장 종류와 상장 문구를 먼저 만들어 두는 업무입니다. <strong>‘상장명’은 연간 시상 계획의 수상명과 일치하게 입력</strong>해야 이후 수상 등록과 학교생활기록부 수상경력이 어긋나지 않습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중. 수상자를 등록하기 전에 상장양식을 먼저 등록해 두고, 필요에 따라 연중 수정함.</dd></dl>
+      <dl><dt>누가?</dt><dd>수상 업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-수상경력-수상대장관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학생생활-수상경력-수상대장관리]</code>의 <span class="btn">{수상대장관리}</span> 탭에서 학년도를 확인하고 <span class="btn">{상장양식관리}</span> 함 → ‘상장양식관리’ 창에서 <span class="btn">{등록}</span> 하여 ‘상장명’, ‘상장분류’, ‘상장제목’, ‘부문명칭’, ‘용지설정’, ‘상장문구’, ‘수여자명’ 등을 선택 또는 입력하여 <span class="btn">{저장}</span> 후 <span class="btn">{확인}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>연간 시상 계획대로 상장을 찍고 학교생활기록부 수상경력에 같은 이름으로 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>한 번 등록한 상장 양식은 <b>학년도와 관계없이 계속하여 사용</b>할 수 있으며, ‘상장명(코드:상장분류)’을 선택하여 수정하거나 삭제할 수 있으므로 필요에 따라 ‘상장명’, ‘부문명칭’, ‘상장문구’ 등을 연중으로 수정하여 사용할 수 있음.</li><li>‘상장명’ 입력 시 <b>연간 시상 계획의 수상명과 일치하게</b> 입력함.</li><li><b>이미 등록된 상장과 동일한 상장명을 등록할 경우 새로 등록한 상장명에 다른 코드 번호가 부여되어 저장</b>됨.</li><li><span class="btn">{상장양식관리}</span>에서 ‘수상명’을 선택하여 출력양식을 ‘세로’에서 ‘가로’로 수정할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="B" data-when="등록전" data-who="수상업무담당교사">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE B · 대장 설정">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수상 등록 전</span><span class="tag opt">직접입력 / 자동채번 선택</span></div>
+    <h3>상장번호 입력형식과 시작번호 설정</h3>
+    <p class="desc">교내상 수상을 등록하기 전에 상장번호를 어떤 방식으로 매길지 먼저 정해 두는 업무입니다. <strong>'상장번호 입력형식 선택'을 '직접입력'으로 두면 수상 등록 시 상장번호를 직접 입력할 수 있고, '자동채번'으로 두면 '상장 시작번호'부터 순서대로 번호가 붙습니다.</strong> 잘못 등록한 수상을 삭제한 뒤 그 번호를 다시 쓰려는 경우에도 이 설정을 먼저 확인합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 수상내용을 등록하기 전에 먼저 설정함.</dd></dl>
+      <dl><dt>누가?</dt><dd>수상 업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-수상경력-수상대장관리]</code> 의 <span class="btn">{수상대장관리}</span> 탭</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학생생활-수상경력-수상대장관리]</code>의 <span class="btn">{수상대장관리}</span> 탭에서 '학년도', '교내/교외', '학년', '상태' 확인 후 <span class="btn">{조회}</span> → <span class="btn">{상장번호설정}</span> 하여 '상장번호 설정' 창에서 '상장번호 입력형식 선택', '상장 시작번호', '수상대장 정렬방식'을 선택 및 입력 후 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>상장번호가 겹치거나 비지 않게 미리 규칙을 정해 두어 수상대장이 시상 순서대로 정확히 남게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>'상장시작번호'는 '마지막 상장번호'보다 큰 번호를 입력함.</b></li><li>수상내용을 잘못 등록해 삭제하고 새로 등록하는 경우, <span class="btn">{상장번호설정}</span>에서 '상장번호 입력형식 선택'을 '직접입력'으로 설정하면 수상 등록 시 수상번호를 직접 입력할 수 있으며 <b>삭제된 상장번호를 다시 입력할 수 있음.</b></li><li>'직접입력'에서 '자동채번'으로 바꿀 때는 '상장번호 입력형식 선택'을 '자동채번'으로 수정한 후 <b>등록했던 상장번호 다음 번호를 '상장시작번호'에 직접 입력</b>하면 해당 번호부터 자동으로 채번됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="출력전" data-who="수상업무담당교사">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 상장양식">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">상장 인쇄 전</span><span class="tag opt">학교 로고 등 필요 시</span></div>
+    <h3>상장양식 출력 속성·배경이미지 편집</h3>
+    <p class="desc">등록한 상장양식을 실제로 뽑기 전에 글꼴과 배경을 학교 실정에 맞추는 업무이며, 기본 양식대로 출력해도 되는 학교는 건너뛸 수 있습니다. <strong>학교직인을 넣는 것은 불가능하므로</strong> 기본 제공 기능 이외는 상장양식 파일을 내려받아 편집해야 합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중. 상장양식을 등록한 뒤, 상장을 인쇄하기 전에 함.</dd></dl>
+      <dl><dt>누가?</dt><dd>수상 업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-수상경력-수상대장관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학생생활-수상경력-수상대장관리]</code>의 <span class="btn">{수상대장관리}</span> 탭에서 <span class="btn">{상장양식관리}</span> 함 → ‘상장양식관리’ 창에서 <span class="btn">{상장양식편집}</span> 하여 ‘상장양식 출력 속성’에서 ‘용지설정’, ‘상장번호’, ‘상장명’, ‘부문명칭’, ‘학년반’, ‘학생성명’, ‘상장문구’, ‘수상일자’, ‘수여자명’의 폰트, 크기, 속성 등을 설정함 → ‘배경이미지’에 학교별 로고 이미지 등을 첨부하고 <span class="btn">{미리보기}</span> 하여 확인 후 <span class="btn">{저장}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>실제 종이에 찍히는 모양을 미리 맞춰 두어 시상 당일 상장을 다시 뽑는 일이 없게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>‘상장양식관리’ 창에서 <span class="btn">{상장양식편집}</span> 하면, ‘상장양식 출력 속성’에서 ‘용지설정’, ‘상장번호’, ‘상장명’, ‘부문명칭’, ‘학년반’, ‘학생성명’, ‘상장문구’, ‘수상일자’, ‘수여자명’의 폰트, 크기, 속성 등을 설정할 수 있음.</li><li>‘배경이미지’에 학교별 로고 이미지 등을 첨부하고 <span class="btn">{미리보기}</span>하여 확인 후 <span class="btn">{저장}</span>할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>직인·이름 출력이 안 될 때</h4><ul><li><b>상장 양식에 학교직인을 넣는 것은 불가능</b>함. 기본적으로 제공하는 것 이외의 기능은 학교에서 상장양식 파일을 다운로드한 후 편집하여 사용함.</li><li>외국인 학생의 영어이름이 끝까지 출력되지 않으면 <code>[학생생활-수상경력-수상대장관리]</code>의 <span class="btn">{상장출력}</span>에서 해당 학생을 선택하여 <span class="btn">{출력}</span>한 후 ‘저장’에서 <b>한글파일(HWP)로 내려받아 성명을 편집</b>하여 출력함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="출력전" data-who="수상업무담당교사">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 대장 설정">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">상장 출력 전</span></div>
+    <h3>수상대장 정렬 방식 설정</h3>
+    <p class="desc">수상대장에 등록된 목록을 원하는 기준으로 줄 세워 보는 업무입니다. 조회 결과 화면에서 <strong>설정에서 '필터'를 클릭하면 각 항목에 삼각형이 나타나며, 그 항목을 기준으로 정렬할 수 있습니다.</strong> 상장을 인쇄하기 전에 목록 순서를 확인할 때 사용합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 수상내용이 등록되어 조회되는 상태에서 상장 인쇄 전에 함.</dd></dl>
+      <dl><dt>누가?</dt><dd>수상 업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-수상경력-수상대장관리]</code> 의 <span class="btn">{수상대장관리}</span> 탭</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학생생활-수상경력-수상대장관리]</code>의 <span class="btn">{수상대장관리}</span> 탭에서 학년도 확인 후 조회 조건 확인 및 선택하고 <span class="btn">{조회}</span> → 설정에서 '필터'를 클릭하면 각 항목에 삼각형이 나타나며 원하는 항목을 기준으로 선택하여 정렬함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>많은 수상 목록에서 시상 순서나 학년·반 순으로 줄을 맞춰 놓아 상장을 빠뜨리거나 뒤섞어 인쇄하지 않으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'수상대장 정렬방식'은 <span class="btn">{상장번호설정}</span>의 '상장번호 설정' 창에서도 선택할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="C" data-when="시상시점" data-who="수상업무담당교사">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE C · 상장 출력">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">시상 직전</span><span class="tag">기본 경로</span></div>
+    <h3>수상대장관리 탭에서 상장 인쇄</h3>
+    <p class="desc">등록된 상장양식과 수상자 정보로 실제 상장을 뽑는 단계입니다. 상장양식 등록과 상장번호 설정이 끝나 수상대장에 수상 내용이 들어와 있어야 하며, <strong>출력할 '수상명'을 입력해 조회한 뒤 목록을 선택해야 해당 수상자만 인쇄됩니다.</strong> 외국인 학생의 영어이름처럼 이름이 끝까지 나오지 않으면 파일로 내려받아 편집합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 상장양식 등록과 수상 내용 등록이 끝난 시상 직전</dd></dl>
+      <dl><dt>누가?</dt><dd>수상 업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-수상경력-수상대장관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학생생활-수상경력-수상대장관리]</code>의 <span class="btn">{수상대장관리}</span> 탭에서 학년도 확인 후 조회 조건 확인 및 선택하고 출력할 '수상명' 입력 → <span class="btn">{조회}</span> → 출력할 목록 선택 → <span class="btn">{출력}</span> → '상장출력미리보기' 창에서 내용 확인 후 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>연간 시상 계획대로 확정된 수상 내용을 학생에게 전달할 상장 실물로 만들려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>외국인 학생의 영어이름 등으로 학생 이름이 끝까지 출력되지 않는 경우, <code>[학생생활-수상경력-수상대장관리]</code>의 <span class="btn">{상장출력}</span>에서 해당 학생을 선택하여 <span class="btn">{출력}</span>한 후 '저장'에서 <b>한글파일(HWP)로 내려받아 성명을 편집하여 출력</b>함.</li><li>상장 양식에 <b>학교직인을 넣는 것은 불가능</b>함. 기본적으로 제공하는 것 이외의 기능은 학교에서 상장양식 파일을 다운로드한 후 편집하여 사용함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="C" data-when="시상시점" data-who="수상업무담당교사">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE C · 상장 출력">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">시상 직전</span><span class="tag opt">참가 부문·단체상 있는 경우</span></div>
+    <h3>상장출력 탭에서 양식 선택 및 단체상장 출력</h3>
+    <p class="desc">참가 부문이 있는 대회이거나 단체 수상이 있는 학교만 해당합니다. <strong>참가 부문이 있는 대회는 수상명의 ( ) 안에 참가 부문을 입력해 두어야</strong> 상장출력 조건에서 그에 맞는 상장양식을 고를 수 있습니다. 단체건은 단체상장과 개인별단체상장을 함께 뽑을 수 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 수상명에 참가 부문까지 입력된 상태의 시상 직전</dd></dl>
+      <dl><dt>누가?</dt><dd>수상 업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-수상경력-수상대장관리]</code>의 <span class="btn">{상장출력}</span> 탭</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>참가 부문이 있는 대회의 경우 수상명의 ( ) 안에 참가 부문을 입력 → <code>[학생생활-수상경력-수상대장관리]</code>의 <span class="btn">{상장출력}</span> 탭에서 상장출력 조건을 선택하여 상장양식을 선택 → 단체건은 “체크되면 단체건일 경우 단체상장과 개인별단체상장까지 출력됩니다.”를 선택 → <span class="btn">{출력}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>부문별·단체별로 문구가 다른 상장을 한 번의 출력으로 각각 맞게 받아 학생에게 나눠 주려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>참가 부문이 있는 대회의 경우 <b>수상명의 ( ) 안에 참가 부문을 입력</b>하고 <code>[학생생활-수상경력-수상대장관리]</code>의 <span class="btn">{상장출력}</span> 탭에서 상장출력 조건을 선택하여 상장양식을 선택할 수 있음.</li><li>“체크되면 단체건일 경우 단체상장과 개인별단체상장까지 출력됩니다.”를 선택하여 출력하면 <b>단체상장과 개인상장이 동시에 출력</b>됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="D" data-when="정정시점" data-who="학교업무분장관리자 수상업무담당교사">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE D · 정정">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수상 담당자 부재 시 정정 발생 시점</span><span class="tag opt">결재 완료된 수상문서에 한정</span></div>
+    <h3>결재문서 삭제 후 수상내용 수정</h3>
+    <p class="desc">수상내용을 잘못 등록해 고쳐야 하는데 <strong>수상 담당자가 현재 본교에 재직 중이 아닌 경우</strong>에 해당하는 업무입니다. 학교업무분장관리자가 해당 수상문서의 결재문서를 먼저 삭제해야 수상업무담당교사가 수상내용을 수정할 수 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 수상내용 정정 사유가 발생한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리자, 수상 업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무승인관리-업무승인-결재현황관리-결재현황판관리]</code>, <code>[학생생활-수상경력-수상대장관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>학교업무분장관리자 아이디로 로그인 → <code>[업무승인관리-업무승인-결재현황관리-결재현황판관리]</code>에서 해당 수상문서에 대해 '기안자' 찾기 → '상신기간'을 설정하여 <span class="btn">{조회}</span> → 수정해야 할 '결재문서명'을 선택하고 <span class="btn">{삭제}</span> → '결재문서삭제' 창에서 '삭제사유'를 등록해 <span class="btn">{삭제}</span> → 이후 수상업무담당자가 <code>[학생생활-수상경력-수상대장관리]</code>에서 해당 수상을 수정함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교생활기록부 수상경력에 잘못된 내용이 그대로 남지 않도록, 담당자가 바뀐 뒤에도 수상 기록을 바로잡을 길을 열어 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>수상 담당자가 현재 본교에 재직 중이 아닌데 수정할 부분이 발생했을 때는 <b>학교업무분장관리자 아이디로 로그인</b>하여 처리함.</li><li><code>[업무승인관리-업무승인-결재현황관리-결재현황판관리]</code>에서 해당 수상문서에 대해 '기안자' 찾기 후 '상신기간'을 설정하여 <span class="btn">{조회}</span>함.</li><li>'결재문서삭제' 창에서는 <b>'삭제사유'를 등록해야</b> <span class="btn">{삭제}</span>가 가능함.</li><li>결재문서를 삭제한 이후에 수상업무담당자가 <code>[학생생활-수상경력-수상대장관리]</code>에서 해당 수상을 수정할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>삭제한 상장번호를 다시 쓰려면</h4><ul><li>등록된 내용을 삭제하고 새로 등록할 때 전에 사용했던 수상대장번호를 다시 쓰려면, <code>[학생생활-수상경력-수상대장관리]</code>의 <span class="btn">{상장번호설정}</span>에서 '상장번호 입력형식 선택'을 <b>'직접입력'</b>으로 설정함. 그러면 수상 등록 시 수상번호를 직접 입력할 수 있고 삭제된 상장번호를 입력할 수 있음.</li><li>'직접입력'에서 '자동채번'으로 되돌릴 때는 '상장번호 입력형식 선택'을 '자동채번'으로 수정한 후 <b>등록했던 상장번호 다음 번호를 '상장시작번호'에 직접 입력</b>하면 해당 번호부터 자동으로 채번됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 학생생활, Section_04 수상대장 관리 (685–693쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

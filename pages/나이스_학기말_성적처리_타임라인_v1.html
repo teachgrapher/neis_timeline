@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<!-- 학기말 성적처리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>학기말 성적처리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>학기말 성적처리</b>
+    <span class="sub">업무 29개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Part 6. 성적 · Section_05 · pp. 830–894</p>
+    <h1>학기말 성적처리
+      <em>업무 29개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학기말</dd></div>
+      <div><dt>업무담당</dt><dd>성적처리담당교사</dd></div>
+      <div><dt>메뉴경로</dt><dd>[성적-성적처리선행작업], [성적-성적처리]</dd></div>
+      <div><dt>선행조건</dt><dd>학기말 성적에 반영되는 지필평가와 수행평가가 마감되어 있어야 함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>학기 중 상시 점검</h3>
+            <p class="tl-sub">지필·수행평가 마감 이후 · 성취도 5단계 산출 과목만 조회됨.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t25" title="25 성취율·출결 점검"><span>25</span>성취율·출결 점검</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>전입·위탁학생 자료 반영</h3>
+            <p class="tl-sub">전출교 학적반영 또는 위탁기관 자료 통지 이후 · 해당 학생이 있는 학교만.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t10" title="10 전입생 지필 입력"><span>10</span>전입생 지필 입력</button><button type="button" class="tl-btn" data-go="t11" title="11 전입생 수행 입력"><span>11</span>전입생 수행 입력</button><button type="button" class="tl-btn" data-go="t12" title="12 전입생 학기말성적"><span>12</span>전입생 학기말성적</button><button type="button" class="tl-btn" data-go="t13" title="13 위탁자료 가져오기"><span>13</span>위탁자료 가져오기</button><button type="button" class="tl-btn" data-go="t14" title="14 위탁자료 수동입력"><span>14</span>위탁자료 수동입력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>성적처리 선행작업</h3>
+            <p class="tl-sub">학기말 반영 지필·수행평가 마감 확인 후 착수.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 산출 기준명 등록"><span>01</span>산출 기준명 등록</button><button type="button" class="tl-btn" data-go="t2" title="02 산출대상 일반교과"><span>02</span>산출대상 일반교과</button><button type="button" class="tl-btn" data-go="t3" title="03 산출대상 실무과목"><span>03</span>산출대상 실무과목</button><button type="button" class="tl-btn" data-go="t4" title="04 대상학생 가져오기"><span>04</span>대상학생 가져오기</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>산출 기준 확정</h3>
+            <p class="tl-sub">성적산출 대상 등록 완료가 선행조건 · 산출 실행 직전 단계.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 인정점 부여기준"><span>05</span>인정점 부여기준</button><button type="button" class="tl-btn" data-go="t6" title="06 통합·분리산출"><span>06</span>통합·분리산출</button><button type="button" class="tl-btn" data-go="t7" title="07 고정분할점수"><span>07</span>고정분할점수</button><button type="button" class="tl-btn" data-go="t8" title="08 추정분할점수"><span>08</span>추정분할점수</button><button type="button" class="tl-btn" data-go="t9" title="09 동점자 처리 규정"><span>09</span>동점자 처리 규정</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>성적산출과 마감</h3>
+            <p class="tl-sub">인정점 산출 확인 후 과목 단위로 산출하고 학년 단위로 상신.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t15" title="15 인정점 산출"><span>15</span>인정점 산출</button><button type="button" class="tl-btn" data-go="t16" title="16 성적산출·과목마감"><span>16</span>성적산출·과목마감</button><button type="button" class="tl-btn" data-go="t17" title="17 교양교과 이수처리"><span>17</span>교양교과 이수처리</button><button type="button" class="tl-btn" data-go="t18" title="18 성적마감·승인요청"><span>18</span>성적마감·승인요청</button><button type="button" class="tl-btn" data-go="t19" title="19 성적통지표 출력"><span>19</span>성적통지표 출력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">06</p>
+            <h3>기록 작성과 보장지도</h3>
+            <p class="tl-sub">세특·독서는 학기말 수업 종료 후 · 보장지도는 성적산출 마감과 과목출결마감 이후.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t20" title="20 세특 일반교과"><span>20</span>세특 일반교과</button><button type="button" class="tl-btn" data-go="t21" title="21 세특 전문교과"><span>21</span>세특 전문교과</button><button type="button" class="tl-btn" data-go="t22" title="22 개인별 세특"><span>22</span>개인별 세특</button><button type="button" class="tl-btn" data-go="t23" title="23 편복학생 세특복사"><span>23</span>편복학생 세특복사</button><button type="button" class="tl-btn" data-go="t24" title="24 과목별 독서활동"><span>24</span>과목별 독서활동</button><button type="button" class="tl-btn" data-go="t26" title="26 보장지도 대상자"><span>26</span>보장지도 대상자</button><button type="button" class="tl-btn" data-go="t27" title="27 보장지도 예외처리"><span>27</span>보장지도 예외처리</button><button type="button" class="tl-btn" data-go="t28" title="28 추가학습 이수관리"><span>28</span>추가학습 이수관리</button><button type="button" class="tl-btn" data-go="t29" title="29 보장지도 마감상신"><span>29</span>보장지도 마감상신</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t25" data-num="25" data-stage="E" data-when="학기중수시" data-who="교과담당교사 성적처리담당교사">
+  <div class="gutter"><b>25</b><span class="gstage" title="원문 STAGE E · 기록·이수 마무리">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">지필평가·수행평가 마감 이후 학기 중 상시</span><span class="tag opt">2026학년도 1･2학년 한정</span></div>
+    <h3>지필/수행 학업성취율현황·과목별출결현황 사전 점검</h3>
+    <p class="desc">2022 개정 교육과정을 적용받아 성취도 5단계로 성적을 산출하는 과목만 해당한다. 대상자 생성 이전에 예방지도 대상자를 확인할 수 있도록 제공되는 조회 기능이며, <strong>지필평가·수행평가가 마감된 경우 최소성취수준보장지도 대상자 가져오기와 관계없이 학기 중 상시 조회 가능</strong>하다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 중, 해당 과목의 지필평가마감 또는 수행평가마감 이후.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사, 성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리-최소성취수준보장지도(추가학습)대상자]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리-최소성취수준보장지도(추가학습)대상자]</code>에서 '학년도', '학기', '학년' 확인 후 '과목', '강의실'을 선택하여 <span class="btn">{조회}</span> → <span class="btn">{지필/수행학업성취율현황}</span>을 클릭해 '지필/수행 학업 성취율현황' 창에서 '학년도', '학기' 확인 후 '고사', '학년', '과목', '강의실', '라운드' 선택 후 <span class="btn">{조회}</span>하여 '성취수준'을 선택해 지필 학업성취율 '미도달' 학생을 확인하고 <span class="btn">{닫기}</span> → 같은 화면에서 <span class="btn">{과목별출결현황}</span>을 클릭해 '과목별출결현황' 창에서 '학년도', '학기' 확인 후 '과목' 선택 후 <span class="btn">{조회}</span>하여 교과목 출결 이수기준 충족 여부를 확인하고 <span class="btn">{닫기}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학기말 성적산출 때 최소성취수준에 도달하지 못하는 학생이 생기지 않도록 미리 찾아 지도 계획을 세우려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 학업성취율 현황</h4><ul><li>2022 개정 교육과정을 적용받아 성취도 5단계로 성적을 산출하는 과목의 지필평가 또는 수행평가의 학업 성취율을 조회할 수 있음.</li><li><code>[성적-지필평가-지필평가마감관리]</code>, <code>[성적-수행평가-수행평가마감관리]</code>에서 <b>해당 과목의 마감 이후 조회 가능함</b>.</li><li>성취도 '미도달' 학생은 조회 고사 기준으로 해당 학생은 이수 기준점수에 도달하지 못했다는 의미이므로 '1차 지필평가' 이후 '지필 학업성취율 현황'을 조회하여 미도달 학생을 조사하여 학기말 성적산출 시 최소성취수준에 도달하지 못하는 학생이 발생하지 않도록 사전에 예방지도 계획을 세우는 데 활용할 수 있음.</li><li>추정 분할점수를 이용하여 학기말 분할점수를 산출하는 경우 학업 성취율 미도달에 해당하는 점수는 학교마다 다를 수 있음.</li><li>고정 분할점수를 이용해서 학기말 성적을 산출하는 경우 <b>학기말 과목 원점수 40점 미만</b>이면 학업 성취율 미도달에 해당함.</li><li><span class="btn">{엑셀다운로드}</span>로 지필/수행 평가의 학업 성취율 현황을 다운받을 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 과목별 출결현황</h4><ul><li>일출결 마감일을 기준으로 조회되므로, 학생이 소속된 학급의 일출결 마감 상황에 따라 실제 값과 다르게 조회될 수 있음.</li><li>최소성취수준 보장지도 관리 대상 학생은 <b>학업성취율(40%)과 출석률(학점당 시수의 2/3)</b>을 반영하여 대상자를 반영함.</li><li>'총 수업시수'는 해당학기에 학급의 나이스 시간표에서 운영되는 전체 수업 시수임.</li><li>'현재 수업시수'는 학생이 수강하는 수업의 교과담당교사가 <code>[교과담임-학적-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)]</code>에서 <span class="btn">{출결마감}</span>한 총 수업시수임.</li><li>'출석 시수'는 학생이 해당 과목을 수강한 총 시수임.</li><li>'결과 시수'는 학생이 해당 과목을 결시한(미인정, 질병, 기타 포함) 총 시수임.</li><li>'현재 수업시수 기준 충촉 여부'는 현재 수업시수 기준으로 2/3 이상을 출석한 학생은 '충족'으로 표시되고 미만인 학생에게는 부족한 시수가 음수로 나타남.</li><li>'이수기준 충족 여부'는 해당 과목 학점당 시수의 2/3 이상을 출석한 학생은 '충족'으로 표시되고 미만인 학생에게는 부족한 시수가 음수로 나타남.</li><li>정기적으로 학생들의 과목별 출결현황을 확인하여 과목 출결 미달로 이수하지 못하는 상황을 예방함.</li><li><code>[교과담임-학적-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)]</code>에서 교과담당교사가 수업을 진행한 '일자'와 '교시'를 <span class="btn">{출결마감}</span>하고 해당 학급담임교사가 <code>[학급담임-학적-출결관리-출결관리-일일출결관리(담임용)]</code>에서 교과담당교사가 수업한 '일자'의 교시 <span class="btn">{출결마감}</span>이 모두 되었는지 확인함.</li><li><b>확정된 최소성취수준보장지도 대상자를 가져오기 위해서는 학기말 성적산출 및 과목별 출결 마감이 완료되어야 함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="C" data-when="전입위탁입력" data-who="성적처리담당교사 업무담당교사">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE C · 전입·위탁생 성적">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">지필평가 이후 전입생 발생 시</span><span class="tag opt">전입생 있는 학교만</span></div>
+    <h3>전입생 지필평가 성적 입력</h3>
+    <p class="desc">1차 지필평가 이후에 전입생이 들어온 경우에만 하는 업무입니다. 이전 학교에서 실시한 지필평가 성적을 전입교의 성적으로 환산해 넣습니다. <strong>이전학교(전출교) 지필평가 성적의 과목만점이 100점이 아닌 경우 전입교의 과목만점에 따라 환산하여 입력합니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 전출교에서 성적자료가 전송되어 학적반영이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사, 업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-전입관리-전입자료관리-지필평가성적관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-전입관리-전입자료관리-지필평가성적관리]</code>에서 '학년도', '학기' 확인 후 '고사', '학년'을 선택하고 <span class="btn">{조회}</span> → 1차 지필평가 이후 전입생을 선택한 후 <span class="btn">{이전학교성적보기}</span>하여 이전학교에서 응시한 지필평가의 '과목만점', '점수' 또는 '결시명칭'을 확인 → 확인한 자료를 바탕으로 이전학교 성적을 반영하는 '점수' 또는 '결시명칭'을 입력(전입교의 학업성적관리규정 적용)하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>당해 학교 성적자료가 없는 전입생도 학기말 성적산출에서 빠지지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 과목이 조회되지 않을 때</h4><ul><li>2026학년도 1･2학년 전입학생의 과목이 조회되지 않는 경우 <code>[학적-전입관리-전입관리-학적반영]</code>에서 해당학생을 <span class="btn">{수강과목편성}</span>함(1학년 전입생의 수강과목 편성시 전입교 개설과목을 전출교의 '전입이전 출결산출 포함 과목'과 비교하여 '비매칭과목 출결 결과 산출', '해외귀국/복학 인정출결산출', '전출교의 출결산출포함 과목' 중 하나를 선택하여 <span class="btn">{저장}</span>함).</li><li>2026학년도 3학년 전입학생의 과목이 조회되지 않을 경우 <code>[학적-전입관리-전입관리-학적반영]</code>에서 해당학생을 <span class="btn">{수강과목편성}</span>하거나 <code>[교육과정-편제및과목개설관리-학생별수강과목편성]</code>에서 해당 '학년', '반'을 선택하고 <span class="btn">{조회}</span>하여 전입생의 미편성 과목을 편성 과목 목록으로 이동시켜 저장함.</li><li>아무 과목도 나타나지 않으면 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강학생편성]</code> 또는 <code>[교육과정-편제및과목개설관리-학생별수강과목편성]</code>에서 해당 전입생을 본교 개설과목의 수강학생으로 편성하고 다시 입력함.</li><li>과목이 비활성화된 경우 <code>[성적-지필평가-지필평가성적관리]</code>에서 해당 고사, 해당 학생, 해당 과목의 성적을 삭제함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 성적 인정 원칙</h4><ul><li><b>전입생이 전출교의 1차 지필평가에서 미인정 결시를 하고 전입한 경우, 전출교에서는 미인정 결시 인정점을 산출하여 전입교에 전송하여 전출 처리함.</b> 미인정 결시의 인정점은 당해고사를 기준으로 처리하므로 전입한 이후 전입교에서의 인정점 산출은 올바른 성적이 아님.</li><li>1차 지필평가 성적을 가지고 A학교에서 B학교로 전입한 학생이 학기말 성적산출 이전에 C학교로 전출하는 경우 B학교에서는 <code>[학적-전입관리-전입자료관리-지필평가성적관리]</code>에서 입력한 A학교 성적자료를 C학교로 전송해야 함.</li><li>전출교에서는 전출생이 전출 이전에 취득한 성적(지필평가 및 수행평가의 원점수와 항목별 반영비율 등) 전산자료를 전･편입하는 학교로 전송함.</li><li>전입･편입･재입학생의 성적 일부가 중복된 경우는 전입･편입･재입학 이후 새로 취득한 성적으로 함.</li><li>모든 평가가 완료되기 이전 퇴학생(자퇴･제적･휴(유)학 등)이 퇴학 이전에 취득한 성적이 있을 경우 이 학생의 전입･편입･재입학을 위하여 그 성적을 전산 입력함.</li><li>전입생의 전출교에서 수강한 과목과 전입교에 편제된 과목이 상이할 경우 전입교의 학업성적관리규정에 따라 인정 여부를 결정함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t11" data-num="11" data-stage="C" data-when="전입위탁입력" data-who="성적처리담당교사 업무담당교사">
+  <div class="gutter"><b>11</b><span class="gstage" title="원문 STAGE C · 전입·위탁생 성적">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">전입생 학적반영 이후</span><span class="tag opt">이전학교 수행평가 점수를 인정점으로 반영할 때</span></div>
+    <h3>전입생 수행평가 성적 입력</h3>
+    <p class="desc">전입생의 수행평가는 당해 학교의 학업성적관리규정 및 교과 평가계획에 따라 실시한 후 <code>[성적-수행평가-성적관리]</code>에서 직접 입력하는 것이 일반적입니다. 이 카드는 그 대신 <strong>전입생이 이전학교에서 실시한 수행평가의 점수를 인정점으로 산출하여 반영하는 경우</strong>에 쓰는 경로입니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 전출교의 수행평가 성적자료가 전송되어 학적반영이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사, 업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-전입관리-전입자료관리-수행평가성적관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-전입관리-전입자료관리-수행평가성적관리]</code>에서 '학년도', '학기' 확인하고 '학년'을 선택 후 <span class="btn">{조회}</span> → 해당 학생을 선택한 후 <span class="btn">{이전학교성적보기}</span>하여 전출교에서 실시한 수행평가의 '점수' 또는 '결시명칭'을 확인하고 <span class="btn">{닫기}</span> → 확인한 자료를 바탕으로 '점수'를 입력(전입교의 학업성적관리규정 적용)하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>실제로 응시하지 않은 영역의 인정점이 그 영역의 응시생수·총점·평균을 왜곡하지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>전입･편입･재입학생의 수행평가 점수는 당해 학교의 학업성적관리규정 및 교과 평가계획에 따라 실시한 후 <code>[성적-수행평가-성적관리]</code>에서 직접 입력하는 것이 일반적임.</li><li><code>[성적-수행평가-성적관리]</code>에 입력한 전입생의 수행평가 점수는 <code>[학적-전입관리-전입자료관리-수행평가성적관리]</code>에서 비활성되어 조회됨.</li><li><b>전입생이 이전학교에서 실시한 수행평가의 점수를 인정점으로 산출하여 반영하는 경우 <code>[학적-전입관리-전입자료관리-수행평가성적관리]</code>에서 입력해야 함.</b> <code>[성적-수행평가-수행평가성적관리]</code>에서 입력하는 경우 해당 영역에 실제로 응시하지 않은 전입생의 인정점이 응시생수와 총점 및 평균에 반영됨.</li><li>전입생 학적반영 이후 전출교에서 성적자료를 추가로 전송할 경우 <code>[학적-전입관리-전입관리-학적반영]</code>에서 추가로 전송된 자료를 <span class="btn">{자료이관}</span>함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t12" data-num="12" data-stage="C" data-when="전입위탁입력" data-who="성적처리담당교사 업무담당교사">
+  <div class="gutter"><b>12</b><span class="gstage" title="원문 STAGE C · 전입·위탁생 성적">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">전출교 학기말 성적 수정 요청 시</span><span class="tag opt">결재 필요</span></div>
+    <h3>전입생 학기말 성적 수정·승인요청</h3>
+    <p class="desc">전출교에서 전입생의 학기말 성적이 산출되어 전송한 경우에는 <code>[학적-전입관리-전입관리-학적반영]</code>에서 전송된 성적자료를 선택하여 학적반영하면 자동 등록되므로 별도 입력이 필요 없습니다. 이 업무는 <strong>전입생의 전출교 편제가 잘못되었거나 공문으로 일부 성적의 수정 요청이 있을 경우</strong>에만 합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 전출교의 학기말 성적자료가 학적반영으로 자동 등록된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사, 업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-전입관리-전입자료관리-학기말성적관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-전입관리-전입자료관리-학기말성적관리]</code>에서 '학년도', '학기' 확인하고 '학년'을 선택 후 <span class="btn">{조회}</span> → 해당 학생을 선택한 후 성적을 수정하고 <span class="btn">{저장}</span> → 수정한 자료를 <span class="btn">{승인요청}</span>하여 기안문상신 후 결재가 완료되면 학교생활기록부에 반영됨.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>잘못된 전출교 성적이 그대로 학교생활기록부에 남지 않도록 결재를 거쳐 바로잡으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{이전학교 성적보기}</span>를 클릭하면 전입자료 최초 이관 이후 재전송된 성적을 재 이관 없이 가져오기하여 처리할 수 있음.</li><li>2026학년도 1･2학년의 전입생의 경우 수정할 학생의 '성취도별 분포비율'을 더블 클릭하여 '성취도별 분포비율' 창에서 내용을 수정하고 <span class="btn">{입력}</span>함.</li><li>과목 누락 등으로 과목을 등록하려면 <code>[학적-전입관리-전입자료관리-학기말성적관리]</code>에서 <span class="btn">{과목추가}</span>하여 과목을 입력함.</li><li><b><span class="btn">{저장}</span> 후 반드시 <span class="btn">{승인요청}</span>하여 결재를 완료해야 전입생의 수정된 성적자료가 학교생활기록부에 반영됨.</b></li><li><span class="btn">{저장}</span>하고 <span class="btn">{승인요청}</span>하지 않으면 '수기입력여부'란은 'Y(미상신)', '반영여부'란은 '미반영'으로 표현됨.</li><li><span class="btn">{저장}</span>하고 <span class="btn">{승인요청}</span> 완료하면 '수기입력여부'란은 'Y(완결)', '반영여부'란은 '반영'으로 표현됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t13" data-num="13" data-stage="C" data-when="전입위탁입력" data-who="성적처리담당교사 업무담당교사">
+  <div class="gutter"><b>13</b><span class="gstage" title="원문 STAGE C · 전입·위탁생 성적">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">위탁기관 자료 전송 후</span><span class="tag opt">나이스플러스·나이스 사용 위탁기관</span><span class="tag opt">권장 경로</span></div>
+    <h3>위탁학생 타학교자료 가져오기 — 성적·세부능력및특기사항·관찰내용</h3>
+    <p class="desc">위탁학생이 있고 <strong>나이스플러스 또는 나이스를 사용하는 위탁기관에서 자료를 전송한 경우</strong>에 쓰는 경로입니다. 성적, 세부능력및특기사항, 관찰내용 세 가지 모두 같은 화면에서 항목만 바꿔 같은 절차로 가져옵니다. 위탁기관이 나이스를 쓰지 않으면 이 카드가 아니라 과목추가로 직접 입력합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 위탁교육 개설교(위탁교육기관)에서 자료를 전송한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사, 업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-자료관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-자료관리]</code>에서 '학년도', '학기' 확인 후 '학년', '반'을 선택하고 <span class="btn">{조회}</span> → 목록에서 위탁학생 '성명'을 클릭한 뒤 '성적'의 '성적'을 선택하고 <span class="btn">{타학교자료가져오기}</span>하여 '타학교 성적 자료 가져오기' 창의 <span class="btn">{학기말성적}</span> 탭을 클릭 → 위탁교육 개설교(위탁교육기관)에서 전송한 자료를 선택 후 <span class="btn">{반영}</span>하고 자료 확인 후 <span class="btn">{저장}</span> → '세부능력및특기사항'을 선택하고 <span class="btn">{타학교자료가져오기}</span>하여 가져올 자료를 선택하고 <span class="btn">{반영}</span> 후 <span class="btn">{확인}</span>하고 내용을 확인하여 <span class="btn">{저장}</span> → '관찰내용'을 선택하고 <span class="btn">{타학교자료가져오기}</span>하여 가져올 자료를 선택하고 <span class="btn">{반영}</span>하여 반영된 '관찰내용'을 확인하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>위탁기관에서 쌓인 학습 결과를 재적교 학교생활기록부에 옮겨 학생의 기록이 끊기지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 무엇을 어디서 가져오는가</h4><ul><li>성적 — <code>[성적]</code> 학기말성적, 지필평가성적, 수행평가성적, 관찰내용과 <code>[학생생활]</code> NCS 이수상황은 <code>[학적-위탁･현장실습학생관리-자료관리]</code>의 '성적'에서 <span class="btn">{타학교자료가져오기}</span>함.</li><li>세부능력및특기사항 — <code>[성적]</code> 세부능력 및 특기사항은 <code>[학적-위탁･현장실습학생관리-자료관리]</code>의 '세부능력및특기사항'에서 <span class="btn">{타학교자료가져오기}</span>함.</li><li>위탁학생의 성적은 소속교의 학기말 성적이 마감되어도 입력 가능하며, 위탁교(기관)에서 이수한 과목은 과목명이 진하게 표기됨.</li><li><b>'학기말' 성적산출기준명이 존재하지 않으면 <span class="btn">{과목추가}</span> 버튼이 나타나지 않음.</b></li><li><b>위탁교육기관에서 성적을 재전송하였으면 등록한 성적을 삭제 후 다시 반영함.</b></li><li>'타학교 세부능력 및 특기사항 자료 가져오기' 창에서 체크박스가 비활성화 되어있는 경우 위탁교육기관에서 전송한 성적자료가 등록되었는지 확인함.</li><li>위탁기관에서 전송한 위탁학생의 영재교육과 발명교육 관련 사항은 '영재·발명교육 기록사항'에 등록됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 수강자 제외와 성적산출 대상 처리</h4><ul><li>위탁 전 소속교 성적이 있는 경우에는 위탁교(기관)로 해당 성적을 통지하여 위탁교(기관)의 학업성적관리규정에 따라 소속교의 성적과 위탁 이후 취득한 성적을 합산하여 성적을 산출하고, 소속교의 성적이 없을 경우에는 위탁교(기관)의 학업성적관리규정에 의거 위탁 이후의 취득한 성적만으로 성적을 산출함.</li><li>소속교에서 수강하지 않은 과목이라도 <code>[교육과정-편재및과목개설관리-편재및과목개설관리-수강생편성]</code>에서 해당 학생을 편성한 경우 <code>[성적]</code>의 각 메뉴에서 학생의 명단이 조회됨.</li><li>소속교에서 수강하지 않은 과목은 <code>[교육과정-편재및과목개설관리-편재및과목개설관리-수강생편성]</code>에서 해당 학생을 '미편성 학생'으로 이동하여 수강자에서 제외함. <b>단, 해당 과목에 성적자료가 있을 경우는 제외처리가 불가능하므로 이 경우는 <code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출학생관리]</code>의 <span class="btn">{대상자가져오기}</span>에서 '대상자 포함여부'를 '포함안함'으로 선택함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t14" data-num="14" data-stage="C" data-when="전입위탁입력" data-who="성적처리담당교사 업무담당교사">
+  <div class="gutter"><b>14</b><span class="gstage" title="원문 STAGE C · 전입·위탁생 성적">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">위탁기관이 자료를 서면으로 송부한 뒤</span><span class="tag opt">나이스플러스·나이스 미사용 위탁기관</span></div>
+    <h3>위탁학생 자료 수작업 등록 — 과목추가로 성적·세특·관찰내용 입력</h3>
+    <p class="desc"><strong>나이스플러스 또는 나이스를 사용하지 않는 위탁교육기관에서 송부한 위탁학생의 자료</strong>는 재적교에서 수작업으로 나이스에 입력합니다. 성적, 세부능력 및 특기사항, 관찰내용을 각각 <span class="btn">{과목추가}</span>로 과목을 만든 뒤 내용을 입력합니다. 위탁기관이 나이스로 자료를 전송했다면 이 카드가 아니라 타학교자료가져오기를 씁니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 위탁교(기관)가 교과 성적 및 대안교육교과의 이수 결과를 소속교로 통지한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사, 업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-자료관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-자료관리]</code>에서 '학년도', '학기' 확인 후 '학년', '반'을 선택하고 <span class="btn">{조회}</span> → 목록에서 위탁학생 '성명'을 클릭한 뒤 '성적'의 '성적'을 선택하고 <span class="btn">{과목추가}</span>하여 '과목추가' 창의 <span class="btn">{교과과정등록}</span> 탭에서 '교과'를 선택하여 '과목'을 입력하고 <span class="btn">{과목찾기}</span>한 후 '학점'을 입력하여 <span class="btn">{입력}</span> → 위탁교육기관에서 보내온 과목별 성적('과목군구분', '원점수', '성취도', '석차등급', '과목평균', '과목표준편차', '수강자수' 등)을 입력한 후 <span class="btn">{저장}</span> → '세부능력 및 특기사항'을 선택하고 <span class="btn">{과목추가}</span>하여 '위탁학생 세부능력 및 특기사항 과목추가' 창에서 추가할 '과목'을 선택하고 <span class="btn">{등록}</span> 후 <span class="btn">{확인}</span>하고 보내온 내용을 '세부능력 및 특기사항'에 입력한 후 <span class="btn">{저장}</span> → '관찰내용'을 선택하고 <span class="btn">{과목추가}</span>하여 <span class="btn">{교과과정등록}</span> 탭에서 '교과'를 선택, '과목'을 입력하고 <span class="btn">{과목찾기}</span>한 후 '학점'을 입력하고 <span class="btn">{입력}</span>한 뒤 보내온 내용을 '일자'와 '관찰내용'에 입력하고 '영역'을 선택하여 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>나이스로 연결되지 않는 위탁기관의 이수 결과도 통지 자료대로 학교생활기록부에 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 성적 입력 기준</h4><ul><li><b>위탁교(기관)는 교과 성적 및 대안교육교과의 이수 결과를 학기말에 소속교로 통지하며, 위탁교(기관)에서 이수한 과목과 성적을 그대로 인정하여 입력함. 이 경우 해당 학생은 학기말 성적 산출 시 소속교 성적산출 대상에 '포함안함'으로 설정함.</b></li><li>과목명 및 성적은 위탁교(기관)에서 송부하는 '대안교육 장기위탁학생 교과학습발달상황 통지 자료'를 근거로 입력함.</li><li>위탁교(기관)에서 송부한 성적자료 입력 시 동일 과목이 없으면 유사 과목으로 편제하고 <code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-자료관리]</code>의 '세부능력 및 특기사항'란에 정식 과목명을 입력함.</li><li>위탁교(기관)에서 송부한 2026학년도 3학년 전문교과Ⅱ 실무과목 성적은 '과목군구분'을 '일반'으로 선택하며, '단위수', '원점수', '성취도', '과목평균', '과목표준편차', '수강자수'를 입력하고 능력단위는 '이수시간', '원점수', '성취도'를 입력함.</li><li>위탁교(기관)에서 송부한 성적자료가 성적처리 기준에 맞지 않을 경우(예: 전문교과Ⅱ인데 석차등급(1~9등급)으로 평가) 위탁교(기관)에 재처리를 요청하거나 석차등급을 제외하고 입력함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 세특·관찰내용 입력</h4><ul><li><b>'위탁학생 세부능력 및 특기사항 과목추가' 창에서 나타나는 과목은 <code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-자료관리]</code>의 '성적'에서 등록한 교과목임.</b></li><li>위탁교육기관에서 전송한 영재 또는 발명관련 특기사항은 '영재･발명교육 기록사항'란에 입력함.</li><li>관찰내용에서 선택하는 영역의 종류는 '미선택', '수업내용', '평가내용'의 세 영역이고, <b>평가내용을 선택하면 수행평가 영역명을 함께 입력해야 저장할 수 있음.</b></li><li>교양교과와 전문교과Ⅱ 실무과목(2015 개정 교육과정을 적용받는 2026학년도 3학년) 능력단위 추가 방법이 별도로 안내되어 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="선행작업" data-who="성적처리담당교사">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 산출 기준 세우기">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말 성적처리 시작 전</span><span class="tag">학교당 1회 설정</span></div>
+    <h3>성적산출 기준명 등록·수정</h3>
+    <p class="desc">학기말 성적처리의 첫 단계로 모든 학교가 해야 하는 업무입니다. <strong>'성적구분'이 '학기말'인 산출기준은 한 학기에 한 개만 등록 가능하며, 이 산출기준의 성적이 학교생활기록부의 '교과학습발달상황'에 반영됩니다.</strong> 소인수과목 처리 방법도 이 화면에서 학교당 한 가지로 결정합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 학기말 성적에 반영되는 지필평가와 수행평가가 마감된 뒤 성적처리선행작업의 맨 처음.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출기준명관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 <span class="btn">{조회}</span> → <span class="btn">{등록}</span> → '성적산출기준명 등록' 창에서 '기준명'을 입력 → '성적구분('학생부 미반영' 또는 '학기말')'과 '소인수과목처리 구분('석차등급' 또는 '점으로 표기')'을 선택 → <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교생활기록부에 반영될 성적이 어느 기준으로 산출될지, 소인수과목의 석차를 낼지 말지를 학교 학업성적관리규정대로 못 박아 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 등록 시 확인</h4><ul><li>'성적구분'이 '학기말'인 산출기준이 등록되어야 위탁학생의 성적을 입력할 수 있음.</li><li>소인수과목처리 구분은 소인수과목이 2개 이상인 경우에도 '석차등급' 또는 '점으로 표기' 중 <b>한 가지 방법으로 동일하게</b> 처리함.</li><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년 — '소인수과목처리 구분'은 <b>수강자 수가 5명 이하</b>인 보통교과 또는 전문교과의 경우 성적처리 방법을 선택하는 항목으로 당해 학교 학업성적관리규정에 따라 학교당 한 가지 방법으로만 선택할 수 있음.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 — '소인수과목처리 구분'은 <b>수강자 수가 13명 이하</b>인 선택과목(보통교과 또는 전문교과Ⅰ)의 성적처리 방법을 선택하는 항목으로 당해 학교 학업성적관리규정에 따라 학교당 한 가지 방법으로만 선택할 수 있음.</li><li>'소인수과목처리 구분'을 '점으로 표기'로 저장 후 <code>[성적-성적처리-성적산출관리-과목별성적산출]</code>에서 성적을 산출하면 석차등급이 '･'으로 표기됨.</li><li>'소인수과목 처리구분'을 '점으로 표기'로 저장했는데 <code>[성적-성적처리선행작업-성적산출선행작업관리-동점자처리규정등록]</code>에서 해당 과목이 조회되는 것은, 편제및시간배당관리에 '성취도(5단계)+석차등급(9등급)' 유형으로 등록되어 있기 때문이므로 정상임. 이 경우 동점자 처리규정에서 '미적용'을 선택하고 결시생인정점관리, 과목별성적산출을 진행하면 '석차등급'란이 점으로 표시된 것을 성적통지표(가정통신문)관리에서 확인 가능함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 수정·삭제</h4><ul><li>'성적산출기준명'을 수정하려면 해당 성적산출기준명을 클릭함. 단, <b>성적산출자료가 존재하면 '성적구분'을 수정하거나 삭제할 수 없음.</b></li><li>'성적산출기준명'을 삭제할 경우 학급담임교사가 <code>[성적-성적처리-성적통지표(가정통신문)관리]</code>에서 입력한 가정통신문 내용도 삭제됨.</li><li>소인수 과목의 성적처리 구분을 변경('석차등급'에서 '점으로 표기' 또는 '점으로 표기'에서 '석차등급'으로 변경)하기 위해서는 <b>산출된 소인수 과목의 성적만 삭제하면</b> 변경할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="선행작업" data-who="성적처리담당교사">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 산출 기준 세우기">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">지필·수행 마감 확인 후</span><span class="tag">학년별로 반복</span></div>
+    <h3>성적산출 대상(고사/영역) 등록 — 일반교과</h3>
+    <p class="desc">일반교과를 개설한 모든 학교가 하는 업무입니다. 학기말 성적에 반영할 지필평가와 수행평가 영역을 선택하고 각각의 반영비율을 확인하며, 결시생 인정점 산출을 위한 '기준고사/영역'도 함께 설정합니다. <strong>마감처리 된 고사/영역에 대해서만 등록이 가능하므로 반드시 마감 여부를 확인해야 합니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 성적산출 기준명을 등록하고 반영 대상 고사·영역의 마감이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출대상(고사/영역)관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '산출기준'을 선택하고 <span class="btn">{조회}</span> → <span class="btn">{등록}</span> → '성적산출대상(고사/영역) 등록' 창에서 학기말성적에 반영할 '고사/영역명' 선택 → 고사/영역별 '반영비율(%)' 확인 → '기준고사/영역'을 설정 → <span class="btn">{등록}</span> → <span class="btn">{닫기}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>어떤 평가를 몇 퍼센트로 반영해 학기말 성적을 낼지, 결시한 학생의 인정점을 무엇을 기준으로 계산할지 정해 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'성적산출대상(고사/영역) 등록' 창의 '고사/영역명'은 <code>[성적-지필/수행선행작업-반영비율/만점관리]</code>에서 등록한 내역과 동일하며, <b>마감처리 된 고사/영역에 대해 등록이 가능함.</b> 마감되지 않은 지필평가와 수행평가 영역은 선택할 수 없음.</li><li>'기준고사/영역'은 결시생 인정점 산출의 기준이 되므로 <b>반드시 고사 간에 교차 설정</b>을 해야 함('1차 지필평가'의 기준고사는 '2차 지필평가'로, '2차 지필평가'의 기준고사는 '1차 지필평가'로 교차 설정함).</li><li>한 학기에 1회의 지필평가만 실시하는 과목의 경우, 해당 지필평가에 결시하면 '모두결시' 기준에 의하여 인정점이 산출되므로 '기준고사/영역'은 해당 지필평가를 그대로 설정(예: 2차 지필평가만 실시한 경우 기준고사도 2차 지필평가임)하거나 입력하지 않아도 됨(입력 여부를 학교에서 결정함).</li><li>과목이 개설된 모든 학년(학과 또는 계열)에서 해당 과목을 등록해야 <code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출단위관리]</code>에서 '통합산출'을 설정함.</li><li>성적산출 대상 과목의 '고사/영역명'을 삭제하는 경우 <b>기존에 등록된 성취율 및 성적자료는 삭제됨.</b></li><li>'계열/학년/학과'와 '산출기준'이 '없음'으로 나타나 과목을 등록할 수 없는 경우, 성적처리를 위한 학년반 권한과 교과목 권한을 모두 부여받아 업무를 진행함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="A" data-when="선행작업" data-who="성적처리담당교사">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE A · 산출 기준 세우기">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">지필·수행 마감 확인 후</span><span class="tag opt">전공실무과목·실무과목 개설교 한정</span></div>
+    <h3>성적산출 대상(고사/영역) 등록 — 전공실무과목·전문교과Ⅱ 실무과목</h3>
+    <p class="desc">2026학년도 1･2학년 전문교과 전공실무과목 또는 2026학년도 3학년 전문교과Ⅱ 실무과목을 개설한 학교만 해당합니다. 실무과목의 지필평가 영역과 능력단위 수행평가 영역의 반영비율에 따라 학기말 성적을 산출하므로 능력단위 반영비율까지 함께 확인합니다. <strong>능력단위의 영역별 반영비율(%) 합계와 지필평가·수행평가의 '반영비율' 합계는 100%가 되어야 합니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 성적산출 기준명을 등록하고 실무과목의 지필평가·능력단위 수행평가 영역이 마감된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출대상(고사/영역)관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '계열/학년/학과', '산출기준'을 선택하고 <span class="btn">{조회}</span> → <span class="btn">{등록}</span> → '성적산출대상(고사/영역) 등록' 창에서 실무과목과 실무과목 내 능력단위를 확인 → 학기말성적에 반영할 '고사/영역명' 선택 → '능력단위 반영비율(%)' 및 고사/영역별 '반영비율(%)' 확인 → '기준고사/영역' 설정 → <span class="btn">{등록}</span> → <span class="btn">{닫기}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>실무과목의 교과학습발달상황 성적과 학교생활기록부 &lt;국가직무능력표준 이수상황&gt;의 능력단위 이수상황을 각각 제대로 산출해 내려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 반영비율</h4><ul><li>능력단위(*)의 영역별 반영비율(%)의 합계와 지필평가와 수행평가의 '반영비율' 합계는 <b>100%가 되어야 함.</b></li><li>능력단위 반영비율(%) — 학교생활기록부 자격증 및 인증 취득상황란의 &lt;국가직무능력표준 이수상황&gt; 내 능력단위 이수상황 기록을 위한 원점수와 성취도를 산출함.</li><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년에 개설된 전공실무과목의 반영비율(%) — 전공실무과목의 학교생활기록부 교과학습발달상황란 기록을 위한 원점수, 성취도, 석차(동석차수), 수강자, 과목평균, 성취도별 분포비율을 산출함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년에 개설된 실무과목의 반영비율(%) — 실무과목의 학교생활기록부 교과학습발달상황란 기록을 위한 원점수, 과목평균, 표준편차, 성취도, 수강자수를 산출함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 등록 조건</h4><ul><li>'고사/영역명'은 <code>[성적-지필/수행선행작업-반영비율/만점관리]</code>에서 등록한 내역과 동일하며, <b>마감처리 된 고사/영역에 대해 등록이 가능함.</b></li><li>'기준고사/영역'은 결시생 인정점 산출의 기준이 되므로 <b>반드시 고사 간에 교차 설정</b>을 해야 함.</li><li>과목이 개설된 모든 학년(학과 또는 계열)에서 해당 과목을 등록해야 <code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출단위관리]</code>에서 '통합산출'을 설정함.</li><li>성적산출 대상 과목의 '고사/영역명'을 삭제하는 경우 <b>기존에 등록된 성취율 및 성적자료는 삭제됨.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="A" data-when="선행작업" data-who="성적처리담당교사">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE A · 산출 기준 세우기">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">산출대상 등록 후</span><span class="tag">과목별로 반복</span></div>
+    <h3>성적산출 학생 대상자 가져오기</h3>
+    <p class="desc">모든 학교가 과목별로 하는 업무이며, 과목별 수강학생으로부터 성적산출 대상 학생을 가져옵니다. 위탁학생·학적변동 학생의 '대상자포함 여부'를 하나하나 확인해야 하는 단계입니다. <strong>기존에 대상자를 포함하여 성적을 산출한 뒤 그 학생의 성적을 삭제하려면 '포함안함'으로 바꾸는 것만으로는 안 되고 반드시 {대상자가져오기}를 다시 진행해야 합니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 성적산출대상(고사/영역) 등록을 마친 뒤 결시생 인정점 산출과 성적산출 전.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '산출기준', '과목', '포함여부'를 선택하고 <span class="btn">{조회}</span> → <span class="btn">{대상자가져오기}</span> → <span class="btn">{확인}</span> → '반' 또는 '대상자'를 클릭하여 성적산출 대상자의 '대상자포함 여부'를 확인 → <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>성적을 낼 학생과 내지 않을 학생을 갈라 놓아 수강자수·평균·석차가 엉뚱한 학생 때문에 틀어지지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 포함 여부 판단</h4><ul><li>소속교에서 수강하지 않는 위탁학생(예: 직업과정위탁교육 등)과 학기말성적을 위탁기관으로부터 산출해오는 위탁학생은 '대상자포함 여부'를 <b>'포함안함'</b>으로 설정함.</li><li>위탁학생 중 소속교에서 성적처리하는 학생(예: 현장실습생, 병원학교 및 원격수업 수강학생 등)은 '대상자 포함 여부'를 <b>'포함'</b>으로 설정함.</li><li>학생이 지필평가 실시 전에 전출 등의 학적변동이 생겨 학적반영(재학아님)이 완료된 후 <span class="btn">{대상자가져오기}</span> 하면 대상자포함 여부가 '포함안함'으로 설정됨.</li><li>고사 실시 이후 자퇴한 학생의 경우는 성적산출대상학생에서 대상자포함 여부를 '포함'으로 하여 처리함.</li><li>대상 학생 중 외부교육기관에서 위탁교육을 받는 학생일 경우 모든 과목에 대해 학생 성명 옆에 위탁교육 구분(예: 직업과정위탁교육, 현장실습, 병원학교, 학교밖교육 등)이 표시되며 이는 성적처리 시 참조용임.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 오류와 재처리</h4><ul><li><span class="btn">{대상자가져오기}</span> 중 오류가 발생하는 경우는 <span class="btn">{대상자자료검증}</span> 하여 성적산출 대상자에 대한 복수개설과목 오류 여부를 확인함.</li><li>기존에 대상자를 포함하여 성적을 산출하였으나 해당 학생의 성적을 삭제하고자 하는 경우 다시 <span class="btn">{대상자가져오기}</span> 를 해야 함. <b>'포함안함'으로 변경하여 산출하더라도 이전에 산출된 성적이 해당 학생에게 남아 있으므로 여전히 성적일람표 등에서 성적이 조회될 수 있음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="선행작업" data-who="성적처리담당교사">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 산출 규칙 정하기">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">성적산출 대상 등록 후</span><span class="tag">학업성적관리규정 확인 필수</span></div>
+    <h3>결시생 인정점 부여기준 관리</h3>
+    <p class="desc">지필평가에 결시한 학생이 있는 학교는 반드시 설정해야 하는 업무이며, 결시생이 없어도 인정점 산출 단계를 거쳐야 성적산출이 가능하다. 일반결시는 1･2차 지필평가 중 특정 평가 1회만 결시한 경우이고, 1･2차 지필평가를 모두 결시한 경우 또는 한 학기에 1회의 지필평가만 실시하는 과목의 해당 평가에 결시한 경우는 '모두결시'에 준하여 인정점이 부여된다. <strong>일반 결시생 인정점 기준점수는 '평균점수 비율', 모두 결시생 인정점 기준점수의 기본 값은 '평균점수'로 설정되어 있으므로 당해 학교 학업성적관리규정을 확인하여 상황에 맞게 설정을 변경해야 함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 성적산출 대상(고사/영역)이 등록되어 결시 대상 고사가 확정된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-결시생인정점부여기준관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-결시생인정점부여기준관리]</code>에서 '학년도', '학기' 확인 후 <span class="btn">{조회}</span> → <span class="btn">{일반결시}</span>에서 결시 과목의 기준점수 유형('기준고사/영역점수', '평균점수', '평균점수 비율' 중 하나)을 선택하고 '결시명칭'에 따른 '부여기준'과 '차하점 설정'을 당해 학교 학업성적관리규정에 따라 입력 → <span class="btn">{모두결시}</span>에서 모두 결시한 과목의 기준점수 유형('평균점수', '과목의 최하점', '학교자체인정점부여' 중 하나)을 선택하고 '결시명칭'에 따른 '부여기준'을 당해 학교 학업성적관리규정에 따라 입력 → <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>시험을 치지 못한 학생에게도 학교 규정이 정한 방식대로 공정한 점수를 남겨, 학기말 성적이 결시로 인해 왜곡되지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 설정 시 주의</h4><ul><li><span class="btn">{일반결시}</span>의 '미인정결' 차하점 설정은 <span class="btn">{모두결시}</span>에도 동일하게 적용되며, 결시유형에 상관없이 결시한 해당 고사의 차하점으로 적용됨.</li><li>결시생에 대한 인정점 부여기준은 당해 학교의 학업성적관리규정에 따라 부여하며, <b>학업성적관리규정의 부여기준에 맞게 설정이 불가능할 경우 '모두결시'에서 '학교자체인정점부여'를 선택한 후 <code>[성적-성적처리-성적산출관리-결시생인정점관리]</code>에서 <span class="btn">{수동입력}</span>해야 함.</b></li><li><span class="btn">{일반결시}</span>에서 미인정 결의 부여기준을 '차하점 부여'의 '최하점-과목별 선택형 최소배점'으로 설정시 해당 과목에 지필평가 또는 수행평가 결시생이 존재할 경우, 각각 문항정보표의 배점정보와 수행평가정담/배점관리에 최소 1개 이상의 선택형 문항에 배점정보가 있어야 결시생인정점이 부여됨.</li><li>2026학년도 1･2학년에 개설된 과목의 성적을 통합으로 산출할 때, 나이스의 결시생 인정점에 사용하는 평균은 각 학년의 평균을 산출해서 사용하므로 해당 과목을 수강하는 모든 학생의 전체평균을 사용하기 위해서는 수기로 평균을 계산하여 활용해야 함.</li><li><b>인정점 산출 시 인정점이 과목만점을 초과할 경우 과목만점까지만 부여됨.</b></li><li>부정행위 발생으로 특정 학생이 0점으로 처리될 경우, 최하점이 0점으로 변경되어 다른 결시생(미인정결)의 인정점에 영향을 줄 수 있으므로 유의해야 함. 미인정결의 인정점 기준을 '차하점 부여'의 '최하점-과목별 선택형 최소배점'으로 설정한 경우 문항출제 오류로 0점이 존재하는 경우 0점을 제외한 최소배점으로 부여되므로 학교에서는 부여된 인정점에 대해 반드시 확인 필요함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>기준점수별 산출 방식</h4><ul><li>[일반결시] ① 기준고사/영역점수 — 결시생 인정점 = 학생 본인의 응시고사(기준고사) 과목점수 × 해당 결시의 반영비율.</li><li>[일반결시] ② 평균점수(고사 또는 영역 마감시 전입생을 제외한 학생들의 평균점수) — 결시생 인정점 = 결시과목 순수 응시생의 평균점수 × 해당 결시의 반영비율. 순수 응시자는 <b>응시 후 자퇴･유예･면제･전출생 포함, 실시 후 전입･재입학생 미포함</b>.</li><li>[일반결시] ③ 평균점수 비율 — 1차 지필평가와 2차 지필평가의 난이도 차를 반영하여 인정점을 부여하며, 학생본인의 응시고사 점수 × (결시고사 해당 과목 평균(순수 응시생) ÷ 응시고사 해당 과목 평균(순수 응시생)) × 해당 결시의 반영비율.</li><li>[모두결시] 나이스에서 기준은 ① 평균점수(고사 또는 영역 마감시 전입생을 제외한 학생들의 평균점수) ② 과목의 최하점(해당 지필평가 결시과목 최하점) ③ 학교자체인정점부여(학교자체에서 산출하여 수동으로 직접 입력하는 인정점수) 중 <b>하나만 선택할 수 있음</b>.</li><li><code>[성적-성적처리-성적산출관리-결시생인정점관리]</code>에서 <span class="btn">{인정점산출}</span>한 후 학생 성명을 클릭하면 '결시생인정점 세부내역 조회' 창에서 결시구분, 기준점수, 부여정도 등을 확인할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="B" data-when="선행작업" data-who="성적처리담당교사">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE B · 산출 규칙 정하기">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">성적산출 대상 등록 후</span><span class="tag opt">통합산출 또는 분리산출 중 선택</span></div>
+    <h3>성적산출 단위 설정 — 통합산출·분리산출</h3>
+    <p class="desc">동일 교과목을 여러 학년이나 학과의 학생이 함께 수강하는 학교에서 반드시 짚어야 하는 업무이며, 대다수 고등학교는 '통합산출' 방식을 쓴다. 이 메뉴에서 조회되는 과목은 <code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출대상(고사/영역)관리]</code>에서 저장된 과목이다. <strong>통합산출을 하고자 하는 경우에는 [성적산출대상(고사/영역)관리]에서 산출하고자 하는 모든 학년 및 계열/학과에 대해서 대상 과목이 등록되어 있어야 활성화됨.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 성적산출 대상(고사/영역)관리에서 해당 과목이 저장된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출단위관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출단위관리]</code>에서 '학년도', '학기' 확인 후 '학년', '산출기준'을 선택하고 <span class="btn">{조회}</span> → 통합산출은 '과목명' 또는 '산출처리단위'를 클릭하여 '분리산출여부'에서 '통합산출'을 선택하고 <span class="btn">{저장}</span> → 분리산출은 '과목명' 또는 '산출처리단위'를 클릭하여 '분리산출여부'에서 '분리산출'을 선택한 후 '성적산출처리단위'에서 해당 유형('학년별', '계열별', '학과별' 중 하나)을 선택하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>같은 과목을 여러 학년·학과가 수강할 때 누구를 한 모집단으로 볼지 정해, 수강자수와 석차가 학교 규정에 맞는 범위에서 나오게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출단위관리]</code>에서 표시되는 과목은 [성적산출대상(고사/영역)관리]에서 저장된 과목임.</li><li>'분리산출여부'에서 '통합산출'은 동일한 교과 교육과정 내에서 동일한 교과･과목이고 학점, 수강시기가 같은 경우에는 수강한 학생 모두를 수강자수로 하여 성적을 산출하는 경우로 대다수 고등학교의 성적산출 방식임. <b>2022 개정 교육과정을 적용받는 2026학년도 1･2학년과 2015 개정 교육과정을 적용받는 2026학년도 3학년은 교육과정이 달라 통합산출이 불가함.</b></li><li>'분리산출여부'에서 '분리산출'은 동일 교과목을 여러 학년(혹은 학과 등)의 학생이 수강할 때, 성적을 학년별, 계열별, 학과별로 분리해서 산출하는 방식임.</li><li>'학과별로 수강자 수를 결정할 수 있는 학교'는 「초･중등교육법」 제48조에 따른 학과를 설치하고, 같은 법 시행령 제78조에 의거한 시도교육청의 기본계획에 따라 교육감의 승인을 얻어 학과별로 학생을 선발한 학교를 의미함.</li><li>해당 고사에 대한 모든 강의실을 <span class="btn">{마감}</span>하면 <code>[성적-지필/수행선행작업-지필평가과목관리]</code>에 과목별로 시험에 응시한 순수응시학생에 대하여 응시생수, 총점, 평균, 표준편차가 자동으로 등록됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="B" data-when="선행작업" data-who="성적처리담당교사">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE B · 산출 규칙 정하기">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">성적산출 직전</span><span class="tag opt">고정분할점수를 쓰는 과목만</span></div>
+    <h3>분할점수 산출결과 — 성취수준별 고정분할점수 적용</h3>
+    <p class="desc">교과별 평가계획에서 고정분할점수를 쓰기로 한 과목에 해당하는 업무이며, 추정분할점수를 쓰는 과목은 다음 카드로 처리한다. 과목별 성취도(5단계: A-B-C-D-E, 3단계: A-B-C)에 해당하는 성취율(원점수)을 적용하는 작업이다. <strong>3단계 또는 5단계를 선택하면 각 단계에 맞는 점수가 자동으로 나타나므로 각 단계에 맞는 점수를 입력할 필요 없이 해당 과목을 선택하고 {고정분할점수적용}함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, '산출기준(학기말)'이 등록되어 조회되는 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>에서 '학년도', '학기' 확인 후 '학년', '산출기준(학기말)'을 선택하고 <span class="btn">{조회}</span> → '편제명'을 선택하고 성취도('3단계' 혹은 '5단계')를 선택 후 <span class="btn">{고정분할점수적용}</span>을 하고 <span class="btn">{확인}</span>하여 분할점수를 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생의 원점수를 어느 성취도로 평정할지 경계선을 미리 확정해, 성적산출 결과의 성취도가 교과별 평가계획대로 나오게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>3단계 또는 5단계를 선택하면 각 단계에 맞는 점수가 자동으로 나타나므로 각 단계에 맞는 점수를 입력할 필요 없이 해당 과목을 선택하고 <span class="btn">{고정분할점수적용}</span>함.</li><li><b>2022 개정 교육과정을 적용받는 2026학년도 1･2학년 학생의 미도달 등급은 0으로 고정되어 반영됨.</b></li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 학생의 E등급은 0으로 고정되어 반영되고 미도달 등급은 산출하지 않음.</li><li>성취율을 등록하는 교과는 성취평가제가 적용되는 모든 과목(기본과목 및 교양교과(군) 제외)이며, 성취율의 기준 점수는 원점수임.</li><li>과목별 성취도는 성취율에 따라 평정하되 기준 성취율에 따른 분할점수(고정분할점수 또는 추정분할점수)는 교과별 평가계획에 따라 설정함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="B" data-when="선행작업" data-who="성적처리담당교사">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE B · 산출 규칙 정하기">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">성적산출 직전</span><span class="tag opt">추정분할점수를 쓰는 과목만</span></div>
+    <h3>분할점수 산출결과 — 학기말 추정분할점수 가져오기</h3>
+    <p class="desc">과목별 추정분할점수를 사용하기로 한 과목에 해당하는 업무이며, 고정분할점수 과목은 앞 카드로 처리한다. 과목별 추정분할점수를 사용하는 경우는 문항정보표 등록 후 고사(지필평가 또는 수행평가)가 시행되기 전 학업성적관리위원회 심의하고 평가전에 학생들에게 고지한다. <strong>성취율 저장이 완료된 이후에 추정분할점수 산출 결과를 변경하기 위해서는 저장된 성취율을 삭제해야 추정분할점수 산출결과를 수정할 수 있음.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 과목별로 학기말 추정 분할점수가 산출되어 있는 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>에서 '학년도', '학기' 확인 후 '학년', '산출기준(학기말)'을 선택하고 <span class="btn">{조회}</span> → <span class="btn">{산출결과가져오기}</span>하여 '산출결과가져오기' 창에서 과목별로 산출한 학기말 추정 분할점수를 선택 후 <span class="btn">{저장}</span>하고 <span class="btn">{확인}</span> 후 <span class="btn">{확인}</span>하여 각 단계별 분할점수를 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>시험의 실제 난이도를 반영해 심의·고지한 분할점수를 학기말 성적에 그대로 적용하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 수정과 재산출</h4><ul><li><b>성취율을 수정하거나 삭제하면 학기말 성적산출 결과가 삭제되므로 해당과목의 결시생 인정점 산출과 성적산출을 다시 해야 함.</b></li><li>지필평가 추정분할점수 산출 확정 후, 문항정보표(난이도, 배점, 정답, 복수구분)가 수정된 경우 변경된 정보에 맞춰 산출된 추정분할점수는 자동으로 변경됨.</li><li><b>학기말 추정분할점수까지 산출된 경우에는 학기말 추정분할점수 산출 취소 후 재산출해야 지필추정분할점수의 변경된 기준으로 처리됨.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 산출 기준</h4><ul><li>과목별 추정분할점수를 사용하는 경우는 문항정보표 등록 후 고사(지필평가 또는 수행평가)가 시행되기 전 학업성적관리위원회 심의하고 평가전에 학생들에게 고지함.</li><li><span class="btn">{산출결과가져오기}</span>에서 보여지는 'E/미도달' 단계에 해당되는 학생은 최소성취수준 보장자도 추가학습 대상 학생임.(2026학년도 1･2학년)</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 과목의 학기말 성적산출을 위해 <code>[성적-분할점수-분할점수관리-지필평가추정분할점수산출관리]</code>에서 '평가단계'를 '5수준(A-E)+미도달'을 선택하여 'E/미도달'의 분할점수를 산출해도 <span class="btn">{산출결과가져오기}</span>하면 <b>미도달 등급의 성취율의 점수는 확인용도로만 제공되고 E등급의 성취율은 0으로 고정 반영됨.</b></li><li>성취율을 등록하는 교과는 성취평가제가 적용되는 모든 과목(기본과목 및 교양교과(군) 제외)이며, 성취율의 기준 점수는 원점수임.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="B" data-when="선행작업" data-who="성적처리담당교사">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE B · 산출 규칙 정하기">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">성적산출 직전</span><span class="tag opt">석차등급 산출 과목만 조회됨</span></div>
+    <h3>동점자 처리 규정 등록·검증</h3>
+    <p class="desc">석차등급을 산출하는 과목이 있는 학교의 업무이며, 석차등급을 산출하지 않는 교과(전문교과Ⅱ(2015 개정), 교양교과 등)는 동점자 처리 규정의 '과목'에 나타나지 않는다. 학교의 학업성적관리규정에 따라 방안과 순위를 등록한다. <strong>해당 과목에 대해서 적용할 동점자 처리 규정이 없으면 '미적용'을 선택함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 성적산출 대상 과목이 등록되어 '과목'이 조회되는 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-동점자처리규정등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-동점자처리규정등록]</code>에서 '학년도', '학기' 확인 후 '학년', '산출기준', '과목'을 선택하고 <span class="btn">{조회}</span> → '방안명'을 선택하고 '방안순위'와 '방안내순위'를 입력하여 <span class="btn">{저장}</span> → <span class="btn">{검증}</span>하여 저장한 동점자 처리규정이 정상적으로 설정되었는지 확인하고 필요하면 <span class="btn">{전과목출력}</span>으로 '동점자처리 규정 출력' 창에서 학년별 동점자 처리 기준을 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>같은 점수를 받은 학생의 석차를 학교 규정이 정한 순서대로 가르기 위해.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>석차등급을 산출하지 않는 교과(전문교과Ⅱ(2015 개정), 교양교과 등)는 동점자 처리 규정의 '과목'에 나타나지 않음.</li><li><b>2022 개정 교육과정(2026학년도 1․2학년)에서의 전문교과는 석차등급을 산출하며 동점자 처리규정 중 1방안까지만 설정 가능함.</b></li><li>해당 과목에 대해서 적용할 동점자 처리 규정이 없으면 '미적용'을 선택함.</li><li>당해 학교 학업성적관리규정에 명시된 동점자 처리규정을 적용하여 순위를 등록하며, 동점자 처리 규정에 해당하는 방안만 선택하고 해당하지 않는 방안은 선택하지 않을 수 있음.</li><li>소인수과목 처리구분을 '점으로 표기'로 저장한 과목이 동점자처리규정등록에서 조회되는 것은 정상이며, 이 경우 동점자 처리규정에서 '미적용'을 선택하고 <code>[성적-성적처리-성적산출관리-결시생인정점관리, 과목별성적산출]</code>에서 성적을 산출하면 해당 과목의 '석차등급'란이 점으로 표시됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>'지필고사 배점순' 설정 방법</h4><ul><li>해당 과목의 정답/배점에 의해 채점된 결과(점수, O/X)가 있어야 함. <b>결시생 인정점이 부여된 학생은 문항에 대한 채점정보가 없음.</b></li><li>선택할 수 있는 최저배점은 높은 배점 순으로 3개까지의 배점임.</li><li>최저배점에 6, 5, 4가 조회되고 5를 선택하면 최고배점인 6점과 5점을 비교하고 4점은 비교하지 않음.</li><li>'지필고사 배점순'을 선택할 경우 적용되는 배점은 문항정보표에 등록된 선택형과 서술형의 배점으로 최저배점이 구성됨.</li><li><b>선택형 문항의 배점보다 높게 서술형 문항을 3문항 이상 출제하고 문항정보표에 각각의 문항 점수를 등록하면 해당 문항은 채점된 결과가 없으므로 '지필고사 배점순'이 적용이 되지 않음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t15" data-num="15" data-stage="D" data-when="성적산출" data-who="성적처리담당교사">
+  <div class="gutter"><b>15</b><span class="gstage" title="원문 STAGE D · 성적 산출·마감">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">산출 직전</span><span class="tag">결시생 없어도 필수</span></div>
+    <h3>결시생 인정점 산출·수동입력</h3>
+    <p class="desc">결시생이 있는 학교만의 일이 아니다. <strong>결시생이 없어도 {인정점산출} 후 '인정점 설정여부 : 부여함'을 {확인}해야 성적산출이 가능함.</strong> 결시생인정점부여기준관리에서 모두결시의 '부여기준'을 '학교자체인정점부여'로 선택한 학교는 이 화면에서 직접 입력한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 결시생 인정점 부여기준 관리가 끝난 뒤 과목별 성적산출 직전.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-성적산출관리-결시생인정점관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '산출기준', '과목'을 선택하고 <span class="btn">{조회}</span> → <span class="btn">{인정점산출}</span>하여 산출된 결시생의 인정점을 확인하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>평가에 응시하지 못한 학생에게도 학교 학업성적관리규정이 정한 몫의 점수를 남겨, 학기말 성적이 빈칸 없이 산출되게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>결시생이 없어도 <b>{인정점산출} 후 '인정점 설정여부 : 부여함'을 {확인}해야 성적산출이 가능함.</b></li><li>결시생인정점부여기준관리에서 모두결시의 '부여기준'을 '학교자체인정점부여'로 선택한 경우와 결시생 인정점 부여기준이 나이스에서 제공하는 부여기준에 맞지 않는 학교는 <span class="btn">{수동입력}</span>하여 인정점을 수동으로 직접 입력함.</li><li>학교 자체 인정점으로 수기 입력하는 경우 <span class="btn">{평균점수 조회}</span> 기능을 활용하면 학년, 학과, 계열별에 대한 과목 평균점수를 확인할 수 있음. 다만 평균점수 조회에서 나타나는 과목평균 점수는 단순 참고용으로 결시생 인정점 부여 시에는 학교 학업성적관리규정에 따라 처리하여야 함.</li><li>인정점 산출 후 학생의 '성명'을 클릭하면 결시한 학생에게 부여된 인정점 세부내역 조회가 가능함.</li><li>조회하고자 하는 '계열', '학년', '학과'를 선택하고 <span class="btn">{조회}</span>한 후 <span class="btn">{평균점수조회}</span>를 클릭하면 '계열별, 학년별, 학과별' 평균을 조회할 수 있음.</li><li>등록된 결시생 인정점을 삭제할 때는 <span class="btn">{인정점삭제}</span>하여 삭제함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>자동 산출되지 않는 경우</h4><ul><li>문항 출제 오류 등으로 한 학기에 지필평가를 2회 실시한 과목의 만점이 서로 다르고 인정점 부여기준이 '기준고사/영역 점수' 또는 '평균점수'이면 <b>{인정점산출}해도 인정점이 자동으로 산출되지 않으므로</b> 학교에서 수기로 계산한 결과를 <span class="btn">{수동입력}</span>하여 결시생 인정점을 입력함.</li><li>미인정결의 인정점 기준을 '차하점 부여'의 '최하점-과목별 선택형 최소배점'으로 설정한 경우 문항출제 오류로 0점이 존재하는 경우 0점을 제외한 최소배점으로 부여되므로 학교에서는 부여된 인정점에 대해 반드시 확인 필요함.</li><li>현장실습으로 인한 능력단위 수행평가 결시생(공결)은 교과담당교사가 <code>[성적-수행평가-수행평가성적관리]</code>에서 <span class="btn">{현장실습인정점부여}</span>하며, 결시생인정점관리에서 조회되지 않음.</li><li>결시생 인정점 산출의 책임은 교과담당교사에게 있으므로, 교과담당교사가 산출한 결시생인정점과 성적처리담당교사가 나이스에서 산출한 결시생인정점을 비교할 것을 권장함.</li><li>'질병결'에 인정점이 적용되지 않으면 성적산출대상(고사/영역)관리에서 등록한 과목의 '기준고사(영역)'을 확인함. <b>지필평가의 기준고사는 교차로 설정해야 함(1차 지필평가의 기준고사는 2차 지필평가, 2차 지필평가의 기준고사는 1차 지필평가).</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t16" data-num="16" data-stage="D" data-when="성적산출" data-who="성적처리담당교사">
+  <div class="gutter"><b>16</b><span class="gstage" title="원문 STAGE D · 성적 산출·마감">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">인정점 산출 직후</span></div>
+    <h3>과목별 성적산출과 과목 마감</h3>
+    <p class="desc">성적산출 선행작업과 결시생 인정점 산출을 모두 마친 뒤 과목마다 실제 성적을 뽑는 단계다. <strong>성취도(5단계 또는 3단계)를 산출하는 과목은 성취율관리에서 성취율이 등록되어 있어야 성적산출이 가능함.</strong> 전문교과 실무과목은 능력단위별 성적(원점수, 성취도)이 동시에 자동 산출된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 결시생인정점관리에서 인정점 산출과 저장이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-성적산출관리-과목별성적산출]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '산출기준', '과목'을 선택함 → <span class="btn">{지필/수행점수누락자보기}</span>하여 '지필/수행 점수누락자' 창에서 '지필/수행 점수 누락 학생'을 확인한 후 <span class="btn">{닫기}</span>함 → <span class="btn">{성적산출준비}</span>하여 성적산출 대상 및 기준 확인한 후 <span class="btn">{산출함}</span>하여 <span class="btn">{확인}</span>하고 산출한 내용의 이상유무를 확인하여 <span class="btn">{마감함}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>지필·수행 점수와 반영비율, 분할점수, 동점자 규정을 한 번에 적용해 학교생활기록부 교과학습발달상황에 올릴 확정 성적을 만들려고.</dd></dl>
+    </div>
+<div class="memo"><h4>산출 전 조건</h4><ul><li>성취도(5단계 또는 3단계)를 산출하는 과목의 경우 <code>[성적-성적처리선행작업-분할점수관리-성취율관리]</code>에서 <b>성취율이 등록되어 있어야 성적산출이 가능함.</b></li><li>성적산출단위가 '학과별'인 경우 해당학과의 성취율 설정 자료가 동일해야 성적 산출이 가능함.</li><li>성적산출단위가 '계열별'인 경우 동일계열 모든 학과의 성취율 설정 자료가 동일해야 성적 산출이 가능함.</li><li><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출기준명관리]</code>에서 '소인수과목처리구분'을 '점으로 표기'로 선택한 경우는 석차등급 대신 '･'이 입력됨.</li><li><code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출대상(고사/영역)관리]</code>에서 지정한 반영비율을 기준으로 학기말 성적이 산출됨.</li><li>'산출대상자'에서 '19명/20명'의 의미는 19명은 성적산출학생관리에서 {대상자가져오기}로 성적 산출 대상자로 포함한 학생 수, 20명은 수강생편성에서 해당 과목의 수강학생으로 편성된 학생 수임.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무과목·학점제 관련</h4><ul><li>전문교과(2022 개정 교육과정을 적용받는 2026학년도 1･2학년)와 전문교과Ⅱ(2015 개정 교육과정을 적용받는 2026학년도 3학년)의 성적산출 시 실무과목에 대한 능력단위 정보가 제공되며, 실무과목 성적산출 시 능력단위별 성적(원점수, 성취도)이 동시에 자동 산출됨(실무과목 성취율 분할 점수에 따름).</li><li>2026학년도 1･2학년의 경우 과목별 성적산출 방식이 변경됨(고교학점제 적용).</li><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년 학기말 성적은 성취도 5단계(A, B. C, D, E)와 석차등급 5등급(1~5) 병기 또는 P(현장실습 인정점 부여 시)로 산출됨.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 학기말 성적은 A, B. C, D, E(성취도 5단계), P(현장실습 인정점 부여 시)로 산출됨.</li><li>학기말 성적 산출 및 마감까지 완료한 뒤 지필고사 과목 점수를 수정하려면 <b>학기말 성적 마감 및 지필고사에 대한 마감을 취소한 후 과목 점수를 수정하고 학기말 성적을 재산출해야 함.</b> 지필 및 수행평가의 마감을 취소하는 경우 기존 산출한 학기말 성적이 삭제되므로 실수로 마감을 취소한 경우에도 반드시 학기말 성적을 재산출해야 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t17" data-num="17" data-stage="D" data-when="성적산출" data-who="성적처리담당교사">
+  <div class="gutter"><b>17</b><span class="gstage" title="원문 STAGE D · 성적 산출·마감">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">성적산출 마감 전</span><span class="tag opt">교양교과 개설교 한정</span></div>
+    <h3>교양교과 이수여부 처리</h3>
+    <p class="desc">교양교과가 개설된 학교만 해당한다. 2022 개정 교육과정을 적용받는 2026학년도 1･2학년은 '이수기준 충족여부'를 보고 'P' 또는 'F'를 직접 입력하고, 2015 개정 교육과정을 적용받는 2026학년도 3학년은 {전체이수선택}으로 'P'를 입력한다. <strong>'학기말'에 해당하는 산출기준이 존재하지 않으면 교양교과 이수처리를 할 수 없으며, 교양교과 이수처리 후 학기말 성적처리를 마감할 수 있음.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 과목별 성적산출을 마치고 성적산출마감관리로 넘어가기 전.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-교양교과이수관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>2022 개정 교육과정을 적용받는 2026학년도 1･2학년은 '학년도', '학기' 확인 후 '학년', '과목', '강의실', '검색조건('전체')'을 선택하고 <span class="btn">{조회}</span> → '이수기준 충족여부'를 확인 후 '이수여부'에 'P' 또는 'F' 입력 후 <span class="btn">{저장}</span>함. 2015 개정 교육과정을 적용받는 2026학년도 3학년은 같은 조건으로 <span class="btn">{조회}</span> → 이수대상 학생 선택 후 <span class="btn">{전체이수선택}</span>하고 <span class="btn">{확인}</span>하여 '이수여부'에 'P' 입력 여부를 확인하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>석차등급이나 원점수로 평정하지 않는 교양교과의 학점 취득 여부를 확정해 학기말 성적 마감이 막히지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>교양교과 '이수기준 충족여부'에 '미도달'로 나타난 학생은 이수여부를 'P' 또는 'F'로 처리해도 <code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리-최소성취수준보장지도(추가학습)대상자]</code>에서 {대상자가져오기}하면 <b>'대상자'로 등록됨.</b></li><li>이후 [최소성취수준보장지도(추가학습)예외처리] 또는 [최소성취수준보장지도(추가학습)이수관리]를 통해 교양교과 이수여부와 취득학점이 해당 학생의 학교생활기록부에 반영됨(2022 개정 교육과정을 적용받는 2026학년도 1･2학년).</li><li>총 수업시수 기준 2/3 이상 출석해야 하며, 2022 개정 교육과정 적용 학생의 경우 미이수 처리되는 경우 학생부에 '미이수'로 표기됨.</li><li><code>[교과담임-출결관리-과목별출결관리-학기별과목출결마감(창의적체험활동제외)]</code>에서 교양교과 출결마감을 하지 않고 이수여부를 저장하는 경우 메시지가 나타남.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t18" data-num="18" data-stage="D" data-when="성적산출" data-who="성적처리담당교사">
+  <div class="gutter"><b>18</b><span class="gstage" title="원문 STAGE D · 성적 산출·마감">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">전 과목 산출·마감 완료 후</span></div>
+    <h3>성적산출 마감·승인요청·학생/학부모서비스 반영</h3>
+    <p class="desc">모든 과목의 성적산출과 과목 마감, 교양교과 이수처리가 끝난 학년에 대해 진행한다. 나이스에서 성적처리작업과 마감 및 승인처리는 학년별로 진행되므로 3학년을 먼저 상신해도 1･2학년 작업은 정상 진행된다. <strong>'마감여부'를 선택하고 {저장}하면 '학생/학부모서비스 반영' 창이 자동으로 나타나지만, 일단 {닫기}하여 창을 종료하고 {승인요청}을 완료한 이후에 {학생/학부모서비스반영}을 활용할 것을 권장함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 해당 학년 모든 과목의 성적산출 마감과 교양교과 이수처리가 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-성적산출마감관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '산출기준'을 선택하여 <span class="btn">{조회}</span> → 모든 과목에 대한 '마감여부(○)' 확인하고 선택하여 <span class="btn">{저장}</span> 후 '확인' 창에서 <span class="btn">{확인}</span>하고 '학생/학부모서비스 반영' 창에서 <span class="btn">{닫기}</span>함 → <span class="btn">{승인요청}</span>하여 상신한 후 결재가 완료되면 <span class="btn">{학생/학부모서비스반영}</span>함 → '학생/학부모서비스 반영' 창에서 '학생/학부모서비스 성적기준'을 선택하고 <span class="btn">{반영}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>결재로 확정된 학기말 성적만 학교생활기록부와 학생·학부모서비스로 내보내 학생에게 잘못된 성적이 공개되지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>마감 전 확인</h4><ul><li>재학 아닌 학생은 학적변동구분에 학적사항이 기재되고 이수처리 없이 마감이 가능하며, 이수처리가 필요한 경우 학적 변동명을 클릭하면 이수처리 가능함.</li><li><b>'학기말'에 해당하는 산출기준이 존재하지 않으면 교양교과 이수처리를 할 수 없으며, 교양교과 이수처리 후 학기말 성적처리를 마감할 수 있음.</b></li><li>학기별 과목 출결 마감되어야 총 수업시수, 출석시수, 결과시수 반영됨.</li><li>교양교과 이수처리 대상이 아닌 경우는 학기말 성적산출 이전 전출생, 전출교에서 학기말 성적산출이 완료된 전입생, 위탁교육기관에서 학기말 성적산출이 완료된 위탁학생(수강학생 편성에서 제외)임.</li><li>과목별 성적산출 완료 후 교양교과 이수 처리와 전입생 및 위탁학생 성적입력, 공동교육과정 수강학생의 성적 반영 여부 등을 확인함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>마감 이후</h4><ul><li>학기말 성적을 마감한 이후에도 공동교육과정 거점교에서 전송한 공동교육과정 학생의 학기말 성적은 <code>[학적-공동교육과정관리-공동교육과정학생타학교자료전송확인]</code>에서 확인할 수 있고, 해당 학생의 성적을 학교생활기록부에 반영하면 거점교에서 전송한 성적이 반영됨.</li><li>학기말 성적을 마감한 이후에도 위탁기관에서 전송한 위탁학생의 학기말 성적은 <code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-자료관리]</code>에서 등록 가능함.</li><li>성적산출이 완료되면 <span class="btn">{승인요청}</span>은 학기말(학생부 반영) 성적산출기준에 대해서만 가능함.</li><li><b>{학생/학부모서비스반영}한 이후에 입력한 가정통신문을 학부모에게 제공하기 위해서는 다시 {학생/학부모서비스반영}을 해야 함.</b></li><li>3학년 성적산출을 마감하고 {승인요청}을 완료하여도 성적산출대상(고사/영역)관리에서 1･2학년에 대해서 성적처리 선행작업이 가능함.</li><li>성적을 다시 산출하고자 할 때에는 <b>마감 해제 후 [성적-성적처리선행작업-성적산출선행작업-성적산출학생관리]부터 다시 처리해야 함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t19" data-num="19" data-stage="D" data-when="마감후처리" data-who="학급담임교사 성적처리담당교사">
+  <div class="gutter"><b>19</b><span class="gstage" title="원문 STAGE D · 성적 산출·마감">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">성적산출 마감 후</span><span class="tag">학급담임 입력 업무</span></div>
+    <h3>성적통지표(가정통신문) 입력·출력</h3>
+    <p class="desc">학급담임교사가 반 학생과 개별 학생에게 전할 내용을 입력하고 통지표를 뽑는 단계다. '개인가정통신문'에는 특정 학생에게만 해당하는 내용을, '전체가정통신문'에는 반 전체 학생에게 해당하는 내용을 입력한다. <strong>출결상황은 [학적-출결관리-출결관리-반별월출결마감관리]에서 마감이 된 월(일)까지의 출결자료임.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 학기말 성적산출이 마감된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사, 성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-성적통지표(가정통신문)관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '학년', '산출기준', '반'을 선택하고 <span class="btn">{조회}</span> → '성명' 클릭 후 <span class="btn">{개인가정통신문}</span>, <span class="btn">{전체가정통신문}</span> 탭을 선택하여 내용 입력 후 <span class="btn">{저장}</span>함 → 출력할 학생과 옵션을 선택하여 <span class="btn">{미리보기}</span> 후 '성적통지표(가정통신문)관리' 창에서 저장 또는 출력할 수 있음.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>산출된 성적과 출결을 가정에 전달하고 담임의 안내 문구를 함께 실어, 학생·학부모가 학기 결과를 확인할 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>출결상황은 <code>[학적-출결관리-출결관리-반별월출결마감관리]</code>에서 <b>마감이 된 월(일)까지의 출결자료임.</b></li><li>'개인가정통신문'에는 특정 학생에게만 해당하는 내용을 입력하고, '전체가정통신문'에는 반 전체 학생에게 해당하는 내용을 입력함.</li><li>'전체가정통신문' 탭에서 임의의 한 학생에게 가정통신문 내용을 입력하여 저장하면 <b>반 전체에 자동 적용됨.</b></li><li>전문교과(2022 개정 교육과정을 적용받는 2026학년도 1･2학년)와 전문교과Ⅱ(2015 개정 교육과정을 적용받는 2026학년도 3학년)의 경우 성적통지표에 실무과목과 실무과목별 능력단위 상세정보가 출력되며, 현장실습인정점을 부여한 능력단위의 성취도는 'P'로 표기됨.</li><li><b>'성적산출기준명'을 삭제할 경우 학급담임교사가 성적통지표(가정통신문)관리에서 입력한 가정통신문 내용도 삭제됨.</b></li><li>{학생/학부모서비스반영}한 이후에 입력한 가정통신문을 학부모에게 제공하기 위해서는 <code>[성적-성적처리-성적산출마감관리]</code>에서 다시 <span class="btn">{학생/학부모서비스반영}</span>을 해야 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t20" data-num="20" data-stage="E" data-when="기록입력" data-who="교과담당교사">
+  <div class="gutter"><b>20</b><span class="gstage" title="원문 STAGE E · 기록·이수 마무리">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말</span><span class="tag">2차 인증 필요</span></div>
+    <h3>과목별 세부능력 및 특기사항 입력 — 일반교과</h3>
+    <p class="desc">고등학교의 과목별 세부능력 및 특기사항은 모든 교과(군)의 모든 학생을 대상으로 입력하므로 예외 없이 해당한다. <strong>학기 중 학적변동(전출･자퇴･휴학 등) 학생의 경우에도 과목별 세부능력 및 특기사항을 입력</strong>하며, 교과수업에 참여하지 못한 학생은 그 사유를 입력한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 해당 과목의 수업과 평가가 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-과목별 세부능력 및 특기사항]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리-과목별 세부능력 및 특기사항]</code>에서 2차 인증을 과정을 거친 후 '학년도', '학기'를 확인하고 '학년', '과목', '강의실'을 선택하여 <span class="btn">{조회}</span> → 해당 학생의 '세부능력 및 특기사항'을 입력하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>수업에서 관찰한 학생의 활동을 학교생활기록부 교과학습발달상황에 남겨 성적 숫자만으로 드러나지 않는 학습 과정을 증빙하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 공통과목 1･2 합산 500자</h4><ul><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년 학생들의 공통과목 1･2의 과목별 세부능력 및 특기사항의 최대 입력 가능 글자 수를 공통과목 1･2 합산 <b>최대 500자</b>로 변경됨(공통국어 1·2, 공통수학 1·2, 공통영어 1·2, 통합사회 1·2, 통합과학 1·2, 한국사 1·2, 과학탐구실험 1·2).</li><li>공통과목 1･2 각각 세부능력 및 특기사항을 기재해야 하며, 과목별 기재 분량은 자율적으로 결정하되 두 과목 합산 최대 500자 이내로 기재함.</li><li>과목별 세부능력 및 특기사항 미기재 시 학생부 검증에서 '확인필요'로 나타남.</li><li>학교생활기록부 '교과학습 발달상황'에 공통과목 1･2의 특기사항 기재 내용이 합산되어 순서대로 표출되며, 공통과목 1･2 중 한 과목을 미이수한 경우 미이수 과목의 내용은 자동 미표출함.</li><li>공통과목 1･2 간 과목담당교사가 달라 입력 분량 조정이 필요한 경우 등 업무 곤란 상황 발생 시 학업성적관리위원회의 심의를 통해 처리 가능함.</li><li>2025학년도 1학기 기재 내용 분량 조정 시 1학기 해당 과목담당교사가 수정하는 것을 원칙으로 하되, 과목담당 교사가 수정할 수 없는 경우 권한 부여 등 세부사항은 학업성적관리위원회 심의를 통해 결정함.</li><li>전출입 학생 등 이미 공통과목 1･2 합산 500자를 초과하여 작성된 경우 학업성적관리위원회의 심의를 통해 500자 이내로 조정해야함.</li><li><b>대입수시 전형자료 생성 시에는 3학년의 과목별 세부능력 및 특기사항 중 '3학년 1학기(조기 졸업생은 2학년 1학기)' 내용만 생성·제공되고, '2학기' 선택 후 입력한 내용은 반영되지 않음</b>에 유의함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 입력 요령과 글자 수</h4><ul><li>교과수업에 참여하지 못한 학생의 경우 그 사유를 세부능력 및 특기사항 란에 입력함. 순회교육대상학생의 경우 '순회교육으로 특이사항 없음.', 장기결석생인 경우 '장기결석으로 특이사항 없음.', 위탁학생의 경우 '위탁학생으로 특이사항 없음.'</li><li>위탁교육기관, 병원학교･원격수업기관의 활동 내용이 있는 경우, 해당 기관의 자료를 그대로 입력하되 자료 입력 내용은 학교생활기록부 기재요령의 각종 유의 사항을 준수하여 입력함.</li><li><span class="btn">{엑셀내려받기}</span>로 양식을 내려받아 과목별세부능력 및 특기사항을 엑셀 파일에 작성하고 <span class="btn">{엑셀업로드}</span>를 적용하여 일괄 업로드 후 저장 가능함.</li><li><span class="btn">{관찰내용조회}</span>하면 <code>[성적-관찰기록관리-관찰내용관리]</code>에서 기록해둔 자료를 조회할 수 있으며, 필요한 관찰내용만 선택하여 '세부능력 및 특기사항'으로 <span class="btn">{반영}</span>할 수 있음.</li><li>업무편의를 위해서 <code>[성적-성적처리-과목별세부능력및특기사항]</code>에서 <span class="btn">{조회}</span>하면 '영재 미표시'가 기본으로 선택으로 있어서 '영재･발명교육 기록사항'란이 나타나지 않음. '영재 미표시'를 해제하고 <span class="btn">{조회}</span>하면 '영재･발명교육 기록사항'란이 나타남.</li><li>영재교육과 발명교육 관련 내용은 '영재･발명교육 기록사항'란에 입력하고 입력된 내용은 글자 수 500자에 산입되지 않음.</li><li>'세부능력 및 특기사항'에 '입력가능글자'는 총 <b>1,500Bytes</b>이고 내용 입력 시 '과목명', '(학기)'가 자동으로 기재되고 '과목명', '(학기)'는 1,500Byte에 삽입되지 않음.</li><li>'세부능력 및 특기사항'은 학기별로 입력할 수 있으며, 동일 과목에 대해 '1학기'와 '2학기'에 각각 입력하는 경우 '1학기' 내용 다음 줄에 '2학기' 내용이 입력되며, 이때 '(1학기)', '(2학기)'는 자동 입력됨.</li><li>'세부능력 및 특기사항'을 학기별로 입력하지 않고 학년 단위로 입력하는 경우는 학기 구분이 입력되지 않음.</li><li>교과담당교사가 과목별로 '세부능력 및 특기사항'을 입력하면 학교생활기록부 해당란에는 과목별로 한 줄씩 띄워진 상태로 입력됨.</li><li>유의어 목록은 '2026학년도 고등학교 학교생활기록부 기재요령'의 유의사항에서 학교생활기록부에 기재 금지된 사항을 단어(명사) 단위로 작성한 것으로 단어 자체가 금지된 경우와 문맥에 따라 기재 유의어가 될 확률이 높은 단어를 혼합하여 구성하였으므로, 세부적인 사항은 '2026학년도 고등학교 학교생활기록부 기재요령'을 참조함.</li><li>유의어 목록에 포함되지 않았더라도 기재가 불가한 단어가 존재하므로 '2026학년도 고등학교 학교생활기록부 기재요령'을 반드시 확인하여 입력함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t21" data-num="21" data-stage="E" data-when="기록입력" data-who="교과담당교사">
+  <div class="gutter"><b>21</b><span class="gstage" title="원문 STAGE E · 기록·이수 마무리">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말</span><span class="tag opt">전문교과 개설교 한정</span><span class="tag">2차 인증 필요</span></div>
+    <h3>과목별 세부능력 및 특기사항 입력 — 전공일반·전공실무과목, 전문교과Ⅱ 기초·실무과목</h3>
+    <p class="desc">2022 개정 교육과정을 적용받는 2026학년도 1･2학년의 전공일반과목·전공실무과목, 2015 개정 교육과정을 적용받는 2026학년도 3학년의 전문교과Ⅱ 기초과목·실무과목을 개설한 학교만 해당한다. <strong>조회 조건이 '계열/학년/학과'로 잡히고, 능력단위명을 정해진 형식으로 기재해야 한다</strong>는 점이 일반교과와 다르다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 해당 학기에 이수한 능력단위 평가가 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-과목별 세부능력 및 특기사항]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리-과목별 세부능력 및 특기사항]</code>에서 2차 인증을 과정을 거치고 '학년도', '학기' 확인 후 '계열/학년/학과', '과목', '강의실'을 선택하고 <span class="btn">{조회}</span> → 해당 학생의 '세부능력 및 특기사항'을 입력한 후 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>능력단위 단위로 진행된 실무 학습의 참여도와 태도를 학교생활기록부에 남겨 직업교육 이수 과정을 드러내려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년 대상 전문교과 전공일반과목(능력단위와 연계하여 운영하는 경우) 및 전공실무과목의 과목별 세부능력 및 특기사항은 <b>당해 학기에 이수한 모든 능력단위</b>를 세부능력 및 특기사항에 다음과 같이 입력함. (학기명) 과목명 : [능력단위 : 능력단위명] 학습활동 참여도 및 태도 등</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 대상 전문교과Ⅱ의 기초과목, 실무과목 과목별 세부능력 및 특기사항은 과목별로 입력하되, 특기할 만한 사항이 있는 능력단위를 포함하여 다음과 같이 입력할 수 있음. (학기명) 과목명 : 학습활동 참여도 및 태도 등(단, 능력단위명 기재시 "[능력단위 : 능력단위명]"으로 표기)</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t22" data-num="22" data-stage="E" data-when="기록입력" data-who="학급담임교사 성적처리담당교사">
+  <div class="gutter"><b>22</b><span class="gstage" title="원문 STAGE E · 기록·이수 마무리">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말</span><span class="tag">2차 인증 필요</span></div>
+    <h3>개인별 세부능력 및 특기사항 입력</h3>
+    <p class="desc">특정 과목의 세부능력 및 특기사항으로 담기 어려운 사항이 있는 학생만 해당한다. <strong>개인별 세부능력 및 특기사항은 2차 인증을 받아야 입력 가능</strong>하며, 교육과정에 따라 탭 구성이 다르다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 과목별 세부능력 및 특기사항 입력과 함께.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사, 성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-개인별세부능력및특기사항]</code>, <code>[성적-성적처리-개인별 세부능력 및 특기사항]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>2022 개정 교육과정을 적용받는 2026학년도 1･2학년은 <code>[성적-성적처리-개인별세부능력및특기사항]</code>에서 2차 인증을 받은 후 '학년도', '학년', '반'을 확인하고 <span class="btn">{조회}</span>하여 <span class="btn">{보통교과및전문교과}</span>, <span class="btn">{체육･예술일반선택과목}</span>, <span class="btn">{교양교과}</span> 탭에서 해당 학생의 '세부능력 및 특기사항'을 입력하고 <span class="btn">{저장}</span> → 2015 개정 교육과정을 적용받는 2026학년도 3학년은 <code>[성적-성적처리-개인별 세부능력 및 특기사항]</code>에서 2차 인증을 받은 후 '학년도', '학년', '반'을 확인하고 <span class="btn">{조회}</span>하여 <span class="btn">{보통교과 및 전문교과}</span>, <span class="btn">{진로선택과목}</span>, <span class="btn">{체육･예술일반선택과목}</span> 탭에서 해당 학생의 '세부능력 및 특기사항'을 입력하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>관련 과목이 개설되지 않아 과목별 세특에 담을 수 없는 학습 경험을 학생부에 남길 자리를 확보하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 입력 요령</h4><ul><li><span class="btn">{학생선택능력단위명가져오기}</span>하면 '학생선택 능력단위명'이 '세부능력 및 특기사항'란에 입력됨.</li><li><span class="btn">{일괄복사}</span>를 이용하면 같은 내용을 여러 명에게 복사할 수 있고, 선택된 학생 중 기존에 입력된 내용이 있는 경우는 기존내용에 추가로 저장됨.</li><li><b>개인별 세부능력 및 특기사항은 2차 인증을 받아야 입력 가능함.</b></li><li>업무 편의를 위해서 <code>[성적-성적처리-개인별 세부능력 및 특기사항]</code>에서 <span class="btn">{조회}</span>하면 '영재 미표시'가 기본으로 선택으로 있어서 '영재･발명교육 기록 사항'란이 나타나지 않음. '영재 미표시'를 해제하고 <span class="btn">{조회}</span>하면 '영재･발명교육 기록사항'란이 나타남.</li><li>영재교육과 발명교육 관련 내용은 '영재･발명교육 기록사항'란에 입력함(입력된 내용은 개인별 세부능력 및 특기사항 글자 수 500자에 산입되지 않음).</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 입력 대상 항목</h4><ul><li>한국학교 — 한국학교의 성적 산출 방식이 국내학교와 다른 경우.</li><li>학력인정 대안학교 — 학력인정 대안학교의 성적 산출 방식이 전입교와 다른 경우.</li><li>전･편입학, 귀국 등에 따른 미이수 교과목 보충 학습과정(2015 개정 교육과정을 적용받는 2026학년도 3학년) — '보충학습 과정'을 실시했는데 당해 학기에 관련 과목이 개설되지 않은 경우.</li><li>영재교육 — 당해 학기에 관련 과목이 개설되어 있지 않은 경우.</li><li>발명교육 — 당해 학기에 기술･가정, 과학 교과 모두 개설되지 않은 경우.</li><li>방송통신고등학교의 학교 외 학습경험 인정에 따른 과목 이수 — 당해 학기에 관련 과목이 개설되어 있지 않은 경우.</li><li>수업량 유연화에 따른 학교 자율적 교육활동(2015 개정 교육과정을 적용받는 2026학년도 3학년) — 특정 과목의 세부능력 및 특기사항으로 한정하기 어려운 경우.</li><li>교육감이 지정한 교육기관의 방송･정보통신매체를 활용한 수업(온라인 수업)(2015 개정 교육과정을 적용받는 2026학년도 3학년) — 수강하였으나 당해 학기에 관련 과목이 개설되어 있지 않은 경우(성적의 일부 또는 전부가 산출되지 않은 과목)에 한하여 이수내용 기재. <b>다만, 전･편입학, 귀국 등에 해당하지 않는 학생이 온라인 보충과정을 통해 수강한 내용은 기재 불가.</b></li><li>정규 교육과정 이외의 프로그램으로 운영하는 현장실습 — 당해 학기에 현장실습을 전문교과에 포함하지 않거나 창의적 체험활동으로 운영하지 않은 경우.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t23" data-num="23" data-stage="E" data-when="기록입력" data-who="성적처리담당교사 학급담임교사">
+  <div class="gutter"><b>23</b><span class="gstage" title="원문 STAGE E · 기록·이수 마무리">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말</span><span class="tag opt">편입･복학･재입학･재취학 학생 한정</span></div>
+    <h3>편입·복학생 세부능력 및 특기사항 이전년도 자료 복사</h3>
+    <p class="desc">편입학, 복학, 재입학, 재취학 학생만 조회되므로 해당 학생이 있는 학급만 해당한다. 복사한 세부능력 및 특기사항과 같은 과목을 현재년도에 개설하고 그 과목에 해당 학생을 수강과목 편성하면 자동 반영되며, <strong>현재년도에 입력 가능한 글자는 복사한 글자를 차감한 만큼</strong>이다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 해당 학생의 수강과목 편성이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사, 학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-편입/복학생세부능력및특기사항관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리-편입/복학생세부능력및특기사항관리]</code>에서 '학년도' 확인 후 '학년', '반'을 선택하고 <span class="btn">{조회}</span> → 해당 학생 선택 후 <span class="btn">{이전년도자료조회}</span>하여 '이전년도 자료조회' 창에서 현재 학년도로 복사할 자료를 선택 → <span class="btn">{현재년도로복사학기}</span>한 후 <span class="btn">{확인}</span>하여 복사된 자료를 확인하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>이전 학년도에 이미 기록된 학습 내용을 다시 옮겨 적는 수고 없이 현재 학년도 기록에 이어 붙이려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>편입학, 복학, 재입학, 재취학 학생만 조회됨.</li><li>편입, 복학, 재입학, 재취학 학생의 이전학년도 자료를 현재 학년도에 반영하기 위해 사용함.</li><li><b>2026학년도 1･2학년 학생은 이전 학년도와 교육과정이 달라 '이전년도 자료조회' 창에서 과목을 선택할 수 없으므로</b> 필요 시 내용을 복사하여 <code>[교과담임-성적-성적처리-과목별 세부능력 및 특기사항]</code>에서 입력함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t24" data-num="24" data-stage="E" data-when="기록입력" data-who="교과담당교사">
+  <div class="gutter"><b>24</b><span class="gstage" title="원문 STAGE E · 기록·이수 마무리">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말</span></div>
+    <h3>과목별 독서활동 등록</h3>
+    <p class="desc">과목별 독서활동상황을 기록하는 과목이 있는 경우 해당한다. 학생 성명을 클릭하면 '이전독서활동상황 조회' 창이 열리므로, <strong>이전학년도 독서활동상황과 중복 여부를 먼저 확인</strong>한 뒤 입력한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 해당 과목의 독서활동 지도가 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-과목별독서활동]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리-과목별독서활동]</code>에서 '학년도', '학기' 확인 후 '학년', '과목', '강의실'을 선택하고 <span class="btn">{조회}</span> → 해당 학생의 '성명'을 클릭하여 '이전독서활동상황 조회' 창에서 이전학년도 독서활동상황과 중복 여부를 확인하고 <span class="btn">{닫기}</span> → 해당 학생의 '독서활동상황'을 입력하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>같은 책이 학년마다 겹쳐 기록되는 일을 막고 과목 수업과 연결된 독서 이력만 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{일괄입력}</span>하면 같은 내용을 여러 명에게 입력할 수 있고, '과목별독서활동 일괄입력' 창에서 <span class="btn">{이어쓰기}</span>하면 선택된 학생 중 기존에 입력된 내용이 있는 경우는 기존 내용에 추가로 저장되고 <span class="btn">{덮어쓰기}</span>하면 기존에 입력된 내용에 <b>덮어쓰기 형태로 저장됨</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t26" data-num="26" data-stage="E" data-when="마감후처리" data-who="성적처리담당교사 교과담당교사">
+  <div class="gutter"><b>26</b><span class="gstage" title="원문 STAGE E · 기록·이수 마무리">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말 성적산출 마감과 학기별 과목출결마감 이후</span><span class="tag opt">2026학년도 1･2학년 한정</span></div>
+    <h3>최소성취수준 보장지도(추가학습) 대상자 가져오기</h3>
+    <p class="desc">고교학점제 학점 이수 기준을 적용받는 2026학년도 1･2학년 과목만 해당한다. <strong>해당 교과 담당교사의 학기별 과목마감 작업과 해당 학년의 학기말 성적 마감이 끝나야 <span class="btn">{대상자가져오기}</span> 버튼이 활성화</strong>된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 학기별과목출결마감과 성적산출마감이 완료된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사, 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리-최소성취수준보장지도(추가학습)대상자]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리-최소성취수준보장지도(추가학습)대상자]</code>에서 '학년도', '학기', '학년' 확인 후 '과목', '강의실'을 선택하여 <span class="btn">{조회}</span> → <span class="btn">{대상자가져오기}</span>하여 <span class="btn">{확인}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학점을 못 채운 학생을 확정 명단으로 붙잡아 추가학습으로 학점을 이수할 기회를 주려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><code>[학적-출결관리-과목별출결관리-학기별과목출결마감(창의적체험활동제외)]</code>에서 해당 교과 담당교사가 <span class="btn">{학기별 과목마감}</span> 작업과 <code>[성적-성적처리-성적산출마감관리]</code>에서 해당 학년의 학기말 성적이 마감되어야 해당과목의 <span class="btn">{대상자가져오기}</span> 버튼이 활성화됨.</li><li><span class="btn">{대상자삭제}</span>하면 <span class="btn">{대상자가져오기}</span>한 대상자를 삭제할 수 있음.</li><li><b>최소성취수준 보장지도(추가학습) 대상자 가져오기가 진행된 교과 과목이 있는 경우, 학기말 성적산출마감을 취소할 수 없음.</b></li><li>교양교과 '이수기준 충족여부'에 '미도달'로 나타난 학생은 이수여부를 'P' 또는 'F'로 처리해도 <span class="btn">{대상자가져오기}</span>하면 '대상자'로 등록됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t27" data-num="27" data-stage="E" data-when="마감후처리" data-who="성적처리담당교사">
+  <div class="gutter"><b>27</b><span class="gstage" title="원문 STAGE E · 기록·이수 마무리">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">대상자 가져오기 이후</span><span class="tag opt">2026학년도 1･2학년 한정</span></div>
+    <h3>최소성취수준 보장지도(추가학습) 예외처리</h3>
+    <p class="desc">학점이수 기준이 미충족 되었으나 추가학습으로 처리하기 어려운 사정이 있는 학생만 해당한다. <strong>예외처리로 학점이수 처리 후 학점을 부여할 수 있으며, 대상자는 학교 상황에 따라 관리 가능</strong>하다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 보장지도(추가학습) 대상자를 가져온 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리-최소성취수준보장지도(추가학습)예외처리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리-최소성취수준보장지도(추가학습)예외처리]</code>에서 '학년도', '학기', '학년' 확인 후 '과목', '강의실'을 선택하고 '미이수'를 선택하여 <span class="btn">{조회}</span> → 예외처리 사유('특수교육 대상자', '학교외 장소 수강', '기타')를 선택하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>추가학습에 참여할 수 없는 불가피한 사정이 있는 학생이 미이수로 남지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>학점이수 기준이 미충족 되었으나 예외처리로 학점이수 처리 후 학점을 부여할 수 있음.</li><li>학점이수 인정기준 예외처리 대상자는 학교 상황에 따라 관리 가능함(특수교육대상자, 학교외 장소 수강, 기타).</li><li>중･장기적이며 정기적인 병원 진료로 특정과목의 수업에 출석하지 못하는 학생의 경우 불가피한 상황을 고려하여 <b>장긴간 입원 확인서, 정기 통원치료 진단서 등을 근거로 학점이수 인정 가능함</b>(교육부 기초학력진로교육과(2025.7.1.)).</li><li>'예외' 항목을 '기타'로 선택한 경우 '예외사유(기타)'의 입력란이 활성화되어 담당자가 예외 사유를 입력할 수 있음.</li><li>학점반영까지 완료 후 학교생활기록부 자료 반영 완료 시 과목별 '이수' 또는 '미이수'로 처리되어 학교생활기록부 교과학습발달상황에 반영됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t28" data-num="28" data-stage="E" data-when="마감후처리" data-who="성적처리담당교사 교과담당교사">
+  <div class="gutter"><b>28</b><span class="gstage" title="원문 STAGE E · 기록·이수 마무리">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">추가학습 실시 후</span><span class="tag opt">2026학년도 1･2학년 한정</span></div>
+    <h3>최소성취수준 보장지도(추가학습) 이수관리와 학점반영·마감</h3>
+    <p class="desc">학점 이수 기준을 충족하지 못한 학생을 대상으로 추가학습을 실시한 과목만 해당한다. <strong>등록한 '참여시수'가 '이수기준'보다 크면 자동으로 이수여부가 '미이수'에서 '이수'로 변경</strong>된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 예외처리를 마치고 추가학습을 실시한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사, 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리-최소성취수준보장지도(추가학습)이수관리]</code>, <code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리-최소성취수준보장지도(추가학습)마감]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리-최소성취수준보장지도(추가학습)이수관리]</code>에서 '학년도', '학기', '학년' 확인 후 '과목', '강의실'을 선택하고 '미이수' 학생을 선택하여 <span class="btn">{조회}</span> → 학점당 시수를 입력하여 <span class="btn">{시수적용}</span>하고 학생별 '참여시수'와 '비고'란에 이수여부를 등록하고 <span class="btn">{저장}</span> → <code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리-최소성취수준보장지도(추가학습)마감]</code>에서 '학년도', '학기', '학년' 확인 후 '과목', '강의실'을 선택하고 <span class="btn">{조회}</span>하여 <span class="btn">{학점반영}</span> 후 <span class="btn">{마감}</span>하면 '보장지도(추가학습) 대상'의 '대상자', '예외처리자', '이수자', '미이수자', '학점반영자' 정보를 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>추가학습에 참여한 만큼을 학점으로 인정해 학생이 과목을 이수한 것으로 마무리하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>학점 이수 기준을 충족하지 못한 학생을 대상으로 추가학습 참여 시수 입력 후 최종 학점 이수 처리함.</li><li>등록한 '참여시수'가 '이수기준'보다 크면 자동으로 이수여부가 '미이수'에서 '이수'로 변경됨.</li><li>학점당 시수는 <b>1학점당 3시수</b>로 자동 표기되며, '비고'란에 보장지도(추가학습) 내용 등을 간략하게 입력함.</li><li><span class="btn">{마감}</span> 후 학교생활기록부 자료 반영 완료 시 과목별 이수여부에 따라 '이수' 또는 '미이수'로 처리되어 학교생활기록부 교과학습발달상황에 반영됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 출결 수정으로 이수시간이 바뀐 경우</h4><ul><li>최소성취수준 보장지도(추가학습)이 모두 완료된 후, 학기별과목출결마감(창의적체험활동제외)을 마감 취소하여 교과목에 대한 이수시간이 변경되는 경우 <b>최소성취수준 보장지도(추가학습)도 재처리가 필요함</b>.</li><li><code>[학적-과목별출결관리-과목별출결관리]</code> 과목전체마감 화면에서 기결취소 → <code>[학적-과목별출결관리-과목별출결관리-학기별과목출결마감(창의적체험활동제외)]</code>에서 해당과목 마감취소 → <code>[학적-출결관리-반별월출결마감관리]</code>에서 해당 학급의 월 마감과 일 마감 취소 → <code>[학적-출결관리-과목별출결관리]</code>에서 교시출결 마감 취소 후 출결 수정 → 위의 (4,3,2,1) 과정을 역순으로 마감처리 → <code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리]</code> 마감 취소 후 해당 교과의 대상자가져오기부터 마감까지 재 진행 → <code>[학생부-학교생활기록부-자료반영]</code>하여 성적 반영 후 확인.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t29" data-num="29" data-stage="E" data-when="마감후처리" data-who="학급담임교사 교과담당교사 성적처리담당교사">
+  <div class="gutter"><b>29</b><span class="gstage" title="원문 STAGE E · 기록·이수 마무리">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">보장지도 마감 이후</span><span class="tag opt">2026학년도 1･2학년 한정</span></div>
+    <h3>최소성취수준 보장지도(추가학습) 조회와 마감관리 승인요청</h3>
+    <p class="desc">보장지도 결과를 학급담임교사는 학급별로, 교과담당교사는 과목별로 확인하고, 업무담당자가 학년 단위로 마감 상신하는 마지막 단계다. <strong>최소성취수준 보장지도(추가학습) 마감은 학년 단위로 상신하므로 과목별로 상신할 수 없다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 과목별 보장지도(추가학습) 마감이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사, 교과담당교사, 성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리-최소성취수준보장지도(추가학습)조회]</code>, <code>[성적-성적처리-최소성취수준보장지도(추가학습)마감관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>학급별(학급담임)은 <code>[성적-성적처리-최소성취수준보장지도(추가학습)조회]</code>에서 '학년도', '학기', '학년', '반' 확인 후 '전체' 또는 '미이수'를 선택하고 <span class="btn">{조회}</span> → 과목별(교과담임)은 같은 메뉴에서 '학년도', '학기', '학년', '과목' 확인 후 '강의실'을 선택하여 '전체' 또는 '미이수'를 선택하고 <span class="btn">{조회}</span> → <code>[성적-성적처리-최소성취수준보장지도(추가학습)마감관리]</code>에서 '학년도', '학기', '학년' 확인 후 <span class="btn">{조회}</span>하여 '강의실별 마감여부'를 확인하고 전체 과목을 선택하여 <span class="btn">{마감정보저장}</span> 후 <span class="btn">{승인요청}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학년 전체의 이수·미이수 처리 결과를 결재로 확정해 그 학기의 학점 이수 업무를 닫으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>업무담당자가 최소성취수준보장지도(추가학습)에 대한 <span class="btn">{마감정보저장}</span> 후 <span class="btn">{승인요청}</span>을 완료하면 해당 학기의 최소성취수준보장지도 업무가 완료됨.</li><li>보장지도대상인원, 예외처리인원, 이수처리인원, 미이수 처리인원, 학점반영 인원을 클릭하면 상세 현황을 확인할 수 있음.</li><li><b>최소 성취수준 보장지도(추가학습) 마감은 학년 단위로 상신하므로 과목별로 상신할 수 없음.</b></li><li>최소 성취수준 보장지도(추가학습)이 마감된 이후, 학생의 출결을 수정하여 교과 출석 시수가 변경되는 경우에는 출결자료 수정 이후 <b>최소 성취수준 보장지도 대상자 가져오기부터 마감까지 재처리해야 함</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part 6. 성적, Section_05 학기말 성적처리 (830–894쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

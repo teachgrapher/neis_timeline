@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<!-- 학교업무분장 권한관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>학교업무분장 권한관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>학교업무분장 권한관리</b>
+    <span class="sub">업무 29개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Part Ⅰ 학교업무분장 · Section_01~08 · pp. 3–62</p>
+    <h1>학교업무분장 권한관리
+      <em>업무 29개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학년초, 학기중, 수시</dd></div>
+      <div><dt>업무담당</dt><dd>학교업무분장관리 담당자(권한관리 담당자), 학교 업무담당자(업무승인 관리자), 원격업무 담당자, 교원</dd></div>
+      <div><dt>메뉴경로</dt><dd>[업무분장설정업무-학교업무분장-학교업무분장관리], [{업무승인관리}업무승인-결재경로관리-결재선관리], [개인설정-2차인증-2차인증관리]</dd></div>
+      <div><dt>선행조건</dt><dd>학교장(기관마스터)이 학교업무분장에 따라 권한을 부여할 권한관리 담당자를 등록함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>학년초 착수 준비</h3>
+            <p class="tl-sub">권한부여 시작 전 · 학교장 로그인으로만 가능</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 분장담당자 지정"><span>01</span>분장담당자 지정</button><button type="button" class="tl-btn" data-go="t2" title="02 등록방법 선택"><span>02</span>등록방법 선택</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>지난자료·예시 가져오기</h3>
+            <p class="tl-sub">예시 가져와서 설정하기를 고른 학교만 해당</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t3" title="03 예시 가져오기"><span>03</span>예시 가져오기</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>업무분장 권한 부여</h3>
+            <p class="tl-sub">담당자 지정 후 · 부서장→부서원→메뉴 순서 준수</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 부서장 지정"><span>04</span>부서장 지정</button><button type="button" class="tl-btn" data-go="t5" title="05 부서원 편성"><span>05</span>부서원 편성</button><button type="button" class="tl-btn" data-go="t7" title="07 메뉴·자료권한"><span>07</span>메뉴·자료권한</button><button type="button" class="tl-btn" data-go="t10" title="10 공통업무 메뉴"><span>10</span>공통업무 메뉴</button><button type="button" class="tl-btn" data-go="t11" title="11 자료권한 승인요청"><span>11</span>자료권한 승인요청</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>결재선과 2차 인증 준비</h3>
+            <p class="tl-sub">학년초 전결 규정 확정 후 · 입력 시작 전</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t20" title="20 기관결재선 등록"><span>20</span>기관결재선 등록</button><button type="button" class="tl-btn" data-go="t21" title="21 개인결재선 등록"><span>21</span>개인결재선 등록</button><button type="button" class="tl-btn" data-go="t23" title="23 원격업무 결재선"><span>23</span>원격업무 결재선</button><button type="button" class="tl-btn" data-go="t26" title="26 M-OTP 등록"><span>26</span>M-OTP 등록</button><button type="button" class="tl-btn" data-go="t27" title="27 ARS 인증 등록"><span>27</span>ARS 인증 등록</button><button type="button" class="tl-btn" data-go="t28" title="28 메일·인증번호"><span>28</span>메일·인증번호</button><button type="button" class="tl-btn" data-go="t29" title="29 2차 인증 승인"><span>29</span>2차 인증 승인</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>학기중 인사 변동 대응</h3>
+            <p class="tl-sub">전입·겸임·퇴직 등 변동이 생긴 직후</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t13" title="13 겸임교원 가져오기"><span>13</span>겸임교원 가져오기</button><button type="button" class="tl-btn" data-go="t14" title="14 임시교원 등록"><span>14</span>임시교원 등록</button><button type="button" class="tl-btn" data-go="t15" title="15 권한 이양"><span>15</span>권한 이양</button><button type="button" class="tl-btn" data-go="t16" title="16 자료권한 재등록"><span>16</span>자료권한 재등록</button><button type="button" class="tl-btn" data-go="t9" title="09 퇴직·전보 삭제"><span>09</span>퇴직·전보 삭제</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">06</p>
+            <h3>업무 조정과 점검·오류 조치</h3>
+            <p class="tl-sub">권한부여 완료 후 수시 · 문제 발생 시 즉시</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t6" title="06 업무 복사·이동"><span>06</span>업무 복사·이동</button><button type="button" class="tl-btn" data-go="t8" title="08 권한 일부 회수"><span>08</span>권한 일부 회수</button><button type="button" class="tl-btn" data-go="t12" title="12 행공 권한 부여"><span>12</span>행공 권한 부여</button><button type="button" class="tl-btn" data-go="t17" title="17 소유자 조회"><span>17</span>소유자 조회</button><button type="button" class="tl-btn" data-go="t18" title="18 변경이력 관리"><span>18</span>변경이력 관리</button><button type="button" class="tl-btn" data-go="t19" title="19 권한 알림 조치"><span>19</span>권한 알림 조치</button><button type="button" class="tl-btn" data-go="t22" title="22 기결문서 삭제"><span>22</span>기결문서 삭제</button><button type="button" class="tl-btn" data-go="t24" title="24 원격업무 신청"><span>24</span>원격업무 신청</button><button type="button" class="tl-btn" data-go="t25" title="25 원격 외부신청"><span>25</span>원격 외부신청</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="담당자지정" data-who="학교장">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 권한 체계 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 권한부여 시작 전</span><span class="tag opt">학교장·기관마스터 로그인 시에만</span></div>
+    <h3>학교업무분장관리 담당자 지정</h3>
+    <p class="desc">모든 학교가 학년초에 가장 먼저 해야 하는 업무이다. 이 지정이 끝나지 않으면 부서장 지정도 부서원 편성도 시작할 수 없다. <strong>학교업무분장관리 담당자는 당해 학교별로 한 명만 지정할 수 있고, 지정 작업은 학교장 또는 기관마스터로 로그인한 경우에만 가능하다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 부서와 부서장 지정을 시작하기 전에 가장 먼저 처리한다.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교장(기관마스터)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장관리담당자지정]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘사용자성명’에 권한관리 담당자 성명을 입력 후 <span class="btn">{조회}</span> → 조회된 권한관리 담당자 목록을 클릭하고 <span class="btn">{지정}</span> → ‘학교업무분장관리담당자’에 권한관리 담당자 정보가 반영된 것을 확인하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>기관마스터가 개인에게 직접 권한을 주지 못하도록 막아 둔 구조에서, 업무분장에 따라 권한을 부여할 책임자를 한 명으로 못 박아 권한 오남용을 막으려고 한다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>학교장(기관마스터)이 학교업무분장관리 담당자를 지정한다.</li><li><b>학교업무분장관리 담당자는 당해 학교별로 한 명만 지정할 수 있다.</b></li><li><b>학교장 또는 기관마스터로 로그인한 경우에 한해 [학교업무분장관리담당자지정]을 활용할 수 있다.</b></li><li>겸임학교가 있는 경우 <code>[학교업무분장관리담당자지정]</code>에서 ‘학교명’을 선택할 수 있다.</li><li>학교업무분장관리 담당자 변경 시 학교장(기관마스터)이 변경된 학교업무분장관리 담당자를 <span class="btn">{지정}</span>하면 ‘학교업무분장관리담당자’의 ‘현재 담당자’ 정보에는 취소선이 표기되며, ‘변경 후 담당자’로 반영된 것을 확인 후 <span class="btn">{저장}</span>한다.</li><li>학교업무분장관리 담당자로 지정된 권한관리 담당자는 당해학교 업무분장에 따라 <code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정]</code>에서 권한을 부여할 수 있다.</li><li>학교장은 기관마스터 권한을 가지며, 학교업무분장 담당자를 지정할 수 있는 권한만 지닌다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="학년초설정" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 권한 체계 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 담당자 지정 직후</span><span class="tag opt">두 방법 중 선택</span></div>
+    <h3>학교업무분장 등록 방법 선택(처음부터 설정하기 / 예시 가져와서 설정하기)</h3>
+    <p class="desc">학교업무분장관리 담당자로 지정된 뒤 절차형 메뉴를 시작하는 첫 갈림길이다. 학교 여건에 따라 <span class="btn">{우리학교 업무분장 처음부터 설정하기}</span>와 <span class="btn">{학교업무분장 예시 가져와서 설정하기}</span> 중 하나를 고른다. <strong>{우리학교 업무분장 처음부터 설정하기}를 고르면 곧바로 [부서관리(부서장지정)]으로 이동되므로, 우리 학교 업무분장표를 손에 놓고 시작해야 한다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학교장(기관마스터)이 학교업무분장관리 담당자를 지정한 뒤에 한다.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{처음으로}</span>를 클릭 → <span class="btn">{우리학교 업무분장 처음부터 설정하기}</span> 또는 <span class="btn">{학교업무분장 예시 가져와서 설정하기}</span> 2가지 중 당해학교에 적절한 방법을 선택.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>신설학교인지 지난 업무분장이 쌓여 있는 학교인지에 따라 손이 완전히 달라지므로, 처음에 길을 골라 같은 입력을 두 번 하지 않으려고 한다.</dd></dl>
+    </div>
+<div class="memo"><h4>두 가지 방법</h4><ul><li>[방법 1] <span class="btn">{우리학교 업무분장 처음부터 설정하기}</span>는 처음부터 당해학교 업무분장을 기준으로 절차형 메뉴 순서에 따라 부서장과 부서원을 등록하고 단위업무와 자료권한을 등록한다. <code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-부서관리(부서장지정)]</code>로 이동된다.</li><li>[방법 2] <span class="btn">{학교업무분장 예시 가져와서 설정하기}</span>는 ‘학교업무분장예시’에서 선택하거나 ‘지난학교업무분장’을 복사하여 등록하는 방법이 있다.</li><li>‘학교업무분장예시’로 설정하기(신설학교 등)는 미리 등록되어 있는 5가지 부서 유형(유형 A~유형 E) 중 당해학교에 가장 유사한 유형을 선택한 후 부서별 업무분장에 맞게 수정하여 부서장과 부서원을 등록하고 단위업무와 자료권한을 등록하는 방법이다.</li><li><b>‘지난학교업무분장’으로 설정하기는 이전학년도 업무분장을 복사하여 학교업무분장을 등록하는 방법으로 2025학년도부터 활용 가능하다.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>절차형 메뉴란</h4><ul><li>절차형 메뉴는 하나의 메뉴(예: 학교업무분장설정) 안에서 단계적으로 하위 메뉴(예: 처음으로, 부서관리(부서장지정), 업무관리(부서원편성), 업무관리(메뉴, 자료권한권리))를 한 페이지에 버튼으로 구성하여 나열하고 순서대로 업무처리를 할 수 있는 메뉴를 말한다(버튼 사이에 ‘▶’가 있음).</li><li><span class="btn">{학교업무분장 예시 가져와서 설정하기}</span>는 17개 시･도별 고등학교 업무분장표를 정리･분석하여 업무분장 구조를 A~E형으로 유형화한 것이다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="A" data-when="학년초설정" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE A · 권한 체계 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 등록 방법 선택 직후</span><span class="tag opt">예시 가져와서 설정하기를 고른 학교</span><span class="tag">지난학교업무분장은 2025학년도부터</span></div>
+    <h3>지난학교업무분장 또는 학교업무분장예시 가져와서 설정하기</h3>
+    <p class="desc">앞 업무에서 <span class="btn">{학교업무분장 예시 가져와서 설정하기}</span>를 고른 학교만 해당한다. 신설학교는 유형 A~유형 E 중에서, 이전학년도 자료가 있는 학교는 ‘지난학교업무분장’을 복사해 쓴다. <strong>가져오기로는 부서명과 업무명, 업무별 메뉴만 등록되므로 부서장 및 부서원과 자료권한은 추가로 설정해야 한다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학교업무분장 등록 방법으로 {학교업무분장 예시 가져와서 설정하기}를 선택한 직후에 한다.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘업무분장 가져오기’ 창에서 ‘지난학교업무분장’을 선택한 후 <span class="btn">{조회}</span> → ‘적용학년도’를 선택하고 ‘지난학교업무분장’에서 적용하고자 하는 학년도와 가장 비슷한 학년도를 선택한 후 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>매년 비슷하게 반복되는 부서와 업무 뼈대를 다시 손으로 치지 않고 옮겨 와, 실제로 확인이 필요한 사람과 자료권한에만 시간을 쓰려고 한다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>부서명과 업무명, 업무별 메뉴만 등록되므로 부서장 및 부서원과 자료권한은 추가로 설정해야 한다.</b></li><li>학급담임교사, 교과담당교사, 동아리활동 지도교사는 각각의 메뉴에서 편성하고, 자료권한은 <code>[기본메뉴-권한관리-교무자료권한승인관리]</code>에서 ‘담임편성’을 선택한 후 <span class="btn">{학년반}</span> 탭, <span class="btn">{교과목}</span> 탭, <span class="btn">{동아리활동}</span> 탭에서 각각 <span class="btn">{승인요청}</span>하여 업무승인과정을 거쳐 결재권자의 결재가 완료되어야 부여된다.</li><li>학급담임교사는 <code>[교육과정-학급담임편성관리-학급담임편성관리]</code>에서 편성한다.</li><li>교과담당교사는 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code>에서 편성한다.</li><li>동아리활동 담당교사는 <code>[학생생활-창의적체험활동-동아리활동관리-부서만들기]</code>에서 편성한다.</li></ul></div><div class="memo" style="margin-top:12px"><h4>이전학년도 업무분장을 등록하고 조회할 때</h4><ul><li><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-부서관리(부서장지정)]</code>에서 <span class="btn">{행추가}</span>로 이전학년도 부서명을 저장한다.</li><li><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-업무관리(부서원편성)]</code>에서 <span class="btn">{행추가}</span>로 이전학년도 해당 부서명에 부서원을 등록한다.</li><li><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-업무관리(메뉴, 자료권한관리)]</code>에서 해당 부서명의 부서원에 대해 ‘업무 메뉴 관리’, ‘학년반 자료권한’(필요시)을 부여 후 <span class="btn">{교무자료권한승인관리}</span>에서 <span class="btn">{승인요청}</span>한다.</li><li><code>[학교정보-학교정보-기준년도/학기관리]</code>에서 교무학년도를 이전학년도로 설정 후 <span class="btn">{저장}</span>하고 이전학년도 자료를 조회한다.</li><li><b>조회를 마치면 현재학년도로 되돌려야 한다.</b> <code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-부서관리(부서장지정)]</code>에서 <span class="btn">{메뉴표시학년도변경}</span>으로 2025학년도 설정 후 <span class="btn">{메뉴표시학년도저장}</span>한다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="학년초설정" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 부서별 권한부여">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초</span><span class="tag">절차형 메뉴 1단계</span></div>
+    <h3>부서관리(부서장지정)에서 부서장 및 단위업무 등록</h3>
+    <p class="desc">학교업무분장관리 담당자로 지정된 뒤 가장 먼저 하는 단계이다. 당해학교 업무분장표의 부서 구성을 그대로 나이스에 옮기고 부서장과 단위업무를 붙인다. <strong>'부서명', '소관업무'는 당해학교 업무분장에 따라 다를 수 있으며, 이와 관련된 '단위업무' 편성 내용도 다름.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학교장(기관마스터)이 권한관리 담당자를 등록한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-부서관리(부서장지정)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도' 확인 후 <span class="btn">{조회}</span> → <span class="btn">{행추가}</span> 후 '부서명', '소관업무'를 각각 입력 → '클릭해서 부서장 지정하기'를 클릭해 '부서장 지정' 창에서 부서장 '사용자명'을 입력하고 <span class="btn">{조회}</span>하여 '사용여부'를 선택하고 <span class="btn">{확인}</span> → '클릭해서 단위업무 선택하기'를 클릭해 '단위업무 선택' 창에서 해당 단위업무를 선택하고 <span class="btn">{확인}</span> → '정렬순서', '사용여부' 입력 및 확인하고 <span class="btn">{저장}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교 조직 구조를 나이스에 먼저 세워 두어야 부서장이 자기 부서원에게 직접 권한을 나눠줄 수 있기 때문이다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>학교업무분장관리 담당자로 지정된 권한관리자는 당해학교 업무분장에 따라 <code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정]</code>에서 권한을 부여함.</li><li><b>부서명이 '교장･교감', '정보공시', '교육통계부'는 자동으로 단위업무가 등록되어 있어 해당 부서장을 지정하면 됨.</b></li><li>교장･교감 권한에 오류가 있는 경우 <span class="btn">{교장･교감업무생성}</span>으로 교장･교감 권한을 다시 부여함.</li><li><span class="btn">{메뉴목록내려받기}</span>를 클릭하면 업무영역명, 단위업무명, 세부업무명, 메뉴그룹명, 메뉴레벨, 메뉴명을 알 수 있음.</li><li><span class="btn">{메뉴표시학년도변경}</span>은 <code>[학교정보-기준년도/학기관리]</code>의 교무학년도를 수정하는 기능과 동일함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>이전학년도 업무분장을 등록하고 조회하는 절차</h4><ul><li><code>[부서관리(부서장지정)]</code>에서 <span class="btn">{행추가}</span>로 이전학년도 부서명을 저장함.</li><li><code>[업무관리(부서원편성)]</code>에서 <span class="btn">{행추가}</span>로 이전학년도 해당 부서명에 부서원을 등록함.</li><li><code>[업무관리(메뉴, 자료권한관리)]</code>에서 해당 부서명의 부서원에 대해 '업무 메뉴 관리', '학년반 자료권한'(필요시)를 부여 후 <span class="btn">{교무자료권한승인관리}</span>에서 <span class="btn">{승인요청}</span>함.</li><li><code>[학교정보-학교정보-기준년도/학기관리]</code>에서 교무학년도를 이전학년도로 설정 후 <span class="btn">{저장}</span>하고 이전학년도 자료를 조회함.</li><li><b>현재학년도로 변경하기 위해 <code>[부서관리(부서장지정)]</code>에서 <span class="btn">{메뉴표시학년도변경}</span>로 2025학년도 설정 후 <span class="btn">{메뉴표시학년도저장}</span>함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="학년초설정" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 부서별 권한부여">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 부서장 지정 직후</span><span class="tag">절차형 메뉴 2단계</span></div>
+    <h3>업무관리(부서원편성)에서 업무별 부서원 등록</h3>
+    <p class="desc">부서와 부서장이 등록된 뒤 부서별 업무명을 만들고 그 업무를 담당할 부서원을 붙이는 단계이다. <strong>부서별 '업무명', '업무설명'은 당해학교 업무분장에 따라 다를 수 있음.</strong> 교장･교감, 정보공시, 교육통계부 업무는 이미 만들어져 있어 사용자만 지정한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 부서관리(부서장지정)에서 부서장과 단위업무 등록을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-업무관리(부서원편성)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도' 확인 후 <span class="btn">{조회}</span> → '부서명'을 클릭하고 <span class="btn">{행추가}</span>하여 '부서명', '업무설명'을 각각 입력 → '클릭해서 사용자 지정하기'를 클릭해 '업무별 사용자 등록' 창에서 업무담당 부서원을 '사용자명'에 입력하고 <span class="btn">{조회}</span> 후 '사용여부'를 선택하고 <span class="btn">{확인}</span> → <span class="btn">{저장}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>업무 하나하나에 책임자를 붙여 두어야 권한 오남용 없이 업무별로 책임을 물을 수 있기 때문이다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'업무찾기'로 등록된 업무명을 빠르게 검색할 수 있음.</li><li><span class="btn">{메뉴목록내려받기}</span>로 업무영역명, 단위업무명, 세부업무명, 메뉴그룹명, 메뉴레벨, 메뉴명, 업무분장구분, 자료권한구분을 확인할 수 있음.</li><li><span class="btn">{업무목록내려받기}</span>로 등록된 업무목록을 엑셀파일로 다운로드 받을 수 있음.</li><li><b>부서장은 '업무명'이 자동으로 생성되며, 삭제할 수 없음.</b> 부서장의 '업무명'은 '부서장'으로 나타나며, <code>[업무관리(메뉴, 자료권한관리)]</code>에서 부서장의 업무 메뉴를 등록하거나 관리 권한을 부여할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>자동 등록 업무의 사용자 지정</h4><ul><li>자동으로 등록된 교장･교감 업무에서 '클릭해서 사용자 지정하기'를 클릭하면 나타나는 '업무별 사용자 등록' 창에서 '사용자'를 선택하고 <span class="btn">{확인}</span>함.</li><li>자동으로 등록된 정보공시의 '정보공시(작성자)', '정보공시(확인자)', '정보공시(관리자)' 업무에서 각각 '클릭해서 사용자 지정하기'를 클릭해 '사용자'를 선택하고 <span class="btn">{확인}</span>함.</li><li><b>정보공시 차시별 업무 담당자는 관리자가 <code>[정보공시(관리자)-공시항목관리-기준정보관리-담당자관리]</code>에서 지정함.</b></li><li>자동으로 등록된 교육통계부의 '교육통계-관리', '교육통계' 업무에서 각각 '클릭해서 사용자 지정하기'를 클릭해 '사용자'를 선택하고 <span class="btn">{확인}</span>함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="B" data-when="학년초설정" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE B · 부서별 권한부여">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 부서원 편성 직후</span><span class="tag">절차형 메뉴 3단계</span></div>
+    <h3>업무관리(메뉴, 자료권한관리)에서 업무 메뉴와 학년반 자료권한 등록</h3>
+    <p class="desc">부서원 편성까지 끝난 뒤 실제로 열 수 있는 메뉴와 볼 수 있는 자료 범위를 정하는 단계이다. <strong>업무명에 등록된 업무 메뉴에 따라 등록 가능한 '학년반', '교과목', '동아리활동'에 대한 자료권한 버튼이 나타나고 활성화됨.</strong> 자료권한은 저장만으로 끝나지 않고 승인요청까지 가야 부여된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 업무관리(부서원편성)에서 업무별 부서원 등록을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-업무관리(메뉴, 자료권한관리)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도' 확인 후 <span class="btn">{조회}</span> → '부서명'을 클릭하고 '업무 메뉴 관리'에서 <span class="btn">{메뉴관리}</span>를 클릭해 '업무 메뉴 관리' 창에서 업무분장에 따른 메뉴를 검색 후 해당 메뉴를 선택하고 <span class="btn">{저장}</span> → '학년반 자료권한'에서 <span class="btn">{등록}</span>을 클릭해 '자료 권한 관리' 창에서 자료권한을 부여할 학년반을 선택 후 <span class="btn">{저장}</span>하고 <span class="btn">{교무자료권한승인관리}</span>함 → <span class="btn">{저장}</span> 시 '자료권한 변경사유(공통)' 창이 나타나면 '변경사유구분'을 선택하고 '변경사유' 입력 후 <span class="btn">{저장}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>업무담당자가 자기 일에 필요한 화면과 학생 자료에만 손이 닿도록 범위를 좁혀 개인정보 접근을 통제하려고 한다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>'업무명'별로 학년반 자료권한을 등록하면 <span class="btn">{등록}</span> 옆의 '미등록'이 '미상신'으로 변경되며, <code>[기본메뉴-권한관리-교무자료권한승인관리]</code>에서 '권한관리'를 선택하고 승인과정을 거쳐 결재권자의 결재를 완료해야 권한이 부여됨.</b></li><li>업무명에 등록된 업무 메뉴에 따라 등록 가능한 '학년반', '교과목', '동아리활동'에 대한 자료권한 버튼이 나타나고 활성화됨.</li><li>'업무찾기'로 등록된 업무명을 빠르게 검색할 수 있음.</li><li><code>[업무관리(메뉴, 자료권한관리)]</code>에서 <span class="btn">{교무자료권한승인관리}</span>를 클릭하면 <code>[기본메뉴-권한관리-교무자료권한승인관리]</code>로 이동함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>'학년반 자료권한'에 '완료'가 빨간색으로 표시되는 경우</h4><ul><li>위탁학생 관리를 위해 학년반 자료권한을 부여한 뒤 <b>권한부여 이후 기능 개선으로 자료권한에서 '학년반' 권한을 제외함에 따라 나타나는 현상</b>으로, 그대로 두거나 해당 권한을 삭제 후 다시 부여함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="B" data-when="학년초설정" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE B · 부서별 권한부여">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초</span><span class="tag opt">필요한 학교만</span></div>
+    <h3>공통업무(학급담임·교과담임·동아리담임) 메뉴 추가 및 반환</h3>
+    <p class="desc">교육부에서 제공한 공통업무에 당해학교에서만 필요한 메뉴를 더 붙이거나 다시 떼는 업무이다. 담임 전체에게 한꺼번에 적용되므로 부서원 개별 편성과는 다르다. <strong>교육부 제공 공통업무에 당해학교에서 필요한 메뉴 추가 시 '현재 편성 업무' 시스템별 트리에 따라 자동으로 추가됨.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학교장(기관마스터)이 권한관리 담당자를 등록한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-담임업무기준관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'담임구분'을 선택 후 <span class="btn">{조회}</span> → '편성 대상 업무'에서 '교무업무' 클릭 후 메뉴 트리에서 당해학교에서 필요한 메뉴를 선택하고 <span class="btn">{추가}</span>로 '현재 편성 업무'로 이동하여 <span class="btn">{저장}</span> → 추가한 메뉴를 삭제하려면 '현재 편성 업무'에서 해당 메뉴를 선택하고 <span class="btn">{반환}</span> 후 <span class="btn">{저장}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>담임이 학급 업무를 처리하는 데 학교마다 다르게 필요한 화면을 미리 열어 주어 담임마다 따로 권한을 신청하지 않게 하려고 한다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>메뉴 추가 시 추가하고자 하는 메뉴를 선택 후 '현재 편성 업무'로 드래그 온 드롭으로도 추가할 수 있음.</li><li>교육부 제공 공통업무(학급담임, 교과담임, 동아리담임)에 당해학교에서 필요한 메뉴 추가 시 '현재 편성 업무' 시스템별 트리에 따라 자동으로 추가됨.</li><li><b>당해학교에서 추가로 부여한 메뉴를 삭제하려면 '현재 편성 업무'에서 해당 메뉴를 선택하고 <span class="btn">{반환}</span> 후 <span class="btn">{저장}</span>해야 함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t11" data-num="11" data-stage="B" data-when="승인상신" data-who="학교업무분장관리담당자 교원">
+  <div class="gutter"><b>11</b><span class="gstage" title="원문 STAGE B · 부서별 권한부여">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">자료권한 등록 직후</span><span class="tag">학교장 결재 필수</span></div>
+    <h3>교무자료권한승인관리에서 학년반·교과목·동아리활동 자료권한 승인요청</h3>
+    <p class="desc">자료권한은 등록만으로 부여되지 않고 결재까지 마쳐야 실제로 쓸 수 있다. 권한관리 담당자가 학교업무분장으로 부여한 경우에는 '권한관리'를, 담임·교과·동아리 메뉴에서 편성한 경우에는 '담임편성'을 선택한다. <strong>교무업무권한, 교무자료권한 업무승인과정에서 학교장의 결재를 필수적으로 거쳐야 함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초 및 학기중, 업무관리(메뉴, 자료권한관리) 또는 담임·과목개설·동아리 편성이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자), 교원</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[기본메뉴-권한관리-교무자료권한승인관리]</code>, <code>[학교업무분장-학교업무분장관리-교무자료권한승인관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'교무년도', '승인상태' 확인 후 '권한관리'를 선택하여 <span class="btn">{조회}</span> → <span class="btn">{학년반}</span>, <span class="btn">{교과목}</span>, <span class="btn">{동아리활동}</span> 탭에서 미상신인 '자료권한'을 모두 선택 후 <span class="btn">{승인요청}</span> → '기안문서상신' 창에서 '결재문서명' 확인 후 '내용'을 입력하고 <span class="btn">{결재자지정}</span>으로 결재선을 등록 → '기안내용' 확인 후 <span class="btn">{상신}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생 개인정보에 닿는 자료권한을 학교장 결재로 확인받아, 담당자 임의로 권한이 늘어나는 일을 막으려고 한다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>승인과정을 거쳐 결재권자의 결재를 완료해야 권한이 부여됨.</b></li><li>학급담임교사, 교과담당교사, 동아리활동 지도교사 권한부여는 다음 메뉴에서 편성하고 <code>[기본메뉴-권한관리-교무자료권한승인관리]</code>에서 '담임편성'을 선택 후 <span class="btn">{학년반}</span>, <span class="btn">{교과목}</span>, <span class="btn">{동아리활동}</span> 탭에서 각각 <span class="btn">{승인요청}</span>함. 학급담임교사는 <code>[교육과정-학급담임편성관리-학급담임편성관리]</code>, 교과담당교사는 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code>, 동아리활동은 <code>[학생생활-창의적체험활동-동아리활동관리-부서만들기]</code>임.</li><li><b>학교업무분장관리 담당자가 권한부여 후 교무자료권한 <span class="btn">{승인요청}</span> 시에는 '권한관리'를 선택함.</b></li><li><b>교무업무권한, 교무자료권한 업무승인과정에서 학교장의 결재를 필수적으로 거쳐야 함.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>승인메뉴목록 확인</h4><ul><li>'교무자료권한승인관리'의 '메뉴목록'에서 <span class="btn">{보기}</span>를 클릭하면 나타나는 '교무자료권한 승인메뉴목록' 창에서 부여된 메뉴를 트리 형태로 확인할 수 있음.</li><li><span class="btn">{전체펼치기}</span>는 부여된 전체 메뉴 트리를 한꺼번에 펼치고, <span class="btn">{전체접기}</span>는 펼쳐진 메뉴 트리를 한꺼번에 접음.</li><li>최초 상신한 업무담당교사가 <code>[승인사항-상신함]</code>에서 <span class="btn">{기결문서취소}</span>를 못하는 경우는 학교업무분장관리 담당자가 <code>[{업무승인관리}업무승인-결재현황관리-결재현황판관리]</code>에서 삭제 후 해당 업무를 처리하면 됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t20" data-num="20" data-stage="E" data-when="학년초설정" data-who="업무승인관리자">
+  <div class="gutter"><b>20</b><span class="gstage" title="원문 STAGE E · 결재·접속 환경">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초</span><span class="tag">업무승인 관리자 전용</span><span class="tag opt">기관결재선이 개인결재선보다 우선</span></div>
+    <h3>기관 결재선 등록과 결재우선순위 지정</h3>
+    <p class="desc">각 학교의 전결 규정에 따라 결재선을 통일해서 쓰려면 업무승인 관리자가 기관 결재선을 등록한다. <strong>결재선을 등록만 하고 [결재문서관리]에서 '결재우선순위'를 '기관결재선'으로 지정하지 않으면 지정한 결재선이 적용되지 않는다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 업무승인 관리자에게 '{업무승인관리}업무승인' 권한이 부여된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교 업무담당자(업무승인 관리자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[{업무승인관리}업무승인-결재경로관리-결재선관리]</code>, <code>[{업무승인관리}업무승인-결재문서관리-결재문서관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[{업무승인관리}업무승인-결재경로관리-결재선관리]</code>에서 해당 '업무영역' 및 '결재문서명'을 선택 후 <span class="btn">{조회}</span> → <span class="btn">{등록}</span>을 클릭하면 나타나는 '결재선등록' 창에서 '결재선구분' 선택 및 '결재선명'을 입력하고 <span class="btn">{중복확인}</span> 후 <span class="btn">{저장}</span> → '결재선 목록'에서 결재선명을 선택하고 '결재선'에서 <span class="btn">{결재선지정}</span>하고 '적용 대상자 목록'에서 <span class="btn">{등록}</span>하여 '결재선 적용 대상자 등록' 창에서 사용자를 추가하고 <span class="btn">{저장}</span> → <code>[{업무승인관리}업무승인-결재문서관리-결재문서관리]</code>에서 '업무영역'을 선택 후 <span class="btn">{조회}</span> → '결재우선순위'에서 해당 결재문서명에 '기관결재선'을 선택하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교원이 문서를 상신할 때마다 결재선을 새로 찾지 않고 학교 전결 규정대로 자동으로 결재선이 잡히게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><code>[{업무승인관리}업무승인-결재경로관리-결재선관리]</code>의 '결재선 목록'에서 <span class="btn">{내보내기}</span> 기능으로 여러 결재문서명에 대해 일괄로 결재선을 동일하게 지정할 수 있음.</li><li><b>지정한 결재선을 적용하려면 반드시 <code>[{업무승인관리}업무승인-결재문서관리-결재문서관리]</code>에서 해당 결재문서의 '결재우선순위'를 '기관결재선'으로 지정해야 함.</b> 기관결재선으로 등록한 결재문서를 상신하는 경우 자동으로 기관결재선이 지정됨.</li><li>결재선(기관결재선)에 현재 소속이 아닌 사용자가 조회되는 경우는 업무승인 관리자에게 수정 요청함.</li><li>결재자를 변경해야 하는 경우 <span class="btn">{결재자지정}</span>을 클릭하여 변경함.</li><li><b>기관결재선이 개인결재선보다 우선 적용됨.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>대리결재·전결 지정</h4><ul><li>학교업무분장관리 담당자(권한관리자)가 <code>[{업무승인관리}업무승인-결재경로관리-대리결재자지정관리]</code>에서 사용자별 일정기간 동안 대리결재자를 지정할 수 있음.</li><li>학교업무분장관리 담당자(권한관리자)가 <code>[{업무승인관리}업무승인-결재경로관리-전결자지정관리]</code>에서 특정 결재문서명에 대해 일정기간 동안 전결자를 지정할 수 있음.</li><li><code>[{업무승인관리}업무승인-결재경로관리-대리결재자지정관리]</code> 또는 <code>[{업무승인관리}업무승인-결재경로관리-전결자지정관리]</code>에서 <span class="btn">{위임이력조회}</span>로 본인의 대리결재자 및 전결자 이력을 조회함.</li><li><code>[{업무승인관리}업무승인-결재경로관리-조직별결재선지정]</code>에서 결재자 조회 순서를 조정할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t21" data-num="21" data-stage="E" data-when="학년초설정" data-who="교원">
+  <div class="gutter"><b>21</b><span class="gstage" title="원문 STAGE E · 결재·접속 환경">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초</span><span class="tag opt">기관결재선이 있으면 미적용</span></div>
+    <h3>개인 결재선 등록과 결재우선순위 지정</h3>
+    <p class="desc">기관 결재선과 별도로 교원이 자기 결재선을 쓰려면 개인결재선을 등록한다. <strong>해당 결재문서의 '결재우선순위'가 '기관결재선'인 경우 '개인결재선'은 적용되지 않으므로</strong> 업무승인 관리자에게 우선순위를 확인해야 한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 각 학교의 전결 규정이 정해진 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교원</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개인설정-업무승인자관리-개인결재선관리]</code>, <code>[{업무승인관리}업무승인-결재문서관리-결재문서관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[개인설정-업무승인자관리-개인결재선관리]</code>에서 <span class="btn">{등록}</span>을 클릭하여 '결재선명'을 입력 후 <span class="btn">{저장}</span> → 결재선 목록에서 해당 결재선명을 선택하여 <span class="btn">{결재선지정}</span>을 하고 <span class="btn">{저장}</span> → <code>[{업무승인관리}업무승인-결재문서관리-결재문서관리]</code>에서 조회 조건 확인 및 선택하고 <span class="btn">{조회}</span> → '결재우선순위'의 결재문서명에 '개인결재선'을 선택하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>자주 상신하는 문서의 결재 경로를 미리 고정해 상신할 때마다 결재자를 다시 찾는 일을 줄이려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>지정한 개인결재선이 적용되지 않는 경우 업무승인 관리자에게 해당 업무의 '결재우선순위'를 확인함(<b>'기관결재선'이 우선 순위인 경우 '개인결재선'은 적용되지 않음</b>).</li><li>개인결재선으로 등록한 결재문서를 상신하는 경우 자동으로 개인결재선이 지정됨.</li><li>결재선(개인결재선)에 현재 소속이 아닌 사용자가 조회되는 경우 <code>[개인설정-업무승인자관리-개인결재선관리]</code>에서 결재선을 변경함.</li><li>결재자를 변경해야 하는 경우 <span class="btn">{결재자지정}</span>을 클릭하여 변경함.</li><li><code>[개인설정-업무승인자관리-대리결재자지정]</code>에서 일정기간 동안 대리결재자를 지정함.</li><li><code>[개인설정-업무승인자관리-전결자지정]</code>에서 특정 결재문서명에 대해 일정기간 동안 전결자를 지정함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t23" data-num="23" data-stage="E" data-when="수시" data-who="원격업무담당자">
+  <div class="gutter"><b>23</b><span class="gstage" title="원문 STAGE E · 결재·접속 환경">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">외부 신청 전 사전 등록</span><span class="tag">원격업무 담당자 전용</span></div>
+    <h3>원격업무 신청을 위한 결재선 및 적용대상자 사전 등록</h3>
+    <p class="desc">교원이 자택 등 외부에서 원격업무를 신청하려면 원격업무 담당자가 결재선을 먼저 등록해야 한다. <strong>결재선이 등록되어 있지 않으면 외부에서 신청이 불가하다.</strong> 업무영역은 '공통관리', 결재문서명은 'eVPN사용자접속승인요청'으로 고정된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>수시, 교원의 원격업무 외부신청보다 앞서.</dd></dl>
+      <dl><dt>누가?</dt><dd>원격업무 담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[{업무승인관리}업무승인-결재경로관리-결재선관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[{업무승인관리}업무승인-결재경로관리-결재선관리]</code>에서 '업무영역(공통관리)', '결재문서명(eVPN사용자접속승인요청)' 선택 후 <span class="btn">{조회}</span> → <span class="btn">{등록}</span>을 클릭하면 나타나는 '결재선등록' 창의 '결재선구분'에서 '직접입력'을 선택하고 '결재선명'을 입력 후 <span class="btn">{중복확인}</span>하고 <span class="btn">{저장}</span> → 결재선 목록에서 해당 결재선명을 선택하여 <span class="btn">{결재선지정}</span>을 하고 '적용 대상자 목록'에서 <span class="btn">{등록}</span>을 클릭하면 나타나는 '결재선 적용 대상자 등록' 창에서 사용자를 추가하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>외부에서 접속하는 교원의 신청이 결재선 없이 반려되거나 막히는 일을 미리 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>원격업무 담당자가 결재선 및 적용대상자를 사전에 등록하여야 하며, 미등록 시 외부에서 신청이 불가함.</b></li><li>학교 등 교육관련기관에서 원격업무를 신청하는 방법은 <code>[기본메뉴-원격업무지원서비스-원격업무지원서비스(EVPN)]</code>에서 <span class="btn">{신규}</span>를 클릭하여 내용을 입력하고 <span class="btn">{저장}</span> 후 <span class="btn">{승인요청}</span>으로 결재권자의 결재를 완료하되, 결재선은 학교별 전결 규정에 따름.</li></ul></div><div class="memo" style="margin-top:12px"><h4>원격업무 외부신청 및 승인절차</h4><ul><li>(원격업무담당자) 원격업무 외부신청에 필요한 결재선 사전 등록. 업무영역은 공통관리, 결재문서명은 eVPN사용자접속승인요청임.</li><li>(사용자) 원격업무지원서비스(eVPN)에 접속하여 원격업무 외부신청 페이지 접속.</li><li>(사용자) 교육디지털원패스 로그인 후 원격업무 신청.</li><li>(부서장) 원격업무담당자가 등록한 결재선으로 내부결재 진행.</li><li>(사용자) 승인이 완료되면 원격업무서비스 로그인 가능.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t26" data-num="26" data-stage="E" data-when="수시" data-who="교원">
+  <div class="gutter"><b>26</b><span class="gstage" title="원문 STAGE E · 결재·접속 환경">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">세부능력및특기사항 입력 전</span><span class="tag opt">스마트 기기 소지자 권장</span></div>
+    <h3>스마트 기기 나이스 OTP 앱 설치와 M-OTP 신규 등록</h3>
+    <p class="desc"><code>[과목별세부능력및특기사항]</code>, <code>[개인별세부능력및특기사항]</code>, <code>[편입/복학생세부능력및특기사항관리]</code> 세 메뉴를 쓰는 교원만 해당한다. <strong>{등록및승인요청} 후 2차 인증 관리자의 승인이 완료되어야 '등록완료'로 바뀌어 2차 인증을 쓸 수 있다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>수시, 2차 인증 적용 메뉴에 자료를 입력하기 전에.</dd></dl>
+      <dl><dt>누가?</dt><dd>나이스 2차 인증 메뉴 사용 교원</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개인설정-2차인증-2차인증관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>스마트 기기의 플레이스토어(안드로이드)나 앱스토어(iOS)에서 '나이스 OTP' 앱을 검색하여 다운받아 설치 후 실행함 → <code>[개인설정-2차인증-2차인증관리]</code>에서 M-OTP의 '사용자 등록상태'가 '미등록'인 것을 확인 후 신규 등록함 → 스마트 기기에서 '나이스 OTP' 앱을 실행하여 나이스 화면의 QR코드 이미지 스캔 또는 사용자식별번호를 입력하여 나타난 'OTP번호'를 입력 후 <span class="btn">{등록및승인요청}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교생활기록부 기재 자료에 본인만 접근하도록 확인 절차를 한 단계 더 두어 기록 관리 책임을 지키려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>기존 스마트 기기에 설치가 완료되었거나 스마트 기기를 새로 구입한 교원은 4세대 나이스에서의 앱 사용을 위해 업데이트가 필요하므로 플레이스토어(안드로이드)나 앱스토어(iOS)에서 업데이트 후 사용함.</li><li><span class="btn">{M-OTP}</span> 탭을 클릭 시 화면 오른쪽 상단에 2차 인증 사용자 식별을 위한 '사용자식별번호'가 새롭게 부여되어 나타나며, QR코드와 OTP번호를 입력할 수 있는 M-OTP 사용자 등록 화면이 나타남.</li><li><span class="btn">{등록및승인요청}</span>하면 '사용자 등록상태'가 '등록요청' 상태로 변경되며, 2차 인증 관리자의 승인 대기 상태가 됨('등록 정보'는 승인 전까지 빈칸으로 표시됨).</li><li><code>[학교정보-2차인증-2차인증사용자관리]</code>에서 2차 인증 관리자의 승인이 완료되면 <code>[개인설정-2차인증-2차인증관리]</code>에서 사용자 등록상태가 '등록완료'로 변경되며, 2차 인증 사용이 가능한 상태가 됨.</li><li><b>스마트 기기 변경 시 <code>[개인설정-2차인증-2차인증관리]</code>의 <span class="btn">{M-OTP}</span> 탭에서 <span class="btn">{초기화}</span> 후 신규 등록하거나 <span class="btn">{재등록}</span> 과정을 거침.</b></li><li>'나이스 OTP' 앱은 가족이나 타인 명의로 등록된 스마트 기기도 사용 가능함. 단, 사용자 등록 시 2차 인증 관리자에 의해 승인 절차를 거쳐야 사용이 가능함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>2차 인증 적용 메뉴와 등록 상태</h4><ul><li>2차 인증 적용 메뉴는 <code>[교과담임-성적-성적처리-과목별세부능력및특기사항]</code>, <code>[교과담임-성적-성적처리-개인별세부능력및특기사항]</code>, <code>[학급담임-성적-성적처리-편입/복학생세부능력및특기사항관리]</code> 3가지 메뉴에 한함.</li><li>미등록은 사용자 등록 과정을 수행하지 않은 상태임.</li><li>등록요청은 사용자 등록 후 2차 인증 관리자의 사용 승인을 요청한 상태임.</li><li>등록완료는 2차 인증 관리자의 승인이 완료되어 2차 인증을 사용할 수 있는 상태임.</li><li>반려는 2차 인증 관리자가 반려한 상태임.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t27" data-num="27" data-stage="E" data-when="수시" data-who="교원">
+  <div class="gutter"><b>27</b><span class="gstage" title="원문 STAGE E · 결재·접속 환경">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">세부능력및특기사항 입력 전</span><span class="tag opt">전화 인증 가능자</span></div>
+    <h3>ARS 인증 신규 등록</h3>
+    <p class="desc">M-OTP 대신 전화로 2차 인증을 하려는 교원이 등록한다. <strong>'전화번호1'과 '전화번호2'는 착신전환이 안 된 유선전화, 무선전화, 인터넷전화 등을 입력해야 한다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>수시, 2차 인증 적용 메뉴에 자료를 입력하기 전에.</dd></dl>
+      <dl><dt>누가?</dt><dd>나이스 2차 인증 메뉴 사용 교원</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개인설정-2차인증-2차인증관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[개인설정-2차인증-2차인증관리]</code>에서 ARS 인증의 '사용자 등록상태'가 '미등록'인 것을 확인 후 <span class="btn">{ARS인증}</span>함 → 'ARS인증' 창에서 '전화번호1'과 '전화번호2'를 입력한 후 <span class="btn">{인증필요}</span>를 통해 ARS 인증을 진행하고 <span class="btn">{인증요청}</span> → '개인정보 수집 및 이용 동의' 창에서 '동의'를 선택하고 <span class="btn">{확인}</span>하여 <span class="btn">{등록및승인요청}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>스마트 기기 앱을 쓰기 어려운 교원도 학교생활기록부 입력 메뉴에 본인 확인을 거쳐 접근할 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>'전화번호1'과 '전화번호2'는 착신전환이 안 된 유선전화, 무선전화, 인터넷전화 등을 입력함.</b></li><li>나이스의 신뢰성과 보안성을 향상시키기 위해 사용자 등록 시 2차 인증 관리자의 승인 이후 사용이 가능함.</li><li><b>스마트 기기 변경 시 <code>[개인설정-2차인증-2차인증관리]</code>의 <span class="btn">{ARS인증}</span> 탭에서 <span class="btn">{초기화}</span> 과정을 거침.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t28" data-num="28" data-stage="E" data-when="수시" data-who="교원">
+  <div class="gutter"><b>28</b><span class="gstage" title="원문 STAGE E · 결재·접속 환경">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">세부능력및특기사항 입력 전</span><span class="tag opt">스마트 기기 미소지·ARS 인증불가 시</span></div>
+    <h3>E-MAIL 인증 및 인증번호 인증 신규 등록</h3>
+    <p class="desc">스마트 기기 미소지, ARS 인증불가 등 예외 상황에 쓰는 인증방식이다. <strong>E-MAIL 인증은 사용기간이 시작일로부터 최대 30일, 인증번호 인증은 최대 7일로 제약이 있으므로</strong> 입력 기간에 맞춰 등록해야 한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>수시, 스마트 기기 미소지나 ARS 인증불가로 다른 인증방식을 쓸 수 없을 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>나이스 2차 인증 메뉴 사용 교원</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개인설정-2차인증-2차인증관리]</code>, <code>[교과담임-성적-성적처리-과목별세부능력및특기사항]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>E-MAIL 인증은 <code>[개인설정-2차인증-2차인증관리]</code>에서 E-MAIL 인증의 '사용자 등록상태'가 '미등록'인 것을 확인 후 <span class="btn">{E-MAIL}</span> 탭을 클릭함 → 'E-MAIL 인증' 창에서 E-Mail 주소를 입력하여 <span class="btn">{발송}</span>을 클릭 후 해당 E-Mail에 수신된 인증번호를 입력하여 <span class="btn">{확인}</span>하고 사용기간을 설정 → <span class="btn">{등록및승인요청}</span>. 인증번호 인증은 같은 메뉴에서 인증번호 인증의 '사용자 등록상태'가 '미등록'인 것을 확인 후 <span class="btn">{인증키}</span>를 클릭함 → '인증키' 창에서 인증키를 <span class="btn">{생성}</span>하고 사용기간을 설정 후 <span class="btn">{등록및승인요청}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>인증 수단이 없어 세부능력및특기사항 입력이 막히는 교원에게도 기한을 정한 예외 통로를 열어 주려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>스마트 기기 미소지, ARS 인증불가 등 예외 상황에 사용하기 위한 기능임.</li><li><b>E-MAIL 인증의 사용기간은 시작일로부터 최대 30일로 사용기간에 제약이 있는 기능임.</b></li><li><b>인증번호 인증의 사용기간은 시작일로부터 최대 7일로 사용기간에 제약이 있는 기능임.</b></li><li>나이스의 신뢰성과 보안성을 향상시키기 위해 사용자 등록 시 2차 인증 관리자의 승인 이후 사용이 가능함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>메뉴 접속 시 인증요청</h4><ul><li><code>[교과담임-성적-성적처리-과목별세부능력및특기사항]</code>에서 <span class="btn">{E-MAIL}</span> 탭에서 <span class="btn">{발송}</span>을 클릭 후 등록된 E-MAIL에 발송된 인증번호를 입력 후 <span class="btn">{인증요청}</span>함.</li><li><code>[교과담임-성적-성적처리-과목별세부능력및특기사항]</code>에서 <span class="btn">{인증번호}</span> 탭에서 '인증키'를 입력 후 <span class="btn">{인증요청}</span>함(<code>[개인설정-2차인증-2차인증관리]</code>의 '등록정보'에서 인증번호 확인이 가능함).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t29" data-num="29" data-stage="E" data-when="수시" data-who="2차인증관리자">
+  <div class="gutter"><b>29</b><span class="gstage" title="원문 STAGE E · 결재·접속 환경">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">교원의 등록요청 직후</span><span class="tag">2차 인증 관리자 전용</span></div>
+    <h3>2차 인증 사용자 승인과 현황·이력 조회</h3>
+    <p class="desc">교원이 M-OTP, ARS 인증, E-MAIL 인증, 인증번호인증 중 하나를 등록해 '등록요청' 상태로 올린 뒤에 하는 업무다. <strong>2차 인증 관리자가 승인하지 않으면 교원의 등록상태는 '등록완료'로 바뀌지 않아 2차 인증을 쓸 수 없다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>수시, 나이스 2차 인증 메뉴 사용 교원이 신규로 사용자 등록을 한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교 업무담당자(2차 인증 관리자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학교정보-2차인증-2차인증사용자관리]</code>, <code>[학교정보-2차인증-2차인증현황조회]</code>, <code>[학교정보-2차인증-2차인증이력조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학교정보-2차인증-2차인증사용자관리]</code>에서 '2차인증구분', '사용자이름' 또는 '사용자 ID', '등록상태'를 선택 또는 확인 후 <span class="btn">{조회}</span>하여 승인할 교원을 선택 후 <span class="btn">{승인}</span> → <code>[학교정보-2차인증-2차인증현황조회]</code>에서 학교 내 사용자에 대한 인증방식별 2차 인증 사용자 등록 상태를 확인함 → <code>[학교정보-2차인증-2차인증이력조회]</code>에서 인증방식을 선택하고 '사용자 ID', '사용자이름' 중 조회 조건 항목을 선택한 뒤 조회 기간을 입력하고 사용자 정보를 조회함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교생활기록부 입력 권한이 본인에게만 열리도록 학교 차원에서 확인하고 그 사용 내역을 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'2차인증구분'은 '전체', 'M-OTP', 'ARS인증', 'E-MAIL인증', '인증번호인증' 중에서 조회하여 처리하고자 하는 인증방식을 선택함.</li><li><b>2차 인증 관리자의 승인처리 요청 대상의 목록은 체크박스가 활성화되어 표시되며, 필요시 전체 선택 기능을 통해 일괄 처리할 수 있음.</b></li><li>'M-OTP', 'ARS인증', 'E-MAIL인증', '인증번호인증'의 사용자 등록은 나이스 2차 인증 메뉴 사용 교원이 하고, 승인은 2차 인증 관리자가 함.</li><li>2차 인증 적용 대상 페이지에 접속하기 위해 사용자는 활성화된 인증방식 중에서 선택하여 2차 인증을 수행한 후 해당 메뉴 페이지에 접속함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>이력조회 조회 조건</h4><ul><li>인증방식은 '전체', 'M-OTP', 'ARS인증', 'E-MAIL인증', '인증번호인증' 중에서 조회하여 처리하고자 하는 인증방식을 선택함.</li><li>특정 사용자를 조회하기 위해서는 '사용자 ID', '사용자이름' 중 조회 조건 항목을 선택하며, 조회 조건을 '전체'로 선택한 경우 전체 사용자 목록을 화면에 출력함.</li><li><b>조회하고자 하는 기간을 입력하되, 초기 값은 조회하는 날이 속한 월의 1일부터 조회일자까지로 설정됨.</b></li><li>2차 인증에 대한 사용자 등록 상태는 '미등록', '등록요청', '등록완료', '반려'로 구분됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t13" data-num="13" data-stage="C" data-when="학기중변동" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>13</b><span class="gstage" title="원문 STAGE C · 인사변동 대응">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">겸임교원 배정 직후</span><span class="tag opt">동일시도 내 한정</span></div>
+    <h3>사용자가져오기로 동일시도 내 겸임교원 등록</h3>
+    <p class="desc">순회교사(타교 교사) 등의 '겸임교원'이 우리 학교에 사용자로 등록되지 않은 경우에만 하는 업무입니다. <strong>{사용자가져오기}로 사용자를 등록 후 권한을 부여하더라도 소속교에서 겸임처리가 완료되어야 겸임교의 나이스 업무처리가 가능함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 순회교사 등 겸임교원이 배정되었으나 사용자 등록이 되지 않은 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학교업무분장-학교업무분장관리-발령전임시교원등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학교업무분장-학교업무분장관리-발령전임시교원등록]</code>에서 조회 조건 확인하고 <span class="btn">{조회}</span>함 → <span class="btn">{사용자가져오기}</span>를 클릭하면 나타나는 '사용자가져오기' 창에서 '사용자명' 또는 '사용자 ID'를 입력하고 <span class="btn">{조회}</span>함 → '소속', '사용자명' 등을 확인하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>타교 소속 순회교사가 우리 학교 나이스 업무를 볼 수 있도록 사용자 자리를 먼저 만들어 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>순회교사(타교 교사) 등의 겸임교원은 소속교에서 인사담당자가 겸임처리를 하면 <span class="btn">{사용자가져오기}</span>를 하지 않아도 사용자로 등록됨.</li><li><b>{사용자가져오기}로 사용자를 등록 후 권한을 부여하더라도 소속교에서 겸임처리가 완료되어야 겸임교의 나이스 업무처리가 가능함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t14" data-num="14" data-stage="C" data-when="학기중변동" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>14</b><span class="gstage" title="원문 STAGE C · 인사변동 대응">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">인사정보 등록 전</span><span class="tag opt">신규 발령·전입·시간강사 한정</span></div>
+    <h3>임시교원등록으로 신규 발령교원·초임 계약직교원·타시도 전입교원 및 시간강사 등록</h3>
+    <p class="desc">인사정보가 등록되지 않아 {사용자가져오기}로 등록할 수 없는 신규 발령교원(초임 계약직교원 포함) 및 타시도 전입교원이 있을 때 하는 업무입니다. 담임편성, 과목개설관리 등의 업무를 인사정보 등록 전에 처리해야 할 때 임시교원으로 등록합니다. <strong>임시교원은 '임시교원등록' 창에서 {등록} 시 임시 사용자 ID가 생성되며, 6개월 이내에 정식 아이디로 이양해야 함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 인사정보 등록 전에 담임편성·과목개설관리 등을 먼저 처리해야 하는 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학교업무분장-학교업무분장관리-발령전임시교원등록]</code>, <code>[교육과정-시간표관리-전체시간표관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학교업무분장-학교업무분장관리-발령전임시교원등록]</code>에서 조회 조건 확인하고 <span class="btn">{조회}</span>함 → <span class="btn">{임시교원등록}</span>을 클릭하면 나타나는 '임시교원등록' 창에서 임시 '사용자명'을 입력하고 <span class="btn">{등록}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>인사정보가 아직 없는 교원 때문에 담임편성과 과목개설 같은 학년초 업무가 멈추지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>임시교원은 '임시교원등록' 창에서 <span class="btn">{등록}</span> 시 임시 사용자 ID가 생성되며, <code>[학교업무분장-학교업무분장관리-학교업무분장권한이양]</code>에서 <b>6개월 이내에 임시 사용자 ID를 정식 아이디로 이양해야 함.</b></li><li>임시교원에게 권한을 부여한 이후 교원의 인사정보가 등록되면, 임시교원에게 부여하였던 권한을 <code>[학교업무분장-학교업무분장관리-학교업무분장권한이양]</code>에서 이양함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>시간강사 전체시간표 등록</h4><ul><li>시간강사는 <code>[업무분장설정업무-학교업무분장-학교업무분장관리-발령전임시교원등록]</code>에서 <b>'사용자명'만 입력 후 등록</b>하면 '사용자 고유번호'가 자동으로 발급됨.</li><li><code>[교육과정-시간표관리-전체시간표관리]</code>에서 <span class="btn">{일괄변경}</span> 기능을 활용하여 해당 교사를 <span class="btn">{찾기}</span>하여 '교사교체'를 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t15" data-num="15" data-stage="C" data-when="학기중변동" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>15</b><span class="gstage" title="원문 STAGE C · 인사변동 대응">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">인사정보 등록 완료 후 6개월 이내</span></div>
+    <h3>학교업무분장권한이양으로 임시 사용자 ID 권한 인계</h3>
+    <p class="desc">임시교원으로 등록해 권한을 부여했던 교원의 인사정보가 등록된 뒤에 하는 업무입니다. 임시사용자에게 부여된 권한을 실제 사용자에게 인계 처리합니다. <strong>'인수자찾기' 창에서는 업무분장을 하지 않은 신규 아이디만 조회되므로, 이미 업무분장을 한 사용자는 부여된 업무분장 내용을 삭제해야 조회됨.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 임시교원으로 등록한 교원의 인사정보가 등록된 뒤 6개월 이내.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학교업무분장-학교업무분장관리-학교업무분장권한이양]</code>, <code>[학교업무분장-학교업무분장관리-교무자료권한승인관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학교업무분장-학교업무분장관리-학교업무분장권한이양]</code>에서 '인계자'에 임시교원 '사용자명'을 입력하고 <span class="btn">{조회}</span>함 → '인수자'에 '사용자명'을 입력하고 <span class="btn">{조회}</span> 후 <span class="btn">{업무분장인계}</span>함('사용자 ID'는 자동 삭제되며, 권한이 일괄 변경됨) → 이후 <code>[학교업무분장-학교업무분장관리-교무자료권한승인관리]</code>에서 <span class="btn">{학년반}</span>, <span class="btn">{교과목}</span>, <span class="btn">{동아리활동}</span> 탭에서 미상신인 '자료권한'을 모두 선택 후 <span class="btn">{승인요청}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>임시 아이디에 쌓인 업무를 정식 아이디로 옮겨 임시 계정이 방치되지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{조회}</span>를 클릭하면 나타나는 '인수자찾기' 창에서는 업무분장을 하지 않은 신규 아이디만 조회됨. <b>이미 업무분장을 한 사용자는 부여된 업무분장 내용을 삭제해야 조회됨.</b></li><li><span class="btn">{업무분장인계}</span> 시 '사용자 ID'는 자동 삭제되며, 권한이 일괄 변경됨.</li><li><b>업무승인과정을 거쳐 결재권자의 결재가 완료되어야 자료권한이 부여됨.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t16" data-num="16" data-stage="C" data-when="학기중변동" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>16</b><span class="gstage" title="원문 STAGE C · 인사변동 대응">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">2학기 재계약 시</span><span class="tag opt">계약직 교원 재계약 시 한정</span></div>
+    <h3>학급담임·교과담임·동아리담임 자료권한재등록</h3>
+    <p class="desc">계약직 교원이 1학기 퇴직 후 2학기에 같은 학교로 계약한 경우에 하는 업무입니다. <strong>학급담임, 교과담임 등의 자료권한은 각 편성 메뉴의 {자료권한재등록} 기능으로 다시 부여함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 계약직 교원이 1학기 퇴직 후 2학기에 같은 학교로 계약한 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학급담임편성관리-학급담임편성관리]</code>, <code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code>, <code>[학생생활-창의적체험활동-동아리활동관리-부서만들기]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>학급담임은 <code>[교육과정-학급담임편성관리-학급담임편성관리]</code>의 <span class="btn">{자료권한재등록}</span> → 교과담임은 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code>의 <span class="btn">{자료권한재등록}</span> → 동아리담임은 <code>[학생생활-창의적체험활동-동아리활동관리-부서만들기]</code>의 <span class="btn">{자료권한재등록}</span> 기능을 활용함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>퇴직으로 끊긴 담임 자료권한을 되살려 재계약 교원이 학기 시작과 함께 학생 자료를 다룰 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>계약직 교원이 1학기 퇴직 후 2학기에 같은 학교로 계약 시</b> 각 메뉴의 <span class="btn">{자료권한재등록}</span> 기능을 활용하면 됨.</li><li>학급담임교사, 교과담당교사, 동아리활동 지도교사 자료권한은 <code>[기본메뉴-권한관리-교무자료권한승인관리]</code>에서 '담임편성'을 선택한 후 <span class="btn">{학년반}</span> 탭, <span class="btn">{교과목}</span> 탭, <span class="btn">{동아리활동}</span> 탭에서 각각 <span class="btn">{승인요청}</span>하여 <b>결재권자의 결재가 완료되어야 부여됨.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="B" data-when="학기중변동" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE B · 부서별 권한부여">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">퇴직·전보 발생 시</span></div>
+    <h3>퇴직·전보 사용자의 전체 권한 일괄 삭제</h3>
+    <p class="desc">퇴직, 전보 등으로 학교를 떠난 사용자의 권한을 업무별로 하나씩 지우지 않고 한 번에 정리할 때 쓴다. <strong>삭제 시 '자료권한 변경사유(공통)' 창에서 '변경사유구분'과 '변경사유'를 선택 또는 입력해야 저장됨.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 퇴직·전보 등 인사 변동이 발생한 직후</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-업무관리(부서원편성)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{사용자권한삭제}</span>를 클릭하면 나타나는 '개인별학교업무분장권한관리' 창에서 삭제하고자 하는 사용자명을 입력 후 조회 → 해당 사용자를 선택 후 <span class="btn">{삭제}</span> → '자료권한 변경사유(공통)' 창에서 '변경사유구분'과 '변경사유'를 선택 또는 입력 후 <span class="btn">{저장}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교를 떠난 사람의 계정에 남은 권한이 방치되어 학생 자료가 노출되는 일을 막으려고 한다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>퇴직, 전보 등으로 사용자의 전체 권한을 일괄 삭제하는 경우 <span class="btn">{사용자권한삭제}</span>를 사용함.</b></li><li><code>[학교업무분장권한이양]</code>의 '인수자찾기' 창에서는 업무분장을 하지 않은 신규 아이디만 조회되므로, 이미 업무분장을 한 사용자는 부여된 업무분장 내용을 삭제해야 조회됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="B" data-when="학년초설정" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE B · 부서별 권한부여">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">업무 재배치 시</span><span class="tag opt">선택 기능</span></div>
+    <h3>업무복사·이동으로 타부서 업무 옮기기</h3>
+    <p class="desc">업무분장을 조정해 같은 업무를 다른 부서에도 두거나 부서 간에 업무를 넘길 때 쓴다. 비슷한 업무를 처음부터 다시 입력하지 않아도 된다. <strong>업무 복사 시 '업무명'이 '○○○○-복사본'으로 나타나므로 필요시 '업무명'을 수정하고 '업무설명'과 '사용자명'을 설정함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초 또는 학기중, 부서원편성이 등록된 뒤 업무를 재배치할 때</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-업무관리(부서원편성)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{업무복사･이동}</span>에서 <span class="btn">{복사}</span>로 타부서로 업무를 복사하거나 <span class="btn">{이동}</span>으로 타부서로 업무를 이동함 → 복사한 경우 '업무명'을 수정하고 '업무설명'과 '사용자명'을 설정함</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학년 중간에 업무 소관이 바뀌어도 이미 만들어 둔 업무 편성을 그대로 살려 다시 입력하는 수고를 없애려고 한다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>업무 복사 시 '업무명'이 '○○○○-복사본'으로 나타나므로 필요시 '업무명'을 수정해야 함.</b></li><li>'업무찾기'로 등록된 업무명을 빠르게 검색할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="B" data-when="학기중변동" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE B · 부서별 권한부여">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">권한 부여 이후 일부 회수가 필요할 때</span></div>
+    <h3>업무 메뉴 체크 해제 및 업무명 삭제로 부여한 권한 회수</h3>
+    <p class="desc">학교업무분장을 이미 부여한 뒤 특정 메뉴만 못 쓰게 하거나 업무 전체를 없앨 때 쓴다. 일부만 회수할 때와 전체를 삭제할 때 손대는 메뉴가 다르다. <strong>'메뉴 등록'을 체크 해제하면 관리 권한(등록/수정/삭제)도 자동 체크 해제됨.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 학교업무분장 권한부여가 끝난 뒤 업무 조정이 생겼을 때</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-업무관리(메뉴, 자료권한관리)]</code>, <code>[업무분장설정업무-학교업무분장관리-업무관리(부서원편성)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>일부 업무만 삭제하려면 <code>[업무관리(메뉴, 자료권한관리)]</code>에서 '학년도'를 확인하고 <span class="btn">{조회}</span> 후 '업무 메뉴 관리' 항목에서 <span class="btn">{완료}</span>를 클릭 → '업무 메뉴 관리' 창에서 권한을 삭제(회수)하고자 하는 '메뉴명' 항목 앞의 '메뉴 등록'을 체크 해제 → <span class="btn">{저장}</span> → 전체 업무를 삭제하려면 <code>[업무관리(부서원편성)]</code>에서 삭제하고자 하는 '업무명'을 선택 후 <span class="btn">{삭제}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>업무에서 빠진 교원이 예전 권한으로 학생 자료를 계속 볼 수 있는 상태를 끊어 내려고 한다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>'메뉴 등록'을 체크 해제하면 관리 권한(등록/수정/삭제)이 자동 체크 해제되며, <span class="btn">{저장}</span> 이후 해당 메뉴를 사용할 수 없게 됨.</b></li><li>학교업무분장 부여 후 전체 업무를 삭제하는 방법은 <code>[업무분장설정업무-학교업무분장관리-업무관리(부서원편성)]</code>에서 삭제하고자 하는 '업무명'을 선택 후 <span class="btn">{삭제}</span>하는 것임.</li><li><b>부서장은 '업무명'이 자동으로 생성되며, 삭제할 수 없음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t12" data-num="12" data-stage="B" data-when="학기중변동" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>12</b><span class="gstage" title="원문 STAGE B · 부서별 권한부여">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">행공 사용자 지정이 필요할 때</span><span class="tag opt">시스템관리 단위업무 필요</span></div>
+    <h3>전체사용자관리를 통한 행공 권한 부여</h3>
+    <p class="desc">행정업무시스템을 써야 하는 사용자에게 '행공' 체크를 넣어 주는 업무이다. 다른 권한과 달리 <strong>'단위업무'에서 '공통관리'의 '시스템관리'를 먼저 등록해야 <code>[{시스템관리}사용자-사용자관리-전체사용자관리]</code>에 들어갈 수 있음.</strong> 부서장지정부터 메뉴관리까지 네 단계를 순서대로 거친다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초 또는 학기중, 행공 사용자 지정이 필요할 때</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-부서관리(부서장지정)]</code>, <code>[업무관리(부서원편성)]</code>, <code>[업무관리(메뉴, 자료권한관리)]</code>, <code>[{시스템관리}사용자-사용자관리-전체사용자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[부서관리(부서장지정)]</code>에서 <span class="btn">{행추가}</span> 후 '단위업무'에서 '클릭해서 단위업무 선택하기'를 클릭해 '단위업무선택' 창의 '공통관리'에서 '시스템관리'를 선택하여 등록 → <code>[업무관리(부서원편성)]</code>에서 <span class="btn">{행추가}</span>로 해당 부서명에 부서원을 등록 → <code>[업무관리(메뉴, 자료권한관리)]</code>의 '업무메뉴관리'에서 <span class="btn">{메뉴관리}</span>를 클릭해 '업무메뉴관리' 창에서 '전체사용자관리' 메뉴명에 메뉴등록에 체크하고 '관리권한(등록/수정/삭제)'을 체크하고 <span class="btn">{저장}</span> → <code>[{시스템관리}사용자-사용자관리-전체사용자관리]</code>에서 해당사용자에게 '행공' 체크 후 <span class="btn">{저장}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교무업무 권한과 별개로 행정업무시스템 사용 여부를 학교가 직접 통제하려고 한다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>'전체사용자관리' 메뉴는 메뉴등록 체크만으로는 부족하고 '관리권한(등록/수정/삭제)'까지 체크해야 '행공' 체크와 저장이 가능함.</b></li><li>학교 업무분장관리 담당자가 위 네 단계 절차에 따라 권한을 부여함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t17" data-num="17" data-stage="D" data-when="수시" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>17</b><span class="gstage" title="원문 STAGE D · 현황 점검·오류 대응">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">권한부여 완료 후</span><span class="tag">리포트 프로그램 설치 필요</span></div>
+    <h3>메뉴별학교업무분장소유자조회 및 권한부여 현황 승인요청</h3>
+    <p class="desc">학교업무분장에 따라 권한을 부여한 뒤 사용자별로 어떤 메뉴와 자료권한이 실제로 들어갔는지 확인해야 하는 경우에 사용한다. 처음 조회할 때는 <strong>리포트 전용 프로그램을 최초 1회 설치</strong>해야 하며, 이후 조회 시에는 '다운로드'가 나타나지 않는다. 조회한 권한부여 내역은 문서로 상신할 수도 있다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 부서장·부서원·메뉴 및 자료권한 등록과 교무자료권한 승인이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학교업무분장-학교업무분장관리-메뉴별학교업무분장소유자조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학교업무분장-학교업무분장관리-메뉴별학교업무분장소유자조회]</code>에서 조회 조건 확인 및 선택하고 <span class="btn">{조회}</span> → '다운로드'를 클릭하여 리포트 전용 프로그램을 설치하고 메뉴별 업무분장 소유자를 조회 → 필요시 권한부여 내역을 PDF 파일로 다운받아 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>부여한 권한이 업무분장표와 어긋나지 않는지 눈으로 대조해 권한 오남용과 누락을 미리 걸러내려고.</dd></dl>
+    </div>
+<div class="memo"><h4>조회 항목별로 확인되는 정보</h4><ul><li>메뉴별 업무분장 조회 항목에서 '세부업무', '메뉴그룹', '메뉴명', '부서명', '업무명', '관리', '등록일자', '등록자'의 정보를 확인할 수 있음.</li><li>학년반 자료권한 조회 항목에서 '부서명', '업무명', '주야과정', '계열', '학년', '학과', '반', '등록일자', '등록자'의 정보를 확인할 수 있음.</li><li>교과목 자료권한 조회 항목에서 '부서명', '업무명', '학년', '학기', '개설과목', '등록일자', '등록자'의 정보를 확인할 수 있음.</li><li>동아리활동 자료권한 조회 항목에서 '부서명', '업무명', '주야과정', '동아리활동부서', '동아리활동부서학급', '등록일자', '등록자'의 정보를 확인할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li><b>리포트 전용 프로그램은 최초 1회만 설치</b>하면 다음부터는 바로 조회할 수 있음('다운로드'는 처음으로 [메뉴별학교업무분장소유자조회]에 <span class="btn">{조회}</span> 시 나타나며, 이후 조회 시에는 나타나지 않음).</li><li>권한부여 현황을 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료할 수 있음(<b>권한관리 지침은 시도교육청에 따름</b>).</li><li>다운받는 파일 형식은 학교에 따라 다를 수 있음.</li><li>학교업무분장관리 담당자가 부여한 사용자별 학교업무분장조회를 하려면 <code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-부서관리(부서장지정)]</code>에서 '단위업무' 항목을 클릭해 나타나는 '단위업무 선택' 창에서 '공통관리'의 '학교업무분장'을 선택하고 <span class="btn">{확인}</span>한 뒤, [업무관리(부서원편성)]와 [업무관리(메뉴, 자료권한관리)]에서 절차대로 등록해야 학교업무분장관리자에게 [학교업무분장]이 부여되고 이 메뉴에서 확인할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t18" data-num="18" data-stage="D" data-when="수시" data-who="학교업무분장관리담당자">
+  <div class="gutter"><b>18</b><span class="gstage" title="원문 STAGE D · 현황 점검·오류 대응">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">권한 변경 이후 수시</span><span class="tag opt">삭제는 보존기간 종료 자료만</span></div>
+    <h3>학교업무분장변경통계현황 세 탭 조회와 변경이력 삭제 관리</h3>
+    <p class="desc">학년 중에 부서원이 바뀌거나 메뉴·자료권한을 고친 뒤 누가 언제 무엇을 바꿨는지 되짚어야 할 때 쓴다. 세 탭 모두 조회 조건을 고르고 <span class="btn">{조회}</span>한 뒤 탭만 옮기면 되므로 절차가 같다. 이력 삭제는 <strong>조회일 기준 5년 전 변경이력 건수</strong>만 조회되는 별도 메뉴에서 처리한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 부서원 편성이나 메뉴·자료권한 등록·변경이 이루어진 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학교업무분장-학교업무분장관리-학교업무분장변경통계현황]</code>, <code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장변경이력삭제관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학교업무분장-학교업무분장관리-학교업무분장변경통계현황]</code>에서 조회 조건 확인 및 선택하고 <span class="btn">{조회}</span> → <span class="btn">{부서원편성이력}</span> 탭에서 부서원 편성 이력 조회 → <span class="btn">{메뉴및자료권한변경이력}</span> 탭에서 메뉴 및 자료권한의 변경이력 조회 → <span class="btn">{업무별부서원편성이력}</span> 탭에서 업무별 부서원 편성이력 조회 → 보존기간 종료 자료는 <code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장변경이력삭제관리]</code>에서 조회 후 삭제함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>권한이 언제 누구에게 옮겨졌는지 근거를 남겨 두어 권한 관련 문의나 감사에 답할 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>어떤 탭을 언제 여는가</h4><ul><li><span class="btn">{부서원편성이력}</span> 탭 — 부서 단위로 부서원이 어떻게 편성·변경되었는지 확인할 때.</li><li><span class="btn">{메뉴및자료권한변경이력}</span> 탭 — 메뉴 권한과 자료권한이 언제 추가·회수되었는지 확인할 때.</li><li><span class="btn">{업무별부서원편성이력}</span> 탭 — 특정 업무명을 기준으로 담당 부서원의 변동을 확인할 때.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>학교업무분장에 따라 등록한 권한부여 관련 정보를 부서원 편성 이력, 메뉴 및 자료권한 변경이력, 업무별 부서원 편성 이력으로 구분하여 조회할 수 있음.</li><li>[학교업무분장변경이력삭제관리]는 <b>보존기간 종료 자료를 삭제할 수 있는 메뉴</b>이며, 조회 시 <b>조회일 기준 5년 전 변경이력 건수</b>가 조회됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t19" data-num="19" data-stage="D" data-when="수시" data-who="학교업무분장관리담당자 교원">
+  <div class="gutter"><b>19</b><span class="gstage" title="원문 STAGE D · 현황 점검·오류 대응">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">권한 오류 알림이 뜬 즉시</span><span class="tag opt">적용 시점 시·도별 상이</span></div>
+    <h3>나이스 서버사이드 권한 관리 알림(메뉴·관리·자료 권한) 원인별 조치</h3>
+    <p class="desc">교원이 메뉴에 접속하거나 자료를 등록·수정·삭제할 때 권한 관련 알림이 뜨는 경우에 대처하는 업무다. 알림 문구가 '메뉴 권한이 없습니다', '관리 권한이 없습니다', '자료 권한이 없습니다' 중 무엇인지에 따라 손볼 곳이 달라진다. <strong>나이스 서버사이드 권한 관리 기능 적용 시점은 시·도교육청별로 다를 수 있으므로 자세한 내용은 시도교육청별 나이스 관리 담당부서에 확인</strong>한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중. 학교업무분장에 따라 권한을 부여받은 교원이 나이스 업무를 수행하는 중.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자), 시도교육청 권한관리자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-업무관리(메뉴, 자료권한관리)]</code>, <code>[시스템관리-권한관리-권한관리자관리-사용자별권한데이터동기화현황관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'메뉴 권한이 없습니다' 알림이면 <code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-업무관리(메뉴, 자료권한관리)]</code>의 '업무 메뉴 관리'에서 메뉴를 등록하거나 시도교육청 권한관리자에게 권한 데이터 동기화를 요청 → '관리 권한이 없습니다' 알림이면 같은 메뉴의 '업무 메뉴 관리'에서 '관리 권한(등록/수정/삭제)' 확인 및 필요시 관리 권한을 선택 → '자료 권한이 없습니다' 알림이면 같은 메뉴의 '학년반 자료권한', '교과목 자료권한', '동아리활동 자료권한'에서 권한 확인 및 필요시 부여함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>권한 오류로 교원이 업무를 멈추는 일을 막으면서도, 외부 해킹으로부터 나이스를 지키는 서버 검사 체계를 그대로 유지하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>동기화 요청 시 시도교육청 권한관리자 업무</h4><ul><li><code>[시스템관리-권한관리-권한관리자관리-사용자별권한데이터동기화현황관리]</code>에서 다음 업무를 수행함.</li><li><span class="btn">{누락}</span> — 나이스 서버사이드 메뉴 권한 체크를 위한 메뉴 권한이 누락됨('동기화' 항목 확인).</li><li><span class="btn">{사용자메뉴권한동기화}</span> — 누락된 메뉴를 일괄로 동기화함.</li><li><span class="btn">{선택메뉴권한동기화}</span> — 선택된 메뉴만 동기화함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>웹 취약점 개선 조치의 일환으로 나이스를 외부 해킹 등으로부터 보호하기 위해 사용자가 나이스 메뉴 접속 시 메뉴 권한 여부와 자료를 등록·수정·삭제할 수 있는 관리 권한 여부를 체크함.</li><li>3세대 나이스에서는 조회 페이지와 관리 페이지로 분리되어 있어 조회만 필요한 사용자에게는 조회용 메뉴를 부여할 수 있었으나 4세대 나이스에서는 조회 페이지와 관리 페이지를 하나의 페이지로 통합하여 탭으로 구분하게 되어 조회 권한과 관리 권한(등록·수정·삭제)으로 구분함(4세대 나이스 구축 초기 단계부터 정의된 기능임).</li><li><b>나이스 서버사이드 권한 관리 기능 적용 시점은 시·도교육청별로 다를 수 있음.</b></li><li>자료권한 적용 대상 목록은 성적·학생생활·학생부·학적·개별화교육계획 세부업무의 메뉴별로 '학년반', '교과목', '동아리' 유형으로 정해져 있음.</li><li>위탁학생 관리를 위해 학년반 자료권한을 부여했는데 이후 '학년반 자료권한'에 '완료'가 빨간색으로 표시되는 경우는 권한부여 이후 기능 개선으로 자료권한에서 '학년반' 권한을 제외함에 따라 나타나는 현상이므로 그대로 두거나 해당 권한을 삭제 후 다시 부여함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t22" data-num="22" data-stage="E" data-when="수시" data-who="업무승인관리자 학교업무분장관리담당자">
+  <div class="gutter"><b>22</b><span class="gstage" title="원문 STAGE E · 결재·접속 환경">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">기결문서취소가 안 될 때</span><span class="tag opt">예외 처리</span></div>
+    <h3>결재현황판관리에서 기결문서 삭제 처리</h3>
+    <p class="desc">최초 상신한 업무담당교사가 <code>[승인사항-상신함]</code>에서 <span class="btn">{기결문서취소}</span>를 하지 못하는 상황에만 해당하는 업무다. <strong>학교업무분장관리 담당자가 결재현황판관리에서 해당 문서를 삭제해야 미상신 상태로 돌아가 업무를 다시 처리할 수 있다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>수시, 상신자가 상신함에서 기결문서취소를 할 수 없다고 확인된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교 업무담당자(업무승인 관리자), 학교업무분장관리 담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[{업무승인관리}업무승인-결재현황관리-결재현황판관리]</code>, <code>[승인사항-상신함]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>최초 상신한 업무담당교사가 <code>[승인사항-상신함]</code>에서 해당 결재문서명에 대해 <span class="btn">{기결문서취소}</span>가 되는지 확인 → 취소가 불가한 경우 학교업무분장관리 담당자가 <code>[{업무승인관리}업무승인-결재현황관리-결재현황판관리]</code>에서 해당 결재문서를 삭제하고 삭제 사유를 등록 → 미상신 상태로 변경된 것을 확인하고 해당 업무를 다시 처리함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>결재가 걸려 멈춘 문서를 풀어 담당교사가 자료를 다시 상신할 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>삭제 시 삭제 사유를 등록하며, <b>결재문서명에 빨간색 취소선이 표기되고 해당 결재문서는 미상신 상태로 변경됨.</b></li><li>최초 상신한 업무담당교사가 <code>[승인사항-상신함]</code>에서 <span class="btn">{기결문서취소}</span>를 못하는 경우는 학교업무분장관리 담당자가 <code>[{업무승인관리}업무승인-결재현황관리-결재현황판관리]</code>에서 삭제 후 해당 업무를 처리하면 됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t24" data-num="24" data-stage="E" data-when="수시" data-who="교원">
+  <div class="gutter"><b>24</b><span class="gstage" title="원문 STAGE E · 결재·접속 환경">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수시</span><span class="tag opt">학교 등 교육관련기관 내 신청</span></div>
+    <h3>원격업무지원서비스(EVPN)에서 원격업무 신청</h3>
+    <p class="desc">학교 등 교육관련기관 안에서 나이스에 접속할 수 있는 상태라면 이 경로로 원격업무를 신청한다. <strong>{보안서약서}에 동의하지 않으면 저장할 수 없고, 결재선은 각 학교의 전결 규정에 따른다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>수시, 외부에서 나이스를 사용해야 할 시점 전에.</dd></dl>
+      <dl><dt>누가?</dt><dd>교원</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[기본메뉴-원격업무지원서비스-원격업무지원서비스(EVPN)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[기본메뉴-원격업무지원서비스-원격업무지원서비스(EVPN)]</code>에서 '사용자명'을 확인하고 <span class="btn">{조회}</span> → <span class="btn">{신규}</span>하여 '사용기간', '접속그룹', 'VPN패스워드', 'VPN패스워드 확인', '요청사유' 입력 및 선택하고 <span class="btn">{보안서약서}</span> 동의하고 <span class="btn">{저장}</span> → <span class="btn">{승인요청}</span>으로 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>자택 등 외부에서도 나이스 업무를 이어갈 수 있는 접속 권한을 정식 결재를 거쳐 확보하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>보안서약서를 동의하는 방법은 <code>[기본메뉴-원격업무지원서비스-원격업무지원서비스(EVPN)]</code>에서 <span class="btn">{신규}</span>로 내용 입력 시 <span class="btn">{보안서약서}</span>를 클릭하면 나타나는 '보안서약서' 창에서 <span class="btn">{동의}</span>함.</li><li>결재선은 각 학교의 전결 규정에 따름.</li><li><b>EVPN 재신청 시 기존 신청된 정보는 삭제되므로 재신청 시 사용 기간의 시작 일자는 신청 당일로 설정함.</b></li><li><b>EVPN 사용기간은 최대 6개월이며 접속 시 비밀번호 변경 주기는 3개월임.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t25" data-num="25" data-stage="E" data-when="수시" data-who="교원">
+  <div class="gutter"><b>25</b><span class="gstage" title="원문 STAGE E · 결재·접속 환경">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수시</span><span class="tag opt">교육관련기관 이외에서만</span></div>
+    <h3>교육관련기관 이외에서 원격업무 외부신청</h3>
+    <p class="desc">학교에서 신청하지 못한 채 이미 외부에 있는 경우에 쓰는 경로다. <strong>원격업무 담당자가 결재선을 사전에 등록해 두지 않으면 외부 신청 자체가 불가하며,</strong> 외부 신청에는 교육디지털원패스 로그인이 필요하다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>수시, 원격업무 담당자가 결재선 및 적용대상자를 사전 등록한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교원</dd></dl>
+      <dl><dt>어디서?</dt><dd>원격업무 지원시스템 (https://evpn.***.go.kr)에 접속(***는 시･도교육청마다 다름)</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>원격업무지원시스템(https://evpn.시도명.go.kr)에 접속함 → 오른쪽 하단의 '원격업무 외부신청'을 클릭하면 나타나는 '알림' 창에서 <span class="btn">{확인}</span> 후 '교직원 로그인' 창의 <span class="btn">{인증서}</span> 탭에서 '나이스 ID' 입력 후 <span class="btn">{로그인}</span> → '원격업무지원서비스(클라우드)' 창에서 '이름', '나이스 ID', '소속교육청', '소속기관'을 확인 후 'VPN 비밀번호' 및 'VPN 비밀번호 확인' 입력, '사용기간' 설정, '요청사유' 입력, '보안서약서' 확인 후 동의하고 <span class="btn">{신청}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>출장이나 자택처럼 학교 밖에 있는 상황에서도 스스로 접속 권한을 신청해 업무 공백을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'아이디/비밀번호', '간편인증'으로도 로그인을 할 수 있음.</li><li>원격업무지원서비스는 GPKI 인증서, 아이디/비밀번호, 간편인증으로도 로그인을 할 수 있음.</li><li><code>[{업무승인관리}업무승인-결재경로관리-결재선관리]</code>에서 등록된 결재선에 따라 결재권자의 결재가 완료되면 원격업무지원서비스에 로그인이 가능함.</li><li><b>원격업무 외부 신청을 위해서는 교육디지털원패스 로그인이 필요함.</b></li><li><b>EVPN 재신청 시 기존 신청된 정보는 삭제되므로 재신청 시 사용 기간의 시작 일자는 신청 당일로 설정함.</b></li><li><b>EVPN 사용기간은 최대 6개월이며 접속 시 비밀번호 변경 주기는 3개월임.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part Ⅰ 학교업무분장, Section_01~08 학교업무분장 권한관리 (3–62쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

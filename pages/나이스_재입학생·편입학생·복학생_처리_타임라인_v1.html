@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<!-- 재입학생·편입학생·복학생 처리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>재입학생·편입학생·복학생 처리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>재입학생·편입학생·복학생 처리</b>
+    <span class="sub">업무 9개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Part 2. 학적 · Section_03 · pp. 278–289</p>
+    <h1>재입학생·편입학생·복학생 처리
+      <em>업무 9개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학년초, 학기중</dd></div>
+      <div><dt>업무담당</dt><dd>학적업무담당자</dd></div>
+      <div><dt>메뉴경로</dt><dd>[학적-전입관리-전입관리]</dd></div>
+      <div><dt>선행조건</dt><dd>후행처리: [학적-전입관리-전입관리-자료요청및취소]에서 {상신}으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>학생 입급 시점 등록</h3>
+            <p class="tl-sub">학생 유형에 따라 세 경로 중 하나를 선택 · 원적교 자료 도착 여부 확인 후</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 본교 재입·복학 등록"><span>01</span>본교 재입·복학 등록</button><button type="button" class="tl-btn" data-go="t2" title="02 타교 편입생 등록"><span>02</span>타교 편입생 등록</button><button type="button" class="tl-btn" data-go="t3" title="03 추가입학 등록"><span>03</span>추가입학 등록</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>등록값 정정</h3>
+            <p class="tl-sub">학적반영일자나 신규취득학적을 잘못 넣은 경우에만 진행</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 반영일자·학적 수정"><span>04</span>반영일자·학적 수정</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>학적반영 전 확인과 상신</h3>
+            <p class="tl-sub">등록 완료 후 · 결재가 끝나야 학적반영으로 넘어갈 수 있음</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 전입자료 조회"><span>05</span>전입자료 조회</button><button type="button" class="tl-btn" data-go="t6" title="06 기안문 상신"><span>06</span>기안문 상신</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>결재 완료 후 학적반영</h3>
+            <p class="tl-sub">결재권자 결재 완료 후 · 자료이관을 먼저 수행한 뒤 학적반영</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t7" title="07 자료이관·학적반영"><span>07</span>자료이관·학적반영</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>학적반영 후 마무리</h3>
+            <p class="tl-sub">학적반영 직후 · 수강과목 편성 전에는 출결·성적 처리 불가</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t8" title="08 종합자료 검색"><span>08</span>종합자료 검색</button><button type="button" class="tl-btn" data-go="t9" title="09 수강편성·출결지정"><span>09</span>수강편성·출결지정</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="입급시점" data-who="학적업무담당자">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 전입 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">입급 시점</span><span class="tag opt">본교 출신 학생</span></div>
+    <h3>재입학생·복학생·편입학(본교) 등록</h3>
+    <p class="desc">본교에 이전 학적이 남아 있는 재입학생·복학생·편입학(본교) 학생을 등록하는 업무이다. <strong>이전 학적이 본교에 존재하는 학생만 이 경로로 등록할 수 있다.</strong> 등록 창에서 학생을 찾아 신규 취득 학적과 학적반영일자까지 한 번에 저장한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 학생이 입급하는 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-전입관리-전입관리-전편재입/복학생등록(2025학년도)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학년’ 확인 후 ‘기간’을 설정하고 <span class="btn">{조회}</span>하여 <span class="btn">{등록}</span>함 → ‘전편재입/복학생 등록’ 창에서 ‘변동구분(편입학(본교))’을 선택하고 <span class="btn">{조회}</span>함 → ‘편입생(본교) 학생찾기’ 창에서 ‘학생명’ 입력 후 <span class="btn">{조회}</span>하고 학생목록에서 해당 편입생을 클릭하여 <span class="btn">{확인}</span>함 → ‘신규취득학적’과 ‘학적반영일자’를 등록하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학업을 중단했던 학생의 이전 학적을 되살려 새 학적과 이어 붙여, 이후 출결·성적이 같은 학생의 기록으로 쌓이게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>입학·편입학은 해당 학교의 교육과정 이수에 지장이 없는 범위인 <b>당해 학년 수업일수의 3분의 2 이상 남은 시점</b>까지 수시로 입급할 수 있음.</li><li>학생의 출석일수가 당해 학년 수업일수의 3분의 2 미만이 될 경우에는 각 학년 과정의 수료에 필요한 출석일수 부족 등으로 수료 또는 졸업 인정이 되지 않으므로 원칙적으로 당해 학년도 입학·편입학 등은 불가능함.</li><li>다만, 학생과 학부모가 원할 경우 당해 학교장은 학교의 교육 여건 등을 고려하여 학생의 학습권 보호 차원에서 허가할 수 있음. 이때 학교에서는 허가에 앞서 학생, 학부모에게 당해 학년도에는 출석일수 부족으로 수료 또는 졸업이 되지 않음을 정확히 주지 및 확인시켜 주어야 함.</li><li>유급·재입학·편입학·복학한 학생의 학교생활기록부를 입력할 때는 학년이력, 인적·학적사항, 학교폭력 관련 조치사항을 제외한 항목(수업일수, 출결상황, 성적, 기타 비교과 영역 등 제반 내용)에 대하여 재입학·편입학·복학일 이전의 내용은 학업 중단 시의 내용으로 입력하고, 유급·재입학·편입학·복학일 이후의 내용은 유급·재입학·편입학·복학 후 새로 수행하는 사항을 입력함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="입급시점" data-who="학적업무담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 전입 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">입급 시점</span><span class="tag opt">타교 출신 편입생</span></div>
+    <h3>편입학(타학교) 학생 등록</h3>
+    <p class="desc">다른 학교에서 편입해 온 학생을 등록하는 업무이다. 등록 창의 변동구분을 ‘편입학(타학교)’로 골라 학교명과 성명으로 학생을 찾는다. <strong>전입생·편입생(타학교)의 경우 원적교에서 도착한 자료가 조회된다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 원적교에서 자료가 도착한 뒤 입급하는 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-전입관리-전입관리-전편재입/복학생등록(2025학년도)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘전편재입/복학생 등록’ 창에서 ‘편입학(타학교)’ 선택 후 <span class="btn">{조회}</span>함 → ‘편입생(타교) 학생찾기’ 창에서 ‘학교명’, ‘성명’ 입력 후 <span class="btn">{조회}</span>함 → 학생목록에서 해당 편입생을 클릭하고 <span class="btn">{확인}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>원적교가 보낸 전산자료와 편입생을 짝지어, 이전 학교의 기록을 손으로 다시 입력하지 않고 그대로 이어받으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>전입생·편입생(타학교)의 경우 <b>원적교에서 도착한 자료가 조회됨.</b></li><li>편입학할 수 있는 자는 편입학하는 학년의 이전 학년까지의 과정을 수료한 자 및 이와 동등 이상의 학력이 있다고 인정되는 자이어야 함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>외국인 학생·귀국학생 처리</h4><ul><li>입학은 당해 학년 수업일수의 3분의 2 이상 남은 시점까지 1학년으로 처음 학교에 들어오는 경우이며, 외국인 학생이 1학년으로 신입학하는 경우 국내 학생과 동일하게 입학으로 처리함.</li><li>성명은 외국인의 경우 여권(외국인등록증, 외국인등록 사실증명, 국내거소신고 사실증명)에 표기된 영문 또는 한글의 성명과 성별을 그대로 입력함. 증빙서류에 학생의 성명이 영문과 한글로 병기되어 있을 경우, 학생과 학부모의 희망에 따라 성명 표기 방식을 선택할 수 있음.</li><li>귀국학생 등의 학년을 결정할 때, 학년 배정을 받아 편입학하는 경우와 「조기진급 등에 관한 규정」 제5조에 따른 조기진급·졸업·진학 평가위원회가 실시하는 교과목별 이수인정평가의 결과에 따라 학년을 정하여 편입학하는 경우는 <b>남은 수업일수가 당해 학년도 수업일수의 3분의 2 이상에 미달하여도 해당 학년 수료에 영향을 받지 아니함.</b></li><li>귀국학생 등의 해당 학년 수료기준 출석일수는 ‘입급 일부터 학년 종료일까지 남은 수업일수’의 3분의 2 이상임.</li><li>귀국학생 등이 외국학교에서 수학한 같은 기간의 기록은 학년을 결정하는 참고자료로 해당 학년의 정규교육과정을 이수한 기록이 아니므로 해당 학교의 학교생활기록부에 입력하지 않음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="A" data-when="입급시점" data-who="학적업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE A · 전입 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">입급 시점</span><span class="tag opt">전산자료 없는 편입생 한정</span></div>
+    <h3>이전 학적·전산자료가 없는 편입생 추가입학 등록</h3>
+    <p class="desc">앞의 두 경로로 학생이 조회되지 않을 때 쓰는 업무이다. <strong>이전 학적이 존재하지 않거나 전산자료가 없는 편입생(중도 입학자 포함)</strong>은 전편재입/복학생등록이 아니라 추가입학 메뉴에서 등록하고, 자료도 직접 입력해야 한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 원적교 전산자료를 받을 수 없다고 확인된 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-기본학적관리-추가입학/입력누락자입력]</code>, <code>[학적-전입관리-추가입학/입력누락자자료입력]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-기본학적관리-추가입학/입력누락자입력]</code>에서 등록함 → 자료는 <code>[학적-전입관리-추가입학/입력누락자자료입력]</code>에서 직접 등록함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>넘겨받을 전산자료가 없는 학생도 학적을 만들어 두어야 출결과 성적을 처리할 수 있으므로.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>이전 학적이 존재하지 않거나 전산자료가 없는 편입생(중도 입학자 포함)의 경우는 <b>[학적-기본학적관리-추가입학/입력누락자입력]에서 등록</b>하고 자료는 <b>[학적-전입관리-추가입학/입력누락자자료입력]에서 직접 등록</b>함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="A" data-when="등록직후" data-who="학적업무담당자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE A · 전입 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">등록 직후, 필요시</span><span class="tag opt">필요시</span></div>
+    <h3>학적반영일자 및 신규 취득 학적 수정</h3>
+    <p class="desc">등록할 때 넣은 학적반영일자나 신규취득학적이 잘못된 경우에만 하는 업무이다. <strong>목록에서 학생의 ‘성명’을 클릭하면 나타나는 ‘전편재입/복학생 수정’ 창에서 ‘이전학적’을 먼저 확인</strong>한 뒤 수정한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 전편재입/복학생 등록을 마친 뒤 값을 고쳐야 할 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-전입관리-전입관리-전편재입/복학생등록(2025학년도)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학년’, ‘기간’ 확인 후 <span class="btn">{조회}</span>함 → 수정할 학생의 ‘성명’을 클릭하면 나타나는 ‘전편재입/복학생 수정’ 창에서 ‘이전학적’ 확인 후 ‘학적반영일자’와 ‘신규취득학적’을 수정하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학적반영일자와 신규취득학적이 이후 수업일수·출결 산출의 기준이 되므로, 학적반영 전에 바로잡아 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>‘전편재입/복학생 수정’ 창에서는 <b>‘이전학적’을 확인한 뒤</b> ‘학적반영일자’와 ‘신규취득학적’을 수정함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="등록직후" data-who="학적업무담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 확인과 결재">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">등록 직후</span><span class="tag">확인용 조회</span></div>
+    <h3>재입학생·편입학생·복학생 자료 조회</h3>
+    <p class="desc">전편재입/복학생 등록을 마친 학생의 도착 자료를 학적반영 전에 미리 확인하는 단계이다. <strong>전입생·편입생(타학교)의 경우 원적교에서 도착한 자료가 조회되므로</strong> 이관 전에 내용이 맞는지 눈으로 확인해 둔다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초·학기중, 전편재입/복학생 등록을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학적업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-전입관리-전입관리-전입자료조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학년’ 확인 후 ‘기간’을 설정하고 <span class="btn">{조회}</span>하여 해당 학생의 ‘성명’을 클릭함 → ‘학적반영 자료선택(최종수신일자)’에서 <span class="btn">{기본학적}</span>을 클릭하면 나타나는 ‘기본학적조회’ 창의 <span class="btn">{기본신상}</span> 탭 등에서 내용 확인 후 <span class="btn">{닫기}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>원적교에서 도착한 자료가 우리 학교 학생의 것과 맞는지 반영 전에 걸러내 잘못된 학적이 확정되는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>‘학적반영 자료선택(최종수신일자)’ 화면에서 <b>{기본학적}</b>을 클릭하면 ‘기본학적조회’ 창이 열리고, <b>{기본신상}</b> 탭 등에서 내용을 확인할 수 있음.</li><li>이전 학적이 존재하지 않거나 전산자료가 없는 편입생(중도 입학자 포함)은 이 화면에 조회되지 않으므로 <b>[학적-기본학적관리-추가입학/입력누락자입력]</b>에서 등록하고 자료는 <b>[학적-전입관리-추가입학/입력누락자자료입력]</b>에서 직접 등록함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="B" data-when="결재단계" data-who="학적업무담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE B · 확인과 결재">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적반영 전, 결재 단계</span></div>
+    <h3>재입학생·편입학생·복학생 기안문 상신</h3>
+    <p class="desc">재입학생·편입학생·복학생 등록 내용을 학적에 반영하기 전에 반드시 거치는 결재 절차이다. <strong>{상신}으로 업무승인과정을 거쳐 결재권자의 결재를 완료해야</strong> 후속 학적반영으로 넘어갈 수 있다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초·학기중, 등록 내용과 전입자료 확인을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학적업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-전입관리-전입관리-상신]</code>, <code>[학적-전입관리-전입관리-자료요청및취소]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{결재자지정}</span> 후 ‘기안내용’을 선택하고 <span class="btn">{상신}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생의 학적 변동을 학교의 공식 결재로 확정해 두어 근거 없이 학적이 바뀌는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>후행처리로 <b>[학적-전입관리-전입관리-자료요청및취소]</b>에서 <b>{상신}</b>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</li><li>목록의 ‘상태’에서 ‘전입학적반영(완결)’을 클릭하면 <b>[학적-전입관리-전입관리-학적반영]</b>으로 이동함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="C" data-when="학적반영" data-who="학적업무담당자">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE C · 학적반영">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">결재 완료 후</span><span class="tag">자료이관 후 반영</span></div>
+    <h3>재입학생·편입학생·복학생 학적반영</h3>
+    <p class="desc">재입학·편입학·복학생을 등록하고 기안문 상신으로 결재까지 마쳤다면, 실제로 학적을 우리 학교 자료로 확정하는 단계이다. <strong>반영할 자료를 선택해 {자료이관}을 먼저 수행한 뒤에 {학적반영}을 해야 한다.</strong> 전입생·편입생(타학교)의 경우 원적교에서 도착한 자료가 조회된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. [학적-전입관리-전입관리-상신]에서 결재권자의 결재를 완료한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학적업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-전입관리-전입관리-학적반영]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학년’ 확인 후 ‘기간’을 설정하고 <span class="btn">{조회}</span>하여 해당 학생의 ‘성명’을 클릭함 → ‘학적반영 자료선택(최종수신일자)’에서 반영할 자료를 선택하고 <span class="btn">{자료이관}</span> 후 <span class="btn">{목록으로}</span>를 클릭하고 해당 학생 선택 후 <span class="btn">{학적반영}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>원적교에서 온 자료를 우리 학교 학적으로 확정해 그 학생이 출결·성적 처리 대상에 들어오게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>수강과목이 편성되지 않으면 출결처리 및 성적처리를 할 수 없으므로 재입학생·편입학생·복학생 학적 반영한 후 수강과목을 반드시 편성해야 함.</b></li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 재입학생·편입학생·복학생의 수강과목은 [학적-전입관리-전입관리-학적반영]/[종합자료검색]에서 해당 학생 성명을 클릭하면 나타나는 {수강과목편성} 또는 [교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]에서 편성함.</li><li>2022 개정 교육과정을 적용받는 2026학년도 1·2학년은 과목 출석률 산정을 해야 하므로, 이에 해당하는 재입학생·편입학생·복학생의 수강과목은 [학적-전입관리-전입관리-학적반영]/[종합자료검색]에서 해당 학생 성명을 클릭하면 나타나는 {수강과목편성}에서 편성함.</li><li>목록의 ‘상태’에서 ‘전입학적반영(완결)’을 클릭하면 [학적-전입관리-전입관리-학적반영]으로 이동함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>입급 시점과 학적 기록 유의사항</h4><ul><li>입학·편입학은 해당 학교의 교육과정 이수에 지장이 없는 범위인 <b>당해 학년 수업일수의 3분의 2 이상 남은 시점</b>까지 수시로 입급할 수 있음.</li><li>학생의 출석일수가 당해 학년 수업일수의 3분의 2 미만이 될 경우에는 각 학년 과정의 수료에 필요한 출석일수 부족 등으로 수료 또는 졸업 인정이 되지 않으므로 원칙적으로 당해 학년도 입학·편입학 등은 불가능함. 다만, 학생과 학부모가 원할 경우 당해 학교장은 학교의 교육 여건 등을 고려하여 학생의 학습권 보호 차원에서 허가할 수 있으며, 이때 학교에서는 허가에 앞서 학생, 학부모에게 당해 학년도에는 출석일수 부족으로 수료 또는 졸업이 되지 않음을 정확히 주지 및 확인시켜 주어야 함.</li><li>유급·재입학·편입학·복학한 학생의 학교생활기록부를 입력할 때는 <b>학년이력, 인적·학적사항, 학교폭력 관련 조치사항을 제외한 항목</b>(수업일수, 출결상황, 성적, 기타 비교과 영역 등 제반 내용)에 대하여 재입학·편입학·복학일 이전의 내용은 학업 중단 시의 내용으로 입력하고, 유급·재입학·편입학·복학일 이후의 내용은 유급·재입학·편입학·복학 후 새로 수행하는 사항을 입력함.</li><li>귀국학생 등의 학년을 결정할 때, 학년 배정을 받아 편입학하는 경우와 ｢조기진급 등에 관한 규정｣ 제5조에 따른 조기진급·졸업·진학 평가위원회가 실시하는 교과목별 이수인정평가의 결과에 따라 학년을 정하여 편입학하는 경우는 남은 수업일수가 당해 학년도 수업일수의 3분의 2 이상에 미달하여도 해당 학년 수료에 영향을 받지 아니함. 이때 귀국학생 등의 해당 학년 수료기준 출석일수는 ‘입급일부터 학년 종료일까지 남은 수업일수’의 3분의 2 이상임.</li><li>귀국학생 등이 외국학교에서 수학한 같은 기간의 기록은 학년을 결정하는 참고자료로 해당 학년의 정규교육과정을 이수한 기록이 아니므로 해당 학교의 학교생활기록부에 입력하지 않음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="D" data-when="반영후" data-who="학적업무담당자">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE D · 반영 후 마무리">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적반영 후</span><span class="tag">조회·확인</span></div>
+    <h3>재입학생·편입학생·복학생 종합자료 검색</h3>
+    <p class="desc">학적반영을 마친 재입학생·편입학생·복학생의 전송받은 자료 전체를 항목별로 열어 확인하는 업무입니다. <strong>목록의 ‘상태’에서 ‘전입학적반영(완결)’을 클릭하면 [학적-전입관리-전입관리-학적반영]으로 이동</strong>하므로 반영 상태 점검도 이 화면에서 함께 합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 재입학생·편입학생·복학생 학적반영을 마친 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-전입관리-전입관리-종합자료검색]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-전입관리-전입관리-종합자료검색]</code>에서 ‘학년도’, ‘학년’ 확인 → ‘기간’을 설정하고 <span class="btn">{조회}</span> → 해당 학생의 ‘성명’을 클릭 → ‘학적반영 자료선택(최종전송일자)’에서 해당 항목(<span class="btn">{기본학적}</span>, <span class="btn">{학생생활}</span>, <span class="btn">{성적}</span>, <span class="btn">{건강기록부}</span>, <span class="btn">{학교생활기록부}</span>, <span class="btn">{출결내역}</span>, <span class="btn">{PAPS}</span>, <span class="btn">{정정대장}</span>, <span class="btn">{학교스포츠클럽누가기록}</span>)을 클릭하여 내용을 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>전입 학생의 이전 학교 기록이 빠짐없이 넘어왔는지 항목별로 대조해, 이후 출결·성적·학교생활기록부 작성이 잘못된 자료 위에서 시작되지 않게 하려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>목록의 ‘상태’에서 ‘전입학적반영(완결)’을 클릭하면 <code>[학적-전입관리-전입관리-학적반영]</code>으로 이동함.</li><li>유급·재입학·편입학·복학한 학생의 학교생활기록부를 입력할 때는 학년이력, 인적·학적사항, 학교폭력 관련 조치사항을 제외한 항목(수업일수, 출결상황, 성적, 기타 비교과 영역 등 제반 내용)에 대하여 <b>재입학·편입학·복학일 이전의 내용은 학업 중단 시의 내용으로 입력</b>하고, 유급·재입학·편입학·복학일 이후의 내용은 유급·재입학·편입학·복학 후 새로 수행하는 사항을 입력함.</li><li>귀국학생 등이 외국학교에서 수학한 같은 기간의 기록은 학년을 결정하는 참고자료로 해당 학년의 정규교육과정을 이수한 기록이 아니므로 <b>해당 학교의 학교생활기록부에 입력하지 않음</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="D" data-when="반영후" data-who="학적업무담당자">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE D · 반영 후 마무리">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적반영 직후</span><span class="tag opt">교육과정별 경로 다름</span></div>
+    <h3>전입학생 수강과목편성 및 전입이전 출결산출 지정</h3>
+    <p class="desc">학적반영을 마친 재입학생·편입학생·복학생에게 수강과목을 편성하고 전입 이전 기간의 출결산출 방식을 지정하는 업무입니다. <strong>수강과목이 편성되지 않으면 출결처리 및 성적처리를 할 수 없으므로 학적반영 후 반드시 편성해야 합니다.</strong> 적용 교육과정과 학년에 따라 편성 경로가 달라집니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 재입학생·편입학생·복학생 학적반영을 마친 직후.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-전입관리-전입관리-학적반영]</code>, <code>[학적-전입관리-전입관리-종합자료검색]</code>, <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-전입관리-전입관리-종합자료검색]</code>에서 해당 학생의 ‘성명’을 클릭 → <span class="btn">{수강과목편성}</span>을 클릭 → ‘수강과목편성’ 창의 개설과목 목록에서 과목을 선택 → 편성 → 편성된 과목 목록에서 ‘전입이전 출결산출 포함 과목(전출교)’에서 ‘성적수강생편성’을 선택 → <span class="btn">{저장}</span> → <span class="btn">{닫기}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>전입 이전과 이후의 수업 기록을 한 학생의 이수 내역으로 이어 붙여, 과목 출석률과 학점이수 인정 판단이 실제 수업 참여에 맞게 나오도록 하려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>편성 경로</h4><ul><li>수강과목이 편성되지 않으면 출결처리 및 성적처리를 할 수 없으므로 <b>재입학생·편입학생·복학생 학적 반영한 후 수강과목을 반드시 편성해야 함</b>.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 재입학생·편입학생·복학생의 수강과목은 <code>[학적-전입관리-전입관리-학적반영]</code>/<code>[종합자료검색]</code>에서 해당 학생 성명을 클릭하면 나타나는 <span class="btn">{수강과목편성}</span> 또는 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 편성함.</li><li>2022 개정 교육과정을 적용받는 2026학년도 1·2학년은 과목 출석률 산정을 해야 하므로, 이에 해당하는 재입학생·편입학생·복학생의 수강과목은 <code>[학적-전입관리-전입관리-학적반영]</code>/<code>[종합자료검색]</code>에서 해당 학생 성명을 클릭하면 나타나는 <span class="btn">{수강과목편성}</span>에서 편성함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>전입이전 출결산출 지정</h4><ul><li>학기 중 중도 입학생, 해외 귀국학생, 재입학생·편입학생·복학생의 경우 전입이전 출결산출 포함 과목에 <b>‘해외귀국/복학/학기중 신입학 인정출결산출’</b>로 지정함.</li><li>전출·입교 간 학사일정 차이로 전출교가 1학기인 상태에서 2학기인 전입교로 전입학한 경우 ‘전입이전 출결산출 포함 과목(전출교)’은 <b>‘비매칭과목 출결 결과 산출’</b>로 설정함(전입교 개설 과목 기준으로 과목별 결과를 산출함).</li><li>전출·입교 모두 학기말 성적을 산출한 상태에서 전입교로 전입 온 경우 해당 학생은 <b>‘출결수강생편성’만 수행</b>함.</li><li>귀국학생 학점이수 인정기준 출석기준 판별식은 다음과 같음. 귀국학생의 전·편입교 수강과목의 실제 참여 수업 횟수를 귀국학생의 전·편입교 수강과목의 잔여 총 수업 횟수로 나눈 값이 <b>2/3 이상일 시 학점이수 인정기준의 출석기준 충족</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part 2. 학적, Section_03 재입학생·편입학생·복학생 처리 (278–289쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

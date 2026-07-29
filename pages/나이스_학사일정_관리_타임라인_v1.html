@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<!-- 학사일정 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>학사일정 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>학사일정 관리</b>
+    <span class="sub">업무 7개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">교육과정 · Section_06 · pp. 151–161</p>
+    <h1>학사일정 관리
+      <em>업무 7개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학년초, 학사일정 변동 시</dd></div>
+      <div><dt>업무담당</dt><dd>교육과정 업무담당자</dd></div>
+      <div><dt>메뉴경로</dt><dd>[교육과정-학사일정관리]</dd></div>
+      <div><dt>선행조건</dt><dd>후행처리 - [교육과정-시간표관리], [교육과정-학교일지관리]</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>학년초 기초코드 정비</h3>
+            <p class="tl-sub">학사일정 등록 전 · 모든 학교 필수 선행작업</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 행사코드 정비"><span>01</span>행사코드 정비</button><button type="button" class="tl-btn" data-go="t2" title="02 공휴일정보 생성"><span>02</span>공휴일정보 생성</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>연간학사일정 등록</h3>
+            <p class="tl-sub">행사코드 등록과 공휴일정보 생성을 마친 뒤 착수</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t3" title="03 날짜별 등록"><span>03</span>날짜별 등록</button><button type="button" class="tl-btn" data-go="t4" title="04 일괄 등록"><span>04</span>일괄 등록</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>학사일정 변동 대응</h3>
+            <p class="tl-sub">이미 등록된 일정이 바뀌었을 때 · 출결마감자료 확인 필요</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 일정 수정·삭제"><span>05</span>일정 수정·삭제</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>별도 일정 안내</h3>
+            <p class="tl-sub">연간학사일정에서 관리하지 않는 일정이 있는 경우만</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t6" title="06 기타일정 등록"><span>06</span>기타일정 등록</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>1·2학기 등록 완료 후 점검</h3>
+            <p class="tl-sub">1·2학기 학사일정을 모두 등록한 뒤에 확인 가능</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t7" title="07 수업일수 확인"><span>07</span>수업일수 확인</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="학년초준비" data-who="교육과정업무담당자">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 기초자료 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년 초, 학사일정 등록 전</span><span class="tag">시간표·학교생활기록부와 연동</span></div>
+    <h3>행사코드 등록과 사용여부 정비</h3>
+    <p class="desc">모든 학교가 학년 초에 먼저 해야 하는 일이다. 이전학년도 행사코드를 그대로 사용할 수도 있고, 쓰지 않는 코드는 정리해 둔다. <strong>행사명 입력, ‘수업공제일구분’, ‘전국공통행사코드’, ‘학생부특별활동’, ‘사용여부’는 반드시 옵션을 선택해야 함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학사일정 등록 전에 먼저 정비함. 학사일정 변동으로 새 행사가 필요할 때도 추가함</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학사일정관리-학사일정관리]</code>의 <span class="btn">{행사코드관리}</span> 탭</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-학사일정관리-학사일정관리]</code>의 <span class="btn">{행사코드관리}</span>에서 <span class="btn">{행추가}</span>하여 ‘행사명’ 입력 → ‘수업공제일구분’, ‘전국공통행사코드’, ‘학생부특별활동’, ‘사용여부’를 선택 → <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>행사코드의 선택값이 수업일수 계산과 학교생활기록부 창의적 체험활동 이수시간으로 그대로 흘러가므로, 한 해 학사운영의 셈이 어긋나지 않게 하려고 한다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 코드 정비와 선택값</h4><ul><li>이전학년도 행사코드를 그대로 사용하거나, 사용하지 않는 코드는 <span class="btn">{삭제}</span> 또는 <span class="btn">{일괄수정}</span>에서 ‘사용여부’를 ‘미사용’으로 설정함.</li><li>행사코드 등록 시 ‘행사명’ 입력, ‘수업공제일구분’ 선택, ‘전국공통행사코드’ 선택, ‘학생부특별활동’ 반영여부, ‘사용여부’는 <b>반드시 옵션을 선택해야 함</b>.</li><li>‘수업공제일구분’을 ‘공휴일’, ‘휴업일’로 설정하면 <b>수업일수에서 제외</b>되며, ‘전일행사’, ‘해당없음’으로 설정하면 <b>수업일수에 포함</b>됨.</li><li>‘전일행사’를 선택하면 1일 전체가 행사활동으로 등록되고, 시간표 반영에서 전일행사가 반영되면 해당일의 전체시간표 모든 수업이 행사활동으로 변경됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 학생부특별활동 반영</h4><ul><li>‘학생부특별활동’의 ‘미반영’, ‘자율･자치활동(자율활동)’, ‘진로활동’은 학교생활기록부 창의적 체험활동상황의 이수시간에 반영 여부를 결정함.</li><li>미반영 — 창의적 체험활동상황의 이수시간에 반영하지 않는 행사임(영어듣기평가 등).</li><li>자율･자치활동(자율활동) — 창의적 체험활동의 자율활동 영역으로 편제된 교육과정 내 행사와 교육과정 외 별도 시수로 확보된 행사 중 자율과 관련된 활동으로 학교생활기록부 자율활동 이수시간에 반영됨.</li><li>진로활동 — 창의적 체험활동의 진로활동 영역으로 편제된 교육과정 내 행사와 교육과정 외 별도 시수로 확보된 행사 중 진로와 관련된 활동으로 학교생활기록부 진로활동 이수시간에 반영됨.</li><li>행사활동의 시간은 교육과정상 계획된 시간(자율･자치활동(자율활동), 진로활동)과 별도 시수로 확보된 행사활동의 실시 시간을 포함하여 입력함.</li><li>‘학생부특별활동’을 ‘자율･자치활동(자율활동)’ 또는 ‘진로활동’으로 선택하여 행사로 등록하고 <code>[교육과정-시간표관리-전체시간표관리]</code>에서 행사로 처리하면 날짜별 누가기록이 가능하며, 학교생활기록부 ‘창의적 체험활동상황’란의 이수시간에 합산됨. 이 경우 시수 누계는 ‘자율･자치활동(2･3학년은 자율활동)(학사일정)’ 또는 ‘진로활동(학사일정)’에 포함됨.</li><li>별도 시수로 확보된 행사활동은 <span class="btn">{행사코드관리}</span> 탭에서 ‘학생부특별활동’에 ‘자율･자치활동(자율활동)’ 또는 ‘진로활동’으로 설정하고 <code>[교육과정-시간표관리-전체시간표관리]</code>에서 <span class="btn">{행사처리}</span>로 등록하되, <b>‘처리구분’을 ‘현재수업 삭제후 처리’로 설정함</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="학년초준비" data-who="교육과정업무담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 기초자료 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년 초 학교 학사일정 등록 전</span><span class="tag">주 5일수업제 선택</span></div>
+    <h3>공휴일정보 생성</h3>
+    <p class="desc">모든 학교가 학사일정을 등록하기 전에 먼저 처리하는 일이다. 현재 학년도 법정공휴일과 토요휴업일을 일괄로 만들어 둔다. <strong>{공휴일정보생성}을 하지 않으면 [학적-출결관리-출결관리-반별일출결마감관리]에서 ‘토요휴업일’에도 출결마감 체크박스가 생성됨.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 행사코드 정비 후 학교 학사일정 등록 전</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학사일정관리-학사일정관리]</code>의 <span class="btn">{연간학사일정관리}</span> 탭</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-학사일정관리-학사일정관리]</code>의 <span class="btn">{연간학사일정관리}</span> 탭에서 ‘학년도’ 확인 후 ‘기준학기’를 설정하고 <span class="btn">{조회}</span>함 → ‘주5일수업제적용’을 선택하고 <span class="btn">{공휴일정보생성}</span>한 후 “공휴일 정보(주5일수업제 포함)를 생성하시겠습니까?” 확인창에서 <span class="btn">{확인}</span>하고 알림창에서 <span class="btn">{확인}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>토요일·일요일·공휴일을 수업일수에서 미리 걸러 두어야 이후 등록하는 학사일정과 출결마감이 실제 달력과 어긋나지 않는다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>조회 조건이 기존의 ‘기준월’(3월, 9월)에서 ‘기준학기’(1, 2)로 변경되어 학교의 당해 학년도 학사일정 기간에 따라 관리할 수 있음.</li><li><span class="btn">{공휴일정보생성}</span> 시 학교의 교무학년도 1학기와 2학기 기준으로 동시에 공휴일(토요일, 일요일, 공휴일) 정보가 생성되며, <b>공휴일은 수업일수에서 제외함</b>.</li><li><span class="btn">{공휴일정보생성}</span>은 현재 학년도 법정공휴일과 토요휴업일을 일괄 생성하는 기능으로 <b>학년 초 학교 학사일정 등록 전에 먼저 처리하도록 함</b>.</li><li><span class="btn">{공휴일정보생성}</span>을 하지 않는 경우 <code>[학적-출결관리-출결관리-반별일출결마감관리]</code>에서 ‘토요휴업일’에도 출결마감 체크박스가 생성됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="B" data-when="일정등록" data-who="교육과정업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE B · 학사일정 등록">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학사일정 변동 시</span><span class="tag">공휴일정보생성 이후</span></div>
+    <h3>연간학사일정 날짜별 등록</h3>
+    <p class="desc">학교의 개별 행사를 해당 날짜에 하나씩 붙이는 업무입니다. 행사가 특정 학년만 대상이거나 날짜마다 내용이 다를 때 쓰며, <strong>{행사코드관리}에 행사코드가 먼저 등록되어 있어야</strong> 찾기로 불러올 수 있습니다. 시간표가 이미 등록된 날짜라면 변경사항 확인창이 뜨므로 전체시간표를 함께 살펴야 합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학사일정 변동 시. 행사코드 등록과 {공휴일정보생성}을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학사일정관리-학사일정관리]</code> {연간학사일정관리} 탭</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>{연간학사일정관리} 탭에서 '학년도' 확인 후 '기준학기'를 설정하고 <span class="btn">{조회}</span> → 학사일정을 등록할 날짜에서 마우스 오른쪽 버튼을 클릭하여 <span class="btn">{행사추가}</span> → '학사일정 등록' 창에서 '학년'을 선택하고 '행사코드'를 <span class="btn">{찾기}</span>하여 <span class="btn">{등록}</span>함(필요시 '행사세부내용'을 입력함).</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>수업일수와 창의적 체험활동 이수시간의 기초자료가 되는 날짜별 행사 기록을 정확히 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>{행사코드}와 {학사일정}은 시간표와 연결되어 있어 '학생부특별활동여부', '수업공제일구분' 등의 선택 여부에 따라 전체시간표와 시수 계산과 연동이 되므로 정확히 입력함. 또한, 학사일정은 학교일지에서 수업일수 계산의 기초자료가 됨.</li><li>학사일정이 등록된 날짜에는 밑줄이 표시되며, 날짜를 클릭하면 등록된 행사 목록이 확인되고 삭제하거나 추가로 등록할 수 있음.</li><li>{행사추가} 시 전체시간표에 시간표가 등록되어 있는 경우 '학사일정 변경사항 확인' 창이 나타나므로 해당일자에 관련된 전체시간표를 확인함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>출결마감 이후 수정할 때</h4><ul><li><b>출결마감자료가 존재함에도 불구하고 {연간학사일정관리} 탭에서 해당일자의 내용을 수정하게 되면 해당 일자를 [교육과정-학교일지관리-학교일지관리]에서 {제거} 후 다시 {생성}해야만</b> 연간학사일정의 수정 내용이 반영되어 수업일수에 계산됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="일정등록" data-who="교육과정업무담당자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 학사일정 등록">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초 학사일정 수립 직후</span><span class="tag opt">기간 행사에 권장</span></div>
+    <h3>연간학사일정 일괄 등록과 달력 활용</h3>
+    <p class="desc">방학이나 고사 기간처럼 여러 날에 걸친 행사를 한 번에 붙일 때 쓰는 업무입니다. 날짜별 등록과 결과는 같지만 <strong>'학사일정' 기간을 지정해 한 번의 {등록}으로 처리</strong>하므로 연속된 일정에 유리합니다. '월'을 클릭해 달력 화면에서 작업할 수도 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학사일정 변동 시. 행사코드 등록과 {공휴일정보생성}을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학사일정관리-학사일정관리]</code> {연간학사일정관리} 탭</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>{연간학사일정관리} 탭에서 '학년도' 확인 후 '기준학기'를 설정하고 <span class="btn">{조회}</span> → <span class="btn">{일괄등록}</span>을 클릭하면 나타나는 '학사일정 일괄등록' 창에서 '학년', '학사일정'을 선택하고 '행사코드'를 <span class="btn">{찾기}</span>하여 <span class="btn">{등록}</span>함(필요시 '행사세부내용'을 입력함).</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>여러 날에 걸친 행사를 빠뜨림 없이 한 번에 반영해 수업일수 계산의 누락을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'월'을 클릭하면 '연/월간 학사일정관리(달력)' 창이 나타나며, 달력 형태로 월단위로 행사를 추가할 수 있음.</li><li>달력 창에서는 <b>음력표시, 행사추가, 일괄등록, 일괄삭제, 출력</b> 기능을 활용할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="C" data-when="일정변동" data-who="교육과정업무담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE C · 일정 변경과 보완">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학사일정 변동 시</span></div>
+    <h3>등록된 학사일정 수정·삭제</h3>
+    <p class="desc">이미 등록한 행사의 날짜나 내용이 바뀌었을 때 하는 업무입니다. 학사일정이 등록된 날짜에는 밑줄이 표시되므로 밑줄이 있는 날짜를 클릭해 등록된 행사 목록을 먼저 확인합니다. <strong>출결마감자료가 존재하는 일자를 수정하면 [교육과정-학교일지관리-학교일지관리]에서 {제거} 후 다시 {생성}해야 수업일수에 반영됩니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학사일정 변동 시, 연간학사일정이 등록된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학사일정관리-학사일정관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-학사일정관리-학사일정관리]</code>의 <span class="btn">{연간학사일정관리}</span> 탭에서 '학년도' 확인 후 '기준학기'를 설정하고 <span class="btn">{조회}</span>함 → 삭제할 날짜를 클릭하면 나타나는 '학사일정 확인' 창에서 삭제할 행사명을 선택하여 <span class="btn">{삭제}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>변경된 행사가 시간표와 수업일수 계산에 잘못 남아 학교일지의 수업일수가 실제와 어긋나는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'학사일정 확인' 창에서 '행사명'을 클릭하면 나타나는 '학사일정 수정/삭제' 창에서 학사일정을 수정 또는 삭제할 수 있음.</li><li>학사일정이 등록된 날짜에는 밑줄이 표시되며, 날짜를 클릭하면 등록된 행사 목록이 확인되고 삭제하거나 추가로 등록할 수 있음.</li><li><b>출결마감자료가 존재함에도 불구하고 [교육과정-학사일정관리-학사일정관리]의 {연간학사일정관리} 탭에서 해당일자의 내용을 수정하게 되면 해당 일자를 [교육과정-학교일지관리-학교일지관리]에서 {제거} 후 다시 {생성}해야만 연간학사일정의 수정 내용이 반영되어 수업일수에 계산됨.</b></li><li>{행사코드}와 {학사일정}은 시간표와 연결되어 있어 '학생부특별활동여부', '수업공제일구분' 등의 선택 여부에 따라 전체시간표와 시수 계산과 연동이 되므로 정확히 입력함. 또한, 학사일정은 학교일지에서 수업일수 계산의 기초자료가 됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="C" data-when="일정변동" data-who="교육과정업무담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE C · 일정 변경과 보완">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학사일정 변동 시</span><span class="tag opt">연간학사일정 외 일정만</span></div>
+    <h3>기타일정 등록</h3>
+    <p class="desc">연간학사일정에서 관리하지 않는 별도의 일정을 남길 때만 쓰는 업무입니다. <strong>기타 일정은 연간학사일정과 달리 수업일수나 시간표에 연동되지 않는 안내용 일정입니다.</strong> 등록하면 나이스 초기화면 '월간일정'에 표시됩니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초 및 학사일정 변동 시, 별도 일정이 생겼을 때</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학사일정관리-학사일정관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-학사일정관리-학사일정관리]</code>의 <span class="btn">{기타일정관리}</span> 탭에서 '학년도'를 확인하고 '월'을 선택한 후 <span class="btn">{조회}</span>함 → <span class="btn">{등록}</span>하여 '기타일정내역'에서 '등록일자', '제목', '내용'을 입력하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>수업일수와 무관한 학교 내 일정을 구성원이 초기화면에서 함께 확인하도록 알리려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>기타 일정은 <b>연간학사일정에서 관리하지 않는 별도의 일정</b>을 등록할 때 사용함.</li><li>기타 일정을 등록하면 나이스 초기화면에 나타나는 '월간일정'에 <b>검정색 글씨</b>로 표시됨(파란색 글씨는 {연간학사일정관리} 탭에서 입력한 학사일정임).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="D" data-when="등록완료후" data-who="교육과정업무담당자">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE D · 수업일수 확인">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">1·2학기 학사일정 등록 후</span></div>
+    <h3>연간 수업일수 확보 계획표 확인</h3>
+    <p class="desc">학사일정 등록을 마친 뒤 학년별로 수업일수가 제대로 확보되었는지 확인하는 업무입니다. <strong>1･2학기의 학사일정을 모두 등록한 후 전체 수업일수를 확인할 수 있습니다.</strong> 행사코드의 '수업공제일구분'과 공휴일정보 생성 결과가 그대로 반영되므로, 앞선 등록 내용이 정확해야 계획표 수치도 맞습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초 및 학사일정 변동 시, 1･2학기 학사일정을 모두 등록한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학사일정관리-연간수업일수확보계획표]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-학사일정관리-연간수업일수확보계획표]</code>에서 '학년도' 확인하고 '학년'을 선택한 후 <span class="btn">{조회}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교육과정에 따라 확보해야 할 수업일수가 학년별로 실제 채워졌는지 미리 확인해, 학사일정을 고칠 여지가 있는 시점에 부족분을 조정하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>1･2학기의 학사일정을 모두 등록한 후</b> 전체 수업일수를 확인할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 교육과정, Section_06 학사일정 관리 (151–161쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

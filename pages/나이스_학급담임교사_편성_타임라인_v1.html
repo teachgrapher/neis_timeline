@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<!-- 학급담임교사 편성 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>학급담임교사 편성 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>학급담임교사 편성</b>
+    <span class="sub">업무 6개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Part 표기 없음 · Section_03 · pp. 87–90</p>
+    <h1>학급담임교사 편성
+      <em>업무 6개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학년초, 학기중</dd></div>
+      <div><dt>업무담당</dt><dd>교육과정 업무담당자</dd></div>
+      <div><dt>메뉴경로</dt><dd>[교육과정-학급담임편성관리]</dd></div>
+      <div><dt>선행조건</dt><dd>[학교정보-학교정보-기준/반정보관리]에서 학년별 '학과계열명', '학과명', '반명', '반코드'를 등록함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>학년초 담임 편성</h3>
+            <p class="tl-sub">기준/반정보관리에서 학년별 반정보 등록이 끝난 뒤 착수.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 담임 등록"><span>01</span>담임 등록</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>복수담임 운영 학급</h3>
+            <p class="tl-sub">같은 반에 담임 2명을 두는 학급만 해당.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t3" title="03 복수담임 편성"><span>03</span>복수담임 편성</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>편성 저장 직후</h3>
+            <p class="tl-sub">편성 저장만으로는 권한이 생기지 않으므로 결재까지 완료.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 담임 권한부여"><span>04</span>담임 권한부여</button><button type="button" class="tl-btn" data-go="t6" title="06 편성 확인·학생부"><span>06</span>편성 확인·학생부</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>학기중 담임 변동 시</h3>
+            <p class="tl-sub">담임 교체가 발생한 시점에만 진행.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t2" title="02 담임 변경"><span>02</span>담임 변경</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>권한이 삭제된 경우</h3>
+            <p class="tl-sub">인사발령·사용자 삭제 등으로 권한이 사라진 교사만 해당.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 자료권한 재등록"><span>05</span>자료권한 재등록</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="학년초편성" data-who="교육과정업무담당자">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 담임 편성">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초</span><span class="tag opt">진급처리 전 권장</span></div>
+    <h3>학급담임교사 등록</h3>
+    <p class="desc">신학년도 학급담임교사를 처음 편성할 때 하는 업무이다. <strong>[학교정보-학교정보-기준/반정보관리]에서 학년별 '학과계열명', '학과명', '반명', '반코드'가 먼저 등록되어 있어야</strong> 반 목록이 나타난다. 진급처리 전에 등록하면 학교생활기록부에 담임성명이 자동 반영된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 기준/반정보관리에서 학년별 '학과계열명', '학과명', '반명', '반코드' 등록이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학급담임편성관리-학급담임편성관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도' 확인 후 '학년'을 선택하고 <span class="btn">{조회}</span> → '교사목록'에서 학급담임교사를 '2025학년도 ○학년 담임교사'의 해당 반 담임으로 드래그 앤 드롭 → '학생부반영' 선택 여부 확인 후 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>담임교사가 자기 반 학생의 학적과 학생부를 다룰 수 있도록 반과 교사를 연결해 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>편성된 학급담임교사 <span class="btn">{삭제}</span> 시 '자료권한 변경사유(공통)' 창이 나타나며, '변경사유구분'과 '변경사유'를 입력함.</li><li>학급담임교사 편성 후 <b>[기본메뉴-권한관리-교무자료권한승인관리]의 {학년반} 탭에서 {승인요청}으로 업무승인과정을 거쳐 결재권자의 결재가 완결되어야</b> 담임교사의 해당 반 페이지권한 및 자료권한이 부여됨.</li><li><b>진급처리 전에 학급담임교사를 등록하면</b> 학교생활기록부에 담임성명이 자동 반영됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="A" data-when="학년초편성" data-who="교육과정업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE A · 담임 편성">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초</span><span class="tag opt">복수담임 운영 학급 한정</span></div>
+    <h3>복수 학급담임교사 편성</h3>
+    <p class="desc">같은 반에 2명의 복수 학급담임교사를 편성하여 학급을 관리할 때만 하는 업무이다. <strong>해당 반을 선택하여 {복수담임추가}를 먼저 해야</strong> 반이 복사되어 두 번째 담임을 드래그 앤 드롭할 '담임'란이 생긴다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 기준/반정보관리에서 학년별 반정보 등록이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학급담임편성관리-학급담임편성관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도' 확인 후 '학년'을 선택하고 <span class="btn">{조회}</span> → '2025학년도 ○학년 담임교사'에서 해당 반을 선택하여 <span class="btn">{복수담임추가}</span> → '교사목록'에서 해당교사를 복사된 반의 '담임'란으로 드래그 앤 드롭 → '학생부반영'을 선택하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>한 학급을 두 교사가 함께 맡는 운영 형태를 학생부와 자료권한에 그대로 반영하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>같은 반에 2명의 복수 학급담임교사를 편성하여 학급을 관리할 때 사용함(<b>학교생활기록부 '담임성명'란에 2명의 교사가 한 줄에 모두 표기됨</b>).</li><li>학급담임교사 편성 후 [기본메뉴-권한관리-교무자료권한승인관리]의 {학년반} 탭에서 {승인요청}으로 업무승인과정을 거쳐 결재권자의 결재가 완결되어야 담임교사의 해당 반 페이지권한 및 자료권한이 부여됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="편성직후" data-who="교육과정업무담당자 결재권자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 권한 부여">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학급담임교사 편성 후</span><span class="tag">결재 완결 필요</span></div>
+    <h3>학급담임교사 권한부여(승인요청·결재)</h3>
+    <p class="desc">학급담임편성관리에서 편성을 저장한 것만으로는 담임교사에게 권한이 생기지 않습니다. <strong>[기본메뉴-권한관리-교무자료권한승인관리]의 {학년반} 탭에서 {승인요청}으로 업무승인과정을 거쳐 결재권자의 결재가 완결되어야 담임교사의 해당 반 페이지권한 및 자료권한이 부여됨.</strong> 학년초 편성 직후와 학기중 담임 변경 직후에 모두 필요한 후행처리입니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 학급담임편성관리에서 학급담임교사 편성을 저장한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자(결재는 결재권자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[기본메뉴-권한관리-교무자료권한승인관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[기본메뉴-권한관리-교무자료권한승인관리]</code>에서 '교무년도' 확인 후 '담임편성'을 선택( )하고 <span class="btn">{조회}</span>함 → <span class="btn">{학년반}</span> 탭에서 권한을 부여할 자료를 선택( )하고 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>담임교사가 자기 반 학생의 자료를 실제로 열어 볼 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>학급담임교사 편성 후 [기본메뉴-권한관리-교무자료권한승인관리]의 {학년반} 탭에서 {승인요청}으로 업무승인과정을 거쳐 <b>결재권자의 결재가 완결되어야</b> 담임교사의 해당 반 페이지권한 및 자료권한이 부여됨.</li><li>[기본메뉴-권한관리-교무자료권한승인관리]의 {학년반} 탭에서 '메뉴목록'을 {보기}하면 부여된 자료권한 목록을 확인할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="C" data-when="반영확인" data-who="교육과정업무담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE C · 확인·학생부 반영">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">편성 저장 후</span><span class="tag">진급처리 전 등록 시 자동 반영</span></div>
+    <h3>학급담임교사 편성 확인 및 학교생활기록부 반영</h3>
+    <p class="desc">학급담임교사를 편성·변경·복수편성한 모든 학교가 마지막에 거치는 확인 업무이다. 편성 내역은 <code>[학적-기본학적관리-기본신상관리]</code>의 <span class="btn">{학년반이력조회}</span> 탭에서 확인한다. <strong>학교생활기록부의 '담임성명'란에 표기되려면 '학년반이력'을 선택해 반영 처리를 해야 한다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초 또는 학기중, 학급담임교사 편성·변경 저장이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-기본학적관리-기본신상관리]</code>, <code>[학생부-학교생활기록부-학교생활기록부-학생부반영]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-기본학적관리-기본신상관리]</code>의 <span class="btn">{학년반이력조회}</span> 탭에서 학급담임교사 편성 내역을 확인함 → <code>[학생부-학교생활기록부-학교생활기록부-학생부반영]</code>에서 학생 선택 후 '학년반이력'을 선택하고 <span class="btn">{개인별반영}</span> 하거나 <span class="btn">{전체 반영}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생의 학교생활기록부에 담임교사 이름이 빠짐없이 남도록 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>확인·반영 메모</h4><ul><li>학급담임교사 편성 확인은 <code>[학적-기본학적관리-기본신상관리]</code>의 <span class="btn">{학년반이력조회}</span> 탭에서 할 수 있음.</li><li><code>[학생부-학교생활기록부-학교생활기록부-학생부반영]</code>에서 학생 선택 후 '학년반이력'을 선택하고 <span class="btn">{개인별반영}</span> 하거나 <span class="btn">{전체 반영}</span> 해야 <b>학교생활기록부의 '담임성명'란에 표기됨</b>.</li><li><b>진급처리 전에 학급담임교사를 등록하면 학교생활기록부에 담임성명이 자동 반영됨.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>이력추가·복수담임 표기</h4><ul><li>'이력추가'는 당해 학년도에 학급담임교사 변경으로 변동 내역이 표기되어야 할 경우 선택함. 이 경우 '반편성이력'(<code>[학적-기본학적관리-기본신상관리]</code>의 <span class="btn">{학년반이력조회}</span> 탭)으로 추가되며, 학교생활기록부의 '담임성명'란에 이미 편성된 학급담임교사 아래에 추가 표기됨.</li><li>'이력추가반영일자'는 담임이력을 부여한 일자로 자동으로 보여짐.</li><li>복수 학급담임교사를 편성한 경우 <b>학교생활기록부 '담임성명'란에 2명의 교사가 한 줄에 모두 표기됨</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="학기중변동" data-who="교육과정업무담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 담임 편성">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기중 담임 변동 시</span><span class="tag opt">'이력추가' 선택 필수</span></div>
+    <h3>학급담임교사 변경(이력추가)</h3>
+    <p class="desc">학기중 학급담임교사의 변동이 있을 경우 변경된 교사로 수정 편성하는 업무이다. <strong>당해 학년도에 담임 변동 내역이 표기되어야 할 경우 '학생부반영'과 '이력추가'를 모두 선택해야</strong> 학교생활기록부에 이전 담임 아래로 추가 표기된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 학급담임교사 편성이 끝난 상태에서 담임 변동이 발생한 시점</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학급담임편성관리-학급담임편성관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도' 확인 후 '학년'을 선택하고 <span class="btn">{조회}</span> → '교사목록'에서 변경된 학급담임교사를 '2025학년도 ○학년 담임교사'의 이력추가할 반에 드래그 앤 드롭 → '학생부반영'과 '이력추가'를 모두 선택하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학년도 중간에 담임이 바뀐 사실을 기록으로 남겨 학생부의 담임성명이 실제 재직 기간과 어긋나지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'이력추가'는 당해 학년도에 학급담임교사 변경으로 변동 내역이 표기되어야 할 경우 선택함. 이 경우 '반편성이력'([학적-기본학적관리-기본신상관리]의 {학년반이력조회} 탭)으로 추가되며, 학교생활기록부의 '담임성명'란에 이미 편성된 학급담임교사 아래에 추가 표기됨.</li><li>'이력추가반영일자'는 담임이력을 부여한 일자로 자동으로 보여짐.</li><li>편성된 학급담임교사 <span class="btn">{삭제}</span> 시 '자료권한 변경사유(공통)' 창이 나타나며, '변경사유구분'과 '변경사유'를 입력함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="권한삭제후" data-who="교육과정업무담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 권한 부여">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">권한이 삭제된 경우</span><span class="tag opt">해당 사례에 한정</span></div>
+    <h3>삭제된 학급담임교사 자료권한 재등록</h3>
+    <p class="desc">모든 학교가 늘 하는 작업이 아니라 권한이 삭제된 교사가 있을 때만 쓰는 업무입니다. <strong>기본적으로 인사발령, 사용자 삭제, 교무자료권한승인관리에서 삭제 기능 등으로 권한이 삭제된 경우에만 '교무자료권한재등록(학급담임)' 창에서 해당 교사가 조회됩니다.</strong> 예를 들어 계약직 교원이 1학기 퇴직 후 2학기에 같은 학교 계약 시 학급담임교사 권한을 재부여해야 할 때 사용하면 됩니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중. 인사발령·사용자 삭제·교무자료권한승인관리의 삭제 기능 등으로 권한이 삭제된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학급담임편성관리-학급담임편성관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-학급담임편성관리-학급담임편성관리]</code>에서 <span class="btn">{자료권한재등록}</span>을 눌러 '교무자료권한재등록(학급담임)' 창에서 해당 교사를 조회하여 삭제된 학급담임교사의 권한을 재부여함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>담임은 그대로인데 권한만 사라진 교사가 자기 반 자료에 다시 접근할 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>{자료권한재등록}은 삭제된 학급담임교사의 권한을 재부여할 때 활용함.</li><li><b>인사발령, 사용자 삭제, 교무자료권한승인관리에서 삭제 기능 등으로 권한이 삭제된 경우에만</b> '교무자료권한재등록(학급담임)' 창에서 해당 교사가 조회됨.</li><li>편성된 학급담임교사 {삭제} 시 '자료권한 변경사유(공통)' 창이 나타나며, '변경사유구분'과 '변경사유'를 입력함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part 표기 없음, Section_03 학급담임교사 편성 (87–90쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

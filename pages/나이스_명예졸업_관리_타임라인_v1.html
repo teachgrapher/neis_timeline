@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<!-- 명예졸업 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>명예졸업 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>명예졸업 관리</b>
+    <span class="sub">업무 8개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">학적 · Section_14 · pp. 522–532</p>
+    <h1>명예졸업 관리
+      <em>업무 8개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>명예졸업자 발생 시</dd></div>
+      <div><dt>업무담당</dt><dd>학적 업무담당자</dd></div>
+      <div><dt>메뉴경로</dt><dd>[학적-명예졸업관리]</dd></div>
+      <div><dt>선행조건</dt><dd>머리말에 선행처리 없음. 후행처리로 [명예졸업관리] 작업 완료 후 졸업자를 생성하고 졸업대장번호를 부여한 후 학적반영하여 명예졸업장을 출력함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>심의 직후 대상자 등록</h3>
+            <p class="tl-sub">명예졸업자 발생 시 한정 · 학업성적관리위원회 심의 완료가 선행조건</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 대상자 등록"><span>01</span>대상자 등록</button><button type="button" class="tl-btn" data-go="t2" title="02 대장번호 부여"><span>02</span>대장번호 부여</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>생활기록부 생성과 승인요청</h3>
+            <p class="tl-sub">대상자 등록과 대장번호 부여를 마친 뒤 진행</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t3" title="03 생활기록부 생성"><span>03</span>생활기록부 생성</button><button type="button" class="tl-btn" data-go="t4" title="04 승인요청"><span>04</span>승인요청</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>결재 완결 후 학적반영</h3>
+            <p class="tl-sub">결재상태가 완결이어야 착수 가능</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 학적반영"><span>05</span>학적반영</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>정정이 필요할 때</h3>
+            <p class="tl-sub">학적반영 후 오류 발견 시에만 하는 되돌리기 작업</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t6" title="06 학적반영 취소"><span>06</span>학적반영 취소</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>졸업 처리 이후 발급과 점검</h3>
+            <p class="tl-sub">당해 학년도 3학년 졸업 처리와 졸업생 학적반영 완료가 선행조건</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t7" title="07 명예졸업장 출력"><span>07</span>명예졸업장 출력</button><button type="button" class="tl-btn" data-go="t8" title="08 명예졸업대장 조회"><span>08</span>명예졸업대장 조회</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="심의직후" data-who="학적업무담당자">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 대상자 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학업성적관리위원회 심의 직후</span><span class="tag opt">명예졸업자 발생 시 한정</span></div>
+    <h3>명예졸업 대상자 등록</h3>
+    <p class="desc">학칙에서 정하는 바에 따라 학교장이 명예졸업으로 인정한 학생이 있을 때만 하는 업무입니다. <strong>학업성적관리위원회의 심의를 거쳐 명예졸업이 인정된 뒤에 나이스에 대상자로 등록합니다.</strong> 등록한 학생은 당해 학년도 졸업일을 기준으로 명예졸업 처리됩니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>명예졸업자 발생 시, 학업성적관리위원회 심의로 명예졸업이 인정된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-명예졸업관리-명예졸업대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-명예졸업관리-명예졸업대상자관리]</code>에서 '졸업학년도', '학적반영여부' 확인 후 '정렬순'을 선택하고 <span class="btn">{조회}</span>하여 <span class="btn">{등록}</span>함 → '명예졸업 대상자 등록' 창에서 '학년도' 확인 후 '학년', '반'을 선택하고 <span class="btn">{조회}</span>함 → 해당 학생을 선택하여 추가하고 '학적변동일자'를 설정한 후 <span class="btn">{저장}</span>하고 <span class="btn">{닫기}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교장이 명예졸업으로 인정한 학생을 졸업생과 구분해 남겨, 당해 학년도 졸업일 기준으로 명예졸업 처리가 이루어지게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>명예졸업은 학칙에서 정하는 바에 따라 <b>학교장이 명예졸업으로 인정한 경우</b>를 말함.</li><li>명예졸업은 수료 및 졸업(｢초･중등교육법 시행령｣ 제50조), 학력인정(｢초･중등교육법 시행령｣ 제96조, 제97조, 제98조)이나 자격인정(｢초･중등교육법 시행령｣ 제99조, 제100조, 제101조, 제102조, 제103조)과 <b>무관함</b>.</li></ul></div><div class="memo" style="margin-top:12px"><h4>명예졸업 업무 처리 절차</h4><ul><li>심의 주체는 <b>학업성적관리위원회</b>임.</li><li>심의 절차는 심의 신청 → 학업성적관리위원회 개최 및 심의 → 명예졸업 인정 시 나이스에 명예졸업 대상자로 등록 → 당해 학년도 졸업일을 기준으로 명예졸업 처리임.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="등록후" data-who="학적업무담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 대상자 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">대상자 등록 직후</span></div>
+    <h3>명예졸업대장번호 부여</h3>
+    <p class="desc">명예졸업 대상자로 등록한 학생에게 대장번호를 붙이는 업무입니다. <strong>'명예졸업대장번호'는 당해 학년도 졸업생의 졸업대장번호와 별도로 관리됩니다.</strong> 번호 형식과 시작번호를 정한 뒤 작업을 실행합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>명예졸업 대상자 등록을 마친 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-명예졸업관리-명예졸업대상자관리]</code>, <code>[학적-기본학적관리-기본신상관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-명예졸업관리-명예졸업대상자관리]</code>에서 '졸업학년도', '학적반영여부' 확인 후 '정렬순'을 선택하고 <span class="btn">{조회}</span>하여 해당 학생을 선택하고 <span class="btn">{명예졸업대장번호부여}</span>함 → '명예졸업 대장번호 부여' 창에서 '졸업학년도', '졸업회차' 확인 후 '명예졸업대장 시작번호'와 '명예졸업대장 번호부여' 형식을 선택하여 <span class="btn">{작업실행}</span> 후 <span class="btn">{닫기}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>명예졸업 학생의 대장 기록을 일반 졸업대장과 섞이지 않게 고유 번호로 관리하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'졸업회차', '명예졸업대장 시작번호'는 이전학년도에 나이스로 처리한 경우 <b>마지막 번호 +1</b>부터 자동으로 부여됨.</li><li>'명예졸업대장번호'는 <b>당해 학년도 졸업생의 졸업대장번호와 별도 관리됨</b>.</li><li>명예졸업대장 시작번호는 숫자만으로 이루어진 자료와 <b>####-####</b>의 형식으로만 부여할 수 있으며, <b>최대 16자리</b>까지 부여할 수 있음. 숫자만으로 이루어진 자료는 하이픈(-) 뒤에 위치한 입력창에 졸업대장번호를 입력함. 예시는 2025-10001, 10987임.</li><li>'대장번호 형식변경'을 선택하면 '명예졸업대장 시작번호'를 '학년도-연번'으로 관리할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>명예졸업 사유 입력</h4><ul><li><code>[학적-기본학적관리-기본신상관리]</code>의 <span class="btn">{학적사항}</span> 탭에서 '학적 특기사항'란에 '2025.06.12. 학교교육활동 중 사망'과 같이 <b>명예졸업 사유를 입력</b>함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="B" data-when="등록후" data-who="학적업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE B · 자료 생성과 결재">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">대상자 등록 후</span></div>
+    <h3>명예졸업 대상자 학교생활기록부 생성</h3>
+    <p class="desc">명예졸업 대상자로 등록하고 명예졸업대장번호를 부여한 학생에게 해당하는 업무입니다. <strong>[학적-명예졸업관리-명예졸업대상자관리]에서 해당 학생을 선택한 뒤 학교생활기록부를 생성해야 합니다.</strong> 생성 창에서 학생 정보를 확인하는 단계가 있으므로 대상 학생이 맞는지 함께 점검합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>명예졸업자 발생 시, 명예졸업 대상자 등록과 명예졸업대장번호 부여가 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-명예졸업관리-명예졸업대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-명예졸업관리-명예졸업대상자관리]</code>에서 '졸업학년도', '학적반영여부' 확인 후 '정렬순'을 선택하고 <span class="btn">{조회}</span> → 해당 학생을 선택하고 <span class="btn">{학교생활기록부생성}</span> → '학교생활기록부생성' 창에서 해당 학생 정보를 확인하고 <span class="btn">{학교생활기록부생성}</span> 하고 '확인' 창에서 <span class="btn">{확인}</span> 후 <span class="btn">{닫기}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>명예졸업으로 학적에서 제외되기 전에 그 학생의 학교생활 기록을 남겨 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>명예졸업은 학칙에서 정하는 바에 따라 학교장이 명예졸업으로 인정한 경우를 말함.</li><li><b>[학적-기본학적관리-기본신상관리]</b>의 <span class="btn">{학적사항}</span> 탭에서 '학적 특기사항'란에 '2025.06.12. 학교교육활동 중 사망'과 같이 명예졸업 사유를 입력함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="결재기간" data-who="학적업무담당자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 자료 생성과 결재">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학교생활기록부 생성 후</span></div>
+    <h3>명예졸업 대상자 승인요청</h3>
+    <p class="desc">명예졸업 대상자의 학교생활기록부를 생성한 뒤에 해당하는 업무입니다. <strong>결재권자의 결재가 완료되어 '결재상태'가 '완결'이 되어야 다음 단계인 학적반영으로 넘어갈 수 있습니다.</strong> 업무승인과정을 거치므로 결재에 걸리는 시간을 감안해 신청합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>명예졸업자 발생 시, 명예졸업 대상자 학교생활기록부 생성이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-명예졸업관리-명예졸업대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-명예졸업관리-명예졸업대상자관리]</code>에서 '졸업학년도', '학적반영여부' 확인 후 '정렬순'을 선택하고 <span class="btn">{조회}</span> → 해당 학생을 선택하고 <span class="btn">{승인요청}</span> 으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교장이 인정한 명예졸업이라는 사실을 결재로 확인받아 학적반영의 근거를 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{승인요청}</span> 하면 '결재상태'가 '미상신'에서 '상신(진행)'으로 변경되며, <b>결재권자의 결재가 완료되면 '완결'로 변경됨.</b></li><li>명예졸업 업무 처리 절차의 심의 주체는 학업성적관리위원회이며, 심의 절차는 심의 신청 → 학업성적관리위원회 개최 및 심의 → 명예졸업 인정 시 나이스에 명예졸업 대상자로 등록 → 당해 학년도 졸업일을 기준으로 명예졸업 처리임.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="C" data-when="학적반영" data-who="학적업무담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE C · 학적반영">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">결재 완결 후</span><span class="tag">당해 학년도 졸업일 기준</span></div>
+    <h3>명예졸업 대상자 학적반영</h3>
+    <p class="desc">학업성적관리위원회 심의로 명예졸업이 인정되어 대상자 등록과 학교생활기록부 생성, 승인요청까지 마친 학교에서 하는 마지막 확정 작업입니다. <strong>{승인요청} 후 결재권자의 결재가 완료되어 '결재상태'가 '완결'로 변경된 뒤에 학적반영합니다.</strong> 반영하면 해당 학생은 재학생 자료에서 빠집니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>명예졸업자 발생 시, 명예졸업 대상자 승인요청의 결재가 완결된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-명예졸업관리-명예졸업대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-명예졸업관리-명예졸업대상자관리]</code>에서 '졸업학년도', '학적반영여부' 확인 후 '정렬순'을 선택하고 <span class="btn">{조회}</span>하여 해당 학생을 선택하고 <span class="btn">{학적반영}</span>하고 <span class="btn">{확인}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교장이 명예졸업으로 인정한 학생을 당해 학년도 졸업일 기준으로 확정해, 재학생 통계와 학교생활기록부에 남지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{승인요청}</span>하면 '결재상태'가 '미상신'에서 '상신(진행)'으로 변경되며, 결재권자의 결재가 완료되면 <b>'완결'</b>로 변경됨.</li><li>명예졸업 대상자를 <span class="btn">{학적반영}</span>하면 <b>학적, 학교생활기록부 및 학생 수 현황, 학생이동부에서 제외됨.</b></li><li>당해 학년도 졸업일 기준으로 명예졸업이 처리됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>후행 처리</h4><ul><li><code>[명예졸업관리]</code> 작업 완료 후 졸업자를 생성하고 졸업대장번호를 부여한 후 학적반영하여 명예졸업장을 출력함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="C" data-when="학적반영" data-who="학적업무담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE C · 학적반영">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적반영 후 오류 발견 시</span><span class="tag opt">필요 시</span></div>
+    <h3>명예졸업 대상자 학적반영 취소 (필요 시)</h3>
+    <p class="desc">모든 학교가 하는 작업은 아니며, <strong>이미 {학적반영}을 마친 명예졸업 대상자에 잘못된 자료가 있을 때만</strong> 되돌리는 작업입니다. 학적반영으로 학적과 학교생활기록부에서 제외된 상태를 원래대로 돌려놓습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>명예졸업자 발생 시, 명예졸업 대상자 학적반영이 완료된 뒤 정정이 필요할 때</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-명예졸업관리-명예졸업대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-명예졸업관리-명예졸업대상자관리]</code>에서 '졸업학년도', '학적반영여부' 확인 후 '정렬순'을 선택하고 <span class="btn">{조회}</span>하여 해당 학생을 선택하고 <span class="btn">{학적반영취소}</span>하고 <span class="btn">{확인}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>잘못 반영된 명예졸업 자료를 정정할 수 있는 상태로 되돌려, 학생의 학적과 학교생활기록부가 사실과 다르게 확정되는 것을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>조회 조건의 <b>'학적반영여부'</b>를 확인해 이미 학적반영된 대상자를 찾은 뒤 선택함.</li><li>명예졸업 사유는 <code>[학적-기본학적관리-기본신상관리]</code>의 <span class="btn">{학적사항}</span> 탭 '학적 특기사항'란에 '2025.06.12. 학교교육활동 중 사망'과 같이 입력함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="D" data-when="졸업처리후" data-who="학적업무담당자">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE D · 출력과 대장 확인">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">당해 학년도 3학년 졸업 처리 이후</span><span class="tag opt">학과 설치 고등학교는 학과포함 선택</span></div>
+    <h3>명예졸업장 출력</h3>
+    <p class="desc">명예졸업 대상자로 학적반영을 마친 학생에게 명예졸업장을 발급할 때 하는 업무입니다. <strong>명예졸업장은 당해 학년도 3학년의 졸업 처리 이후 출력할 수 있습니다.</strong> 학교에서 쓰는 용지가 테두리 인쇄 용지인지 백지인지에 따라 '테두리' 선택을 달리합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>명예졸업자 발생 시, 당해 학년도 3학년의 졸업 처리가 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-명예졸업관리-명예졸업장출력]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-명예졸업관리-명예졸업장출력]</code>에서 '졸업학년도' 확인 후 '성명' 입력 및 '정렬순'을 선택하고 <span class="btn">{조회}</span> → 필요 시 '테두리'를 선택하고 '학교장명'을 확인 후 해당 학생을 선택하여 <span class="btn">{선택출력}</span>으로 '명예졸업장출력' 창을 확인하고 저장 또는 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교장이 명예졸업으로 인정한 학생에게 그 사실을 증명하는 졸업장을 손에 쥐여 주려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>명예졸업장은 <b>당해 학년도 3학년의 졸업 처리 이후</b> 출력할 수 있음.</li><li>테두리가 인쇄된 용지를 사용하는 경우 <b>'테두리' 선택을 해제</b>함.</li><li>학과가 설치된 고등학교에서는 '학과포함' 여부를 선택할 수 있음.</li><li><span class="btn">{전체출력}</span>으로 조회된 학생들의 명예졸업장을 일괄로 출력할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="D" data-when="졸업처리후" data-who="학적업무담당자">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE D · 출력과 대장 확인">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">당해 학년도 졸업생 학적반영 완료 후</span><span class="tag opt">오류자료조회는 필요 시</span></div>
+    <h3>명예졸업대장 조회와 오류자료 확인</h3>
+    <p class="desc">등록한 명예졸업생의 명예졸업대장을 확인하고 잘못된 자료가 없는지 점검하는 업무입니다. <strong>명예졸업대장은 [학적-졸업/수료관리-졸업/수료생학적반영]에서 당해 학년도 졸업생 학적반영이 완료되어야 조회할 수 있습니다.</strong> 조회한 대장은 문서로 저장하거나 출력해 보존 자료로 쓸 수 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>명예졸업자 발생 시, 당해 학년도 졸업생 학적반영이 완료된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-명예졸업관리-명예졸업대장조회]</code>, <code>[학적-졸업/수료관리-졸업/수료생학적반영]</code>, <code>[학적-졸업생자료관리-졸업생학생부정정대장작성]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-명예졸업관리-명예졸업대장조회]</code>에서 '졸업학년도' 확인 후 '성명' 입력 및 '정렬순'을 선택하고 <span class="btn">{조회}</span> → 해당 명예졸업생의 명예졸업대장을 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>명예졸업 기록이 대장에 제대로 남았는지 확인해 학력 증명 자료가 뒤늦게 어긋나는 일을 막으려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>조회와 출력</h4><ul><li><span class="btn">{졸업현황조회}</span>로 조회된 명예졸업대장 목록을 PDF, 워드, 엑셀, 파워포인트, 한글 문서로 저장하거나 출력할 수 있음.</li><li><span class="btn">{출력}</span>으로 조회된 명예졸업대장을 출력할 수 있음.</li><li>명예졸업대장은 <b>[학적-졸업/수료관리-졸업/수료생학적반영]에서 당해 학년도 졸업생 학적반영이 완료되어야</b> 조회할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>자료 수정과 오류 점검</h4><ul><li>졸업생 학교생활기록부가 있는 명예졸업생의 경우 [학적-졸업생자료관리-졸업생학생부정정대장작성]에서 학교생활기록부 정정대장 작성 후 <span class="btn">{4. 승인요청}</span>으로 업무승인과정을 거쳐 <b>결재권자의 결재가 완결된 후 자료반영 시</b> 명예졸업대장 자료까지 수정됨.</li><li><span class="btn">{오류자료조회}</span>를 클릭하면 나타나는 '명예졸업대장 오류자료조회' 창에서 '졸업학년도별 오류자료조회'와 '주민등록번호 중복자료조회'로 구분하여 조회할 수 있으며, PDF, 워드, 엑셀, 파워포인트, 한글 문서로 저장하거나 출력할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 학적, Section_14 명예졸업 관리 (522–532쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

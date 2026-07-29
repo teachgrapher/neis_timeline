@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<!-- 기본학적 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>기본학적 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>기본학적 관리</b>
+    <span class="sub">업무 20개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Part 3. 학적 · Section_01 · pp. 209–244</p>
+    <h1>기본학적 관리
+      <em>업무 20개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학년초, 학기중</dd></div>
+      <div><dt>업무담당</dt><dd>학급담임교사</dd></div>
+      <div><dt>메뉴경로</dt><dd>[학적-기본학적관리-기본신상관리], [사진일괄입력]</dd></div>
+      <div><dt>선행조건</dt><dd>신입생은 사진을 제외한 기본신상자료가 [입학] 시스템을 통해 중학교에서 전송받아 반영됨.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>학년초 기초자료 확인</h3>
+            <p class="tl-sub">반 배정과 신입생 자료 전송이 끝난 뒤 착수</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 인적사항 확인"><span>01</span>인적사항 확인</button><button type="button" class="tl-btn" data-go="t2" title="02 학적특기사항 등록"><span>02</span>학적특기사항 등록</button><button type="button" class="tl-btn" data-go="t3" title="03 학년반이력 확인"><span>03</span>학년반이력 확인</button><button type="button" class="tl-btn" data-go="t8" title="08 사진 일괄등록"><span>08</span>사진 일괄등록</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>주소 현행화 기간</h3>
+            <p class="tl-sub">3월·9월 요청기간 · 동의서 취합 후 순서대로 진행</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 주소연계 요청"><span>05</span>주소연계 요청</button><button type="button" class="tl-btn" data-go="t6" title="06 연계결과 반영"><span>06</span>연계결과 반영</button><button type="button" class="tl-btn" data-go="t7" title="07 연계이력 조회"><span>07</span>연계이력 조회</button><button type="button" class="tl-btn" data-go="t4" title="04 누가주소 등록"><span>04</span>누가주소 등록</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>학기중 수시 정리와 출력</h3>
+            <p class="tl-sub">사진 등록 이후 · 명단이 필요할 때 수시로</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t9" title="09 개인별 사진등록"><span>09</span>개인별 사진등록</button><button type="button" class="tl-btn" data-go="t11" title="11 사진명렬표 출력"><span>11</span>사진명렬표 출력</button><button type="button" class="tl-btn" data-go="t10" title="10 학생명렬표 출력"><span>10</span>학생명렬표 출력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>반변경 사유 발생 시</h3>
+            <p class="tl-sub">부득이한 사유 확인 후 등록·결재·후속처리 순서 고정</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t12" title="12 반변경 승인요청"><span>12</span>반변경 승인요청</button><button type="button" class="tl-btn" data-go="t13" title="13 반변경 학적반영"><span>13</span>반변경 학적반영</button><button type="button" class="tl-btn" data-go="t14" title="14 번호·출결 후속"><span>14</span>번호·출결 후속</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>학기중 추가입학자 발생 시</h3>
+            <p class="tl-sub">전산자료 없는 편입학 서류 접수 후</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t17" title="17 추가입학 등록"><span>17</span>추가입학 등록</button><button type="button" class="tl-btn" data-go="t18" title="18 이전학년도 입력"><span>18</span>이전학년도 입력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">06</p>
+            <h3>학적변동 확인과 학년말 처리</h3>
+            <p class="tl-sub">학적반영 완료 후 · 조기진급과 부전공은 해당 학교만</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t19" title="19 학생이동부 확인"><span>19</span>학생이동부 확인</button><button type="button" class="tl-btn" data-go="t20" title="20 학적현황 출력"><span>20</span>학적현황 출력</button><button type="button" class="tl-btn" data-go="t16" title="16 부전공 등록"><span>16</span>부전공 등록</button><button type="button" class="tl-btn" data-go="t15" title="15 조기진급 반영"><span>15</span>조기진급 반영</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="반배정직후" data-who="학급담임교사">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 신상 확인">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">반 학생 배정 후</span><span class="tag opt">1학년 입학생 수정 한정</span></div>
+    <h3>학생 인적사항 확인 및 신입생 신상 수정</h3>
+    <p class="desc">신입생은 사진을 제외한 기본신상자료가 [입학] 시스템을 통해 중학교에서 전송받아 반영되므로, 담임교사는 전송된 자료가 맞는지부터 확인한다. <strong>반 학생이 배정된 후 학급담임교사는 기본신상자료(성명, 주민등록번호 등)를 활용하여 동명이인 또는 반편성 오류를 반드시 확인해야 함.</strong> 1학년 입학생의 주민등록번호(외국인등록번호), 성별, 생년월일은 이 화면에서 직접 고칠 수 있다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 반 학생이 배정된 후. 신입생 기본신상자료가 중학교에서 전송되어 반영된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-기본학적관리-기본신상관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학년’, ‘반’ 확인 후 ‘기본신상’을 선택하고 <span class="btn">{조회}</span> 함 → 학생을 클릭하고 <span class="btn">{기본신상}</span> 탭에서 ‘성명’, ‘주민등록번호(외국인등록번호)’, ‘성별’ 등의 기본 신상자료를 이상 유무를 확인함 → 1학년 입학생의 주민등록번호(외국인등록번호), 성별, 생년월일을 변경하고자 할 때에 <span class="btn">{기본신상}</span> 탭에서 수정 후 <span class="btn">{저장}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교생활기록부의 모든 기록이 이 인적사항에 붙기 때문에, 동명이인과 반편성 오류를 학년 초에 걸러 다른 학생의 기록이 섞이는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>확인·조회 시 알아두기</h4><ul><li>특성화고등학교, 산업수요 맞춤형 고등학교, 직업계열 학과가 설치된 일반고등학교에서는 조회 조건의 ‘학년’이 ‘계열/학년/학과’로 조회되며, 메뉴에 따라 ‘계열’이 나타남.</li><li>동명이인이 있는 학생의 성명 앞에는 표시가 나타나며, 해당 학생의 이름에 마우스를 가져가면 팝업창으로 “동명이인이 존재합니다. 이 학생은 ○○년 ○○월 ○○일생입니다.”라는 메시지가 나타남.</li><li>동명이인 학생 표시 기준은 (학적) 동일 학년 내에 성명이 같은 학생이 있는 경우, (성적) 동일 과목의 수강생 기준으로 성명이 같은 학생이 있는 경우임.</li><li><b>동명이인 등의 반 편성 오류는 [학적-기본학적관리-계열/학과/반변경]에서 처리함.</b></li><li>학생의 사진을 개별로 수정하거나 등록하고자 할 때에는 <code>[학적-기본학적관리-기본신상관리]</code>의 <span class="btn">{기본신상}</span> 탭에서 ‘사진등록’을 통해 가능함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>입력 기준과 정보 변경 경로</h4><ul><li>학생의 성명, 성별, 주민등록번호와 주소는 주민등록등(초)본과 일치하여야 하며, <b>성과 이름 사이에 공백을 두지 않음</b>(외국인 성명(영문)은 공백을 둘 수 있음).</li><li>외국인의 경우 여권(외국인등록증, 외국인등록 사실증명, 국내거소신고 사실증명)에 표기된 영문 또는 한글의 성명과 성별을 그대로 입력함.</li><li>우리나라 주민등록번호가 미부여된 외국국적자 등은 외국인등록번호나 국내거소신고번호를 입력함. 다만, 외국인등록번호가 없는 경우 주민등록번호 입력방식에 따라 앞 6자리는 생년월일, 뒤 7자리는 남자는 ‘3000000’, 여자는 ‘4000000’으로 하고, 2000년 이전 출생자는 남자는 ‘1000000’, 여자는 ‘2000000’으로 입력하며 동성 쌍둥이일 경우 끝자리에 1, 2를 부여함.</li><li>신입생의 학생정보(성명 제외) 수정은 나이스의 <code>[학적-기본학적관리-기본신상관리]</code>에서 함.</li><li><b>1학년 입학생의 주민등록번호는 증빙자료를 근거로 {기본신상} 탭에서 직접 변경하고, 2･3학년 학생의 주민등록번호는 [학생부-정정대장관리-정정대장작성]에서 정정함.</b></li><li>신입생의 개명(표기방식 변경 포함)은 재학생과 같이 학교생활기록부 정정대장 작성으로 처리함. 재학생은 <code>[학생부-정정대장관리-정정대장작성]</code>, 학업중단학생은 <code>[학생부-정정대장관리-정정대장작성]</code>의 ‘재학아닌학생’에서 <span class="btn">{학생찾기}</span>, 졸업생은 <code>[학적-졸업생자료관리-졸업생학생부정정대장작성]</code>, 학생부 보존시스템으로 자료가 이관된 졸업생은 <code>[학생부보존-학생부정정관리-졸업생학생부정정대장작성]</code>에서 처리함.</li><li>신입생이 입학 학년도에 학업을 중단하고 개명을 제외한 학생정보 변경을 요청할 경우에는 학적반영 취소 후 수정함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="반배정직후" data-who="학급담임교사">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 신상 확인">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초 및 학적변동 발생 직후</span><span class="tag opt">검정고시 합격자·교명 변경 시 등록</span></div>
+    <h3>학적사항 확인과 학적특기사항 등록</h3>
+    <p class="desc">학적변동(전출･전입･자퇴･퇴학 등) 처리 시 학적사항은 자동으로 입력되므로 <strong>학급담임교사가 ‘학년도’, ‘변동일자’, ‘학년’, ‘학적변동구분’, ‘학적변동사유’, ‘관련학교명’을 직접 입력하지 않음(비활성화되어 있음).</strong> 담임은 자동 입력된 내용이 맞는지 확인하고, 중요한 학적변동 사유는 ‘학적특기사항’에서 확인한다. 검정고시 합격자나 교명 변경처럼 직접 등록해야 하는 경우만 예외다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초 및 학적변동 처리가 완료된 직후. 입학생은 입학대상자관리와 진급자학적반영이, 학적변동자는 전입관리의 학적반영이 정상 처리된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-기본학적관리-기본신상관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학년’, ‘반’ 확인 후 ‘기본신상’을 선택하고 <span class="btn">{조회}</span> 함 → 학생 ‘성명’을 클릭하고 <span class="btn">{학적사항}</span> 탭에서 목록을 선택한 후 ‘학년도’, ‘변동일자’, ‘학년’, ‘학적변동구분’, ‘학적변동사유’, ‘관련학교명’을 확인함 → ‘학적특기사항’에서 중요한 학적변동(면제･자퇴･퇴학･휴학･유급･조기진급 등)이 있는 경우 그 사유를 확인할 수 있음.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>등록된 일자를 기준으로 각종 학적변동 통계자료가 산출되므로, 변동일자와 구분이 실제 처리와 어긋나 통계와 학교생활기록부가 함께 틀어지는 것을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>자동 입력과 정정 경로</h4><ul><li>등록된 일자 기준으로 각종 학적변동 통계자료가 산출됨.</li><li>입학생은 <code>[입학-입학관리-입학대상자관리]</code>와 <code>[학적-진급대상자반편성관리-진급대상자반편성관리-진급자학적반영]</code>을 정상적으로 처리한 경우, 학적변동자는 <code>[학적-전입관리-전입관리-학적반영]</code>에서 학적반영을 정상적으로 처리한 경우에 자동으로 입력됨.</li><li><b>학적변동구분이 잘못된 경우 학교생활기록부 정정대장을 통해 정정함.</b></li><li>학적변동자(자퇴･전출 등)의 학교생활기록부 출력은 <code>[학생부-학교생활기록부-학교생활기록부-학생부조회및출력]</code>에서 ‘재학아닌학생’을 선택하고 ‘성명’을 입력 후 <span class="btn">{조회}</span>하여 출력할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>학적특기사항 입력 기준</h4><ul><li>학교의 통폐합 등으로 교명이 변경된 경우에는 특기사항에 교명 변경 내용을 입력함. <code>[학적-기본학적관리-기본신상관리]</code>의 <span class="btn">{학적사항}</span> 탭에서 ‘학적특기사항’의 ‘일괄입력’을 선택하고 관련 내용을 등록함. 예시는 2026.03.01. 학교 통폐합으로 인한 교명 변경임.</li><li>검정고시 합격자는 검정고시 합격 연월일과 검정고시 합격 내용을 입력하되, <b>‘중학교 졸업학력 검정고시 합격’으로 입력함.</b></li><li>중학교 졸업학력 검정고시 합격자가 1학년으로 입학한 경우 <span class="btn">{학적사항}</span> 탭에서 ‘학년도’ 확인 후 <span class="btn">{등록}</span>하여 ‘변동일자’는 중학교 졸업학력 검정고시 합격일을, ‘학년’은 ‘선택’으로, ‘학벅변동구분’은 ‘중학교졸업학력검정고시 합격’으로 선택 후 <span class="btn">{저장}</span>함. ‘변동일자’가 이전 학년도 일자인 경우 “변동일자가 학년도를 벗어납니다.” 확인창이 나타나며, 이 경우 <span class="btn">{취소}</span>를 클릭하여 입력함.</li><li><b>외국학교에서 국내학교로 전･편입학 시 ‘학적특기사항’은 공란으로 둠.</b> 귀국학생 등의 재입학･편입학 시 해외 수학 기간 및 외국학교명은 ‘특기사항’에 기재하지 않음.</li><li>「학교폭력예방 및 대책에 관한 법률」 제17조(가해학생에 대한 조치) 제1항제8호(전학), 제9호(퇴학처분)에 따른 조치사항을 조치 결정일자(교육지원청 내부결재일)와 함께 결정 즉시 입력함(2025학년도 3학년에 한함). 2026학년도 1･2･3학년은 <code>[학생생활-학교폭력조치상황관리-학교폭력조치상황관리]</code>에서 입력함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="A" data-when="학년초" data-who="학급담임교사">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE A · 신상 확인">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 학기 중 담임 변경 시</span><span class="tag opt">담임 성명 중복 시 삭제</span></div>
+    <h3>학년반이력 조회와 중복 담임 성명 정리</h3>
+    <p class="desc">학과, 학년, 반, 번호의 변경 시 <strong>변경 내용은 모두 입력되어 있어야 함.</strong> 담임교사는 학년반이력 탭에서 ‘학년’, ‘반’, ‘번호’, ‘담임성명’이 제대로 쌓였는지 확인한다. 학급담임교사 성명이 중복되어 나타나는 경우에는 이 탭에서 하나를 삭제하고 학생부반영까지 해야 정리된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학과･학년･반･번호가 변경되거나 학기 중 학급담임교사가 변경된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-기본학적관리-기본신상관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학년’, ‘반’ 확인 후 ‘기본신상’을 선택하고 <span class="btn">{조회}</span> 함 → 학생 ‘성명’을 클릭하고 <span class="btn">{학년반이력조회}</span> 탭에서 ‘학년’, ‘반’, ‘번호’, ‘담임성명’을 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교생활기록부 ‘학년이력’에 그대로 올라가는 기록이므로, 학급과 담임이 바뀐 이력이 빠지거나 중복된 채 졸업 자료로 굳는 것을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>학과, 학년, 반, 번호의 변경 시 <b>변경 내용은 모두 입력되어 있어야 함.</b></li><li>중복된 학급담임교사 성명 삭제 방법은 <code>[학급담임-학적-기본학적관리-기본신상관리]</code>의 <span class="btn">{학년반이력조회}</span> 탭에서 중복된 학급담임교사 성명 하나를 선택하여 삭제 후 <code>[학급담임-학생부-학교생활기록부-학교생활기록부-학생부반영]</code>에서 <span class="btn">{전체반영}</span> 또는 <span class="btn">{개별반영}</span>하면 학교생활기록부 ‘학년이력’에서 중복된 학급담임교사 성명이 삭제됨.</li><li>학기 중 학급담임교사가 변경된 경우 <code>[교육과정-학급담임편성관리-학급담임편성관리]</code>에서 변경된 학금담임교사를 등록하되, <b>‘학생부반영’과 ‘이력추가’를 선택함.</b></li><li>이 후 <code>[권한관리-교무자료권한승인관리]</code>에서 ‘담임편성’ 선택 후 <span class="btn">{학년반}</span> 탭에서 해당 학급담임교사를 선택하고 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 <b>결재권자의 결재를 완료해야 학급담임교사 권한이 부여됨.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="C" data-when="학년초" data-who="학급담임교사">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE C · 사진·명렬표">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초</span><span class="tag opt">졸업학년도 교체 입력</span></div>
+    <h3>사진 일괄등록과 파일 용량 정리</h3>
+    <p class="desc">반 학생 사진을 한 번에 올릴 때 쓰는 업무입니다. 신입생과 졸업생 사진을 반 단위로 올리며, <strong>특정 폴더에 사진 파일명이 '성명(번호)' 형식으로 저장되어 있어야 합니다</strong>. 졸업학년도에는 졸업학년도에 촬영한 사진으로 교체 입력합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 신입생 기본신상자료가 중학교에서 전송받아 반영된 뒤. 졸업학년도에는 수시모집 대입전형자료 생성 전까지</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-기본학적관리-사진일괄입력]</code>, <code>[학적-기본학적관리-명렬표출력]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘계열/학년/학과’, ‘반’ 확인 후 <span class="btn">{사진일괄올리기}</span> → ‘열기’ 창에서 업로드 할 학생들의 사진을 모두 선택하고 <span class="btn">{열기}</span> → <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교생활기록부와 민원·대입전형자료에서 학생 본인이 정확히 식별되도록 얼굴 원형이 유지된 사진을 갖춰 두려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>올리기 전 준비</h4><ul><li>사진 일괄입력 시 특정 폴더에 <b>사진 파일명이 ‘성명(번호)’로 저장되어 있어야 함</b>. 예시) 김유신(1).jpg, 홍길동(13).jpg</li><li>폴더 전체의 사진파일을 동시에 선택하는 경우는 조합키 또는 키를 클릭한 채 첫 번째 파일과 마지막 파일을 선택함.</li><li>사진은 학생의 얼굴을 잘 식별할 수 있도록 원형을 유지해야 하며 <code>[학적-기본학적관리-명렬표출력]</code>에서 <span class="btn">{사진명렬표출력}</span>하여 학생 사진의 이상 유무를 확인함.</li><li>입학년도에 모자를 쓰지 않고 촬영한 천연색 상반신 사진(3.5㎝×4.5㎝)을 등록하며 사진 크기는 자동 조절되어 입력됨.</li><li>졸업학년도에는 졸업학년도에 촬영한 사진(여권용)을 <b>수시모집 대입전형자료 생성 전까지</b> 교체 입력함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>내려받기와 용량 관리</h4><ul><li><span class="btn">{사진일괄내리기}</span>는 해당 반의 사진을 일괄로 다운받을 수 있으며, <span class="btn">{선택사진내리기}</span>로 선택한 사진만 다운받을 수 있음.</li><li>나이스 입력용 사진의 파일 용량은 <b>200KB(JPEG 형식 기준, 해상도 300dpi 정도)까지 지원함</b>.</li><li>기존에 올린 사진의 파일 용량이 200KB 이상인 경우 <code>[{민원} 민원업무]</code>나 대입전형자료 작성 시 오류가 나타날 수 있으며, 이 경우 <span class="btn">{사진일괄변환}</span>으로 사진 파일의 용량을 200KB 이하로 줄일 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="주소연계기간" data-who="학급담임교사">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 주소 등록">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">1학기 3월~4월초, 2학기 9월~10월초</span><span class="tag opt">동의서 제출 학생만</span></div>
+    <h3>학생주소 연계 대상자 등록 및 자료요청</h3>
+    <p class="desc">학생 거주지 주소를 행정안전부의 주민등록정보시스템과 연계하여 송·수신하는 기능으로, 학급담임교사가 나이스의 학적에 등록된 학급 학생에 한해서만 주소정보 확인 요청 및 조회가 가능하다. 시도교육청의 관련 공문을 참조해 진행한다. <strong>연계요청기간 내에 ‘행정정보 공동이용 사전 동의서’를 학부모·학생으로부터 취합한 뒤에 대상자 승인요청을 한다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연 2회(3월, 9월) 학생주소정보 요청기간, ‘행정정보 공동이용 사전 동의서’를 취합한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-기본학적관리-학생주소연계]</code>의 <span class="btn">{연계대상자관리}</span> 탭</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{연계대상자관리}</span> 탭에서 ‘학년도’, ‘학년’, ‘반’ 확인 후 ‘진행상태’를 선택하고 <span class="btn">{조회}</span> → 연계대상 학생을 선택하고 <span class="btn">{승인및자료요청}</span>을 클릭하면 나타나는 ‘기안문서상신’ 창에서 결재경로를 지정하고 <span class="btn">{상신}</span>하여 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교생활기록부에 적힌 주소가 실제 주민등록 주소와 어긋나지 않도록 공적 자료로 확인받으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 요청 조건과 기간</h4><ul><li>학교생활기록부에 기재된 인적사항을 바탕으로 ① 송신정보(나이스 → 주민등록정보시스템)는 학생 성명, 주민등록번호이고 ② 수신정보(주민등록정보시스템 → 나이스)는 송신정보에 해당하는 학생의 주소이며, ③ <b>1학기는 3월~4월초, 2학기는 9월~10월초에만 연계 요청</b>이 됨에 유의한다.</li><li>매 학년 초 학급담임교사가 학부모·학생 동의서 취합 후 보관하고 <b>학년말에 동의서를 폐기</b>한다.</li><li>‘진행상태’가 ‘대상자등록’, ‘상신중’, ‘완료’, ‘자료요청’ 상태일 경우 학생을 선택할 수 없다.</li><li>연계 요청기간 동안 <b>결재 완료된 건에 대해서만 자료요청</b>되며, 학생주소정보 요청기간이 아닌 경우 <span class="btn">{승인및자료요청}</span>이 비활성화된다.</li><li>승인 중인 건에 대해 회수하거나 반려한 경우 <code>[승인사항-상신함]</code>에서 삭제해야 재상신을 할 수 있으며, <b>승인 완료된 자료에 대해서는 기결취소를 할 수 없다(재요청 불가)</b>.</li><li>학생주소정보 요청기간이 지난 후 ‘상신중’인 건에 대해서는 <span class="btn">{연계대상자삭제}</span>로 연계대상자를 삭제해야 이후 연계요청기간에 <span class="btn">{승인및자료요청}</span>이 가능하다.</li><li><span class="btn">{연계결과확인및반영}</span> 탭에서 자료수신을 한 경우 ‘진행상태’가 ‘자료수신’으로, ‘자료반영’을 하면 공란으로 나타난다.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 체크박스가 비활성화되는 학생</h4><ul><li>학생이나 학부모가 학생의 행정정보 공동이용 사전동의서를 제출하지 않음(비동의).</li><li>학생이 외국인인 경우(<b>주민등록번호 뒷자리 첫 번째 숫자가 1, 2, 3, 4가 아닌 경우</b>) 주민등록정보시스템에서 관리되지 않음.</li><li>비밀전학의 경우 학생의 피해가 발생하지 않도록 전입교에서는 변경된 주소를 누가기록하지 않음(「아동복지법 시행령」 제26조의4, 「아동학대범죄의 처벌 등에 관한 특례법」 제35조 및 「가정폭력방지 및 피해자보호 등에 관한 법률 시행령」 제1조의3, 「가정폭력범죄의 처벌 등에 관한 특례법」 제18조).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="B" data-when="주소연계기간" data-who="학급담임교사">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE B · 주소 등록">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">상신·결재 완료 후 일정기간 경과 시</span></div>
+    <h3>학생주소 연계결과 확인 및 반영</h3>
+    <p class="desc">주소정보연계 상신 및 결재 완료 후 일정기간 경과 시(공문 참조)에 <span class="btn">{연계결과확인및반영}</span> 탭에서 주민등록정보시스템으로부터 회신된 학생주소정보를 확인하고 반영하면 학교생활기록부의 인적·학적사항의 학생정보에 반영된다. <strong>학생의 성명과 주민등록번호 모두 일치하는 경우에만 학생주소정보가 조회된다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>업무 05의 상신 및 결재가 완료되고 일정기간이 경과한 뒤, 공문에 정한 특정일 기준.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-기본학적관리-학생주소연계]</code>의 <span class="btn">{연계결과확인및반영}</span> 탭</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{연계결과확인및반영}</span> 탭에서 ‘학년도’, ‘학년’, ‘반’ 확인 후 ‘전송결과’를 선택하고 <span class="btn">{조회}</span> → 연계주소를 반영할 학생을 선택하여 <span class="btn">{자료반영}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교생활기록부 인적·학적사항의 주소를 실제 거주지로 현행화해 통지와 각종 증명에서 잘못된 주소가 쓰이지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 반영 판단</h4><ul><li>주소 현행화 공문에 따라 수행하되, 일정기간 동안 주민등록정보시스템으로 주소 현행화 요청을 하고 이후 특정일 기준으로 주민등록정보시스템으로부터 전송된 주소(연계 수신자료)를 비교하여 <span class="btn">{자료반영}</span>한다.</li><li><b>학생의 성명과 주민등록번호 모두 일치하는 경우에만</b> 학생주소정보가 조회되며 <span class="btn">{엑셀내려받기}</span>로 조회된 주소를 스프레드시트 파일로 다운 받을 수 있다.</li><li>나이스에 등록된 주소와 주민등록정보시스템으로부터 전송된 주소(연계 수신자료)가 다른 경우 빨간색으로 표시되며, 주소의 변경 여부, 단순 쉼표나 띄어쓰기에 따른 표시 여부에 따라 누가기록 하거나 기존 주소 삭제 여부를 결정한다.</li><li>행정구역 변경이나 거주지 이전이 아닌 붙여쓰기 또는 띄어쓰기로 주소가 일치하지 않아 빨간색으로 표시되는 경우 <b>먼저 주소를 반영 후 기 등록된 주소는 삭제하는 것을 권장</b>한다(현행화 주소 등록일은 필요시 기존 주소 등록일로 변경할 수 있음). 예시) 기존 주소(2025.03.01.), 현행화 주소(2025.04.07.) → 현행화 주소(2025.03.01.).</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — ‘전송결과’ 값의 뜻</h4><ul><li>‘전송결과’가 ‘조회성공’인 경우는 요청한 학생주소정보가 정상적으로 연계 수신된 상태(학생의 성명, 주민등록번호가 모두 일치하는 경우에만 조회됨)이다.</li><li>‘전송결과’가 ‘조회실패’인 경우는 요청한 학생주소정보가 주민등록정보시스템에서 검색되지 않아 조회 실패된 상태이다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="B" data-when="주소연계기간" data-who="학급담임교사">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE B · 주소 등록">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">연계 요청·반영 이후</span><span class="tag opt">필요시</span></div>
+    <h3>학생주소 연계 이력·조회현황 확인</h3>
+    <p class="desc">주소연계를 요청하고 반영한 뒤 그 과정을 되짚어 볼 때 쓰는 두 개의 조회 메뉴다. 절차는 두 메뉴 모두 조건을 확인·설정하고 <span class="btn">{조회}</span>하는 것으로 같으므로 한 묶음으로 다룬다. <strong>학급담임교사가 나이스의 학적에 등록된 학급 학생에 한해서만 조회가 가능하다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연계 자료요청과 자료반영을 마친 뒤 필요할 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-기본학적관리-학생주소연계이력조회]</code>, <code>[학급담임-학적-기본학적관리-학생주소연계조회현황]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>학생주소연계이력조회에서 ‘학년도’, ‘학년’, ‘반’ 확인 후 ‘요청일자’를 설정하여 <span class="btn">{조회}</span>하고 필요시 <span class="btn">{출력}</span> → 학생주소연계조회현황에서 ‘학년도’ 확인 후 ‘기간’을 설정하여 <span class="btn">{조회}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>요청한 건이 실제로 수신되고 반영까지 되었는지 숫자로 맞춰 보아 빠진 학생을 찾아내려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 어떤 표를 언제 여는가</h4><ul><li><b>학생주소연계이력조회</b> — ‘요청일자’ 기준으로 학급 학생의 연계 요청 이력을 확인하고 필요시 <span class="btn">{출력}</span>할 때 연다.</li><li><b>학생주소연계조회현황</b> — ‘기간’ 기준으로 요청건수·수신건수·반영건수를 대조해 볼 때 연다.</li><li>‘요청건수’는 나이스를 통해 주민등록정보시스템으로 학생 주소정보를 확인 요청한 건수를, ‘수신건수’는 주민등록정보시스템으로부터 전송된 학생 주소정보 건수를, ‘반영건수’는 회신된 학생 주소정보를 확인하고 학교생활기록부 인적·학적사항의 학생정보에 반영한 건수이다.</li><li>숫자를 클릭하면 나타나는 ‘학생주소연계 상세이력’ 창에서 필요시 조회된 자료를 <span class="btn">{엑셀내려받기}</span>로 스프레드시트 파일로 다운받을 수 있다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="학기중수시" data-who="학급담임교사">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 주소 등록">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기중 수시</span><span class="tag opt">주소연계로 대체 가능</span></div>
+    <h3>누가주소 개별 등록</h3>
+    <p class="desc">학생 주소가 바뀌었거나 신입생 주소를 확인해 고쳐야 할 때 나이스에서 직접 입력하는 방법이다. 3월·9월 주소연계로 일괄 현행화하는 길도 있으므로 개별 등록은 연계 대상이 아닌 학생이나 수시 변경 건에 쓴다. <strong>신입생의 주소는 중학교에서 자동 전송된 주소이므로 반드시 확인하고 필요시 수정한다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초 및 학기중, 신입생 전송 주소를 확인한 뒤 또는 주소 변경 사실을 확인한 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-기본학적관리-기본신상관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학년’, ‘반’ 확인 후 ‘기본신상’을 선택하고 <span class="btn">{조회}</span> → 학생 ‘성명’을 클릭하고 <span class="btn">{누가주소등록}</span> 탭에서 <span class="btn">{등록}</span> 후 <span class="btn">{주소찾기}</span> → ‘도로명주소찾기’ 창에서 ‘시도’, ‘시군구’, ‘도로명’ 등을 입력 후 <span class="btn">{조회}</span> → ‘도로명 주소 검색 결과’에서 해당 주소를 선택 후 추가 주소를 입력하고 <span class="btn">{확인}</span> 후 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교생활기록부의 학생 거주지 주소를 주민등록등(초)본과 일치시켜 학적자료의 신뢰를 지키려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>신입생의 경우 중학교에서 자동 전송된 주소이므로 반드시 확인하고 필요시 수정하며, <b>3월·9월의 일정 기간</b> 동안 <code>[학적-기본학적관리-학생주소연계]</code>에서 행정안전부의 주민등록정보시스템으로부터 학생의 주소를 전송받아 현행화할 수 있다.</li><li>학생의 성명, 성별, 주민등록번호와 주소는 주민등록등(초)본과 일치하여야 한다.</li><li><b>비밀전학의 경우 학생의 피해가 발생하지 않도록 전입교에서는 변경된 주소를 누가기록 하지 않는다</b>(「아동복지법 시행령」 제26조의4(피해아동의 취학에 대한 지원), 「아동학대범죄의 처벌 등에 관한 특례법」 제35조(비밀엄수 등의 의무) 및 「가정폭력방지 및 피해자보호 등에 관한 법률 시행령」 제1조의3(아동의 취학 지원), 「가정폭력범죄의 처벌 등에 관한 특례법」 제18조(비밀엄수 등의 의무)).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="C" data-when="학기중수시" data-who="학급담임교사">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE C · 사진·명렬표">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 중 수시</span><span class="tag opt">개별 수정·등록 시</span></div>
+    <h3>개인별 사진 등록</h3>
+    <p class="desc">전입생이 들어오거나 특정 학생 사진만 잘못 올라간 경우처럼 <strong>한 명의 사진만 등록하거나 수정할 때</strong> 쓰는 업무입니다. 반 전체를 다시 올릴 필요 없이 기본신상관리에서 바로 처리합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 학생 사진을 개별로 수정하거나 등록해야 할 때</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-기본학적관리-기본신상관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학년’, ‘반’ 확인 후 ‘기본신상’을 선택하고 <span class="btn">{조회}</span> → 학생 ‘성명’을 클릭하고 <span class="btn">{기본신상}</span> 탭에서 <span class="btn">{찾아보기&amp;변환}</span>을 클릭 → ‘열기’ 창에서 해당학생 사진을 선택 후 <span class="btn">{열기}</span> → <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생 한 명의 사진 누락이나 오등록이 학교생활기록부와 대입전형자료까지 그대로 따라가는 것을 막으려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>학생의 사진을 개별로 수정하거나 등록하고자 할 때에는 <code>[학적-기본학적관리-기본신상관리]</code>의 <span class="btn">{기본신상}</span> 탭에서 ‘사진등록’을 통해 가능함.</li><li><span class="btn">{찾아보기&amp;변환}</span>으로 등록하므로 파일 용량이 큰 사진도 변환되어 입력됨. 나이스 입력용 사진의 파일 용량은 <b>200KB(JPEG 형식 기준, 해상도 300dpi 정도)까지 지원함</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t11" data-num="11" data-stage="C" data-when="학기중수시" data-who="학급담임교사">
+  <div class="gutter"><b>11</b><span class="gstage" title="원문 STAGE C · 사진·명렬표">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 중 수시</span><span class="tag">사진 등록 후 확인용</span></div>
+    <h3>사진명렬표 출력</h3>
+    <p class="desc">반 전체 또는 선택한 학생의 사진을 한 장에 모아 보는 업무입니다. 사진 일괄등록을 마친 뒤 <strong>학생 사진의 이상 유무를 확인하는 수단</strong>으로도 쓰입니다. 담당 업무에 따라 사진명렬표를 뽑는 메뉴가 따로 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 사진 등록을 마친 뒤 또는 학생 얼굴 확인이 필요한 때</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-기본학적관리-명렬표출력]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학년’, ‘반’ 확인 후 <span class="btn">{조회}</span> → <span class="btn">{사진명렬표출력}</span>을 클릭하면 나타나는 ‘사진명렬표’ 창에서 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>올린 사진이 학생 본인과 맞는지 눈으로 대조해 잘못 붙은 사진이 학교생활기록부로 넘어가지 않게 하려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{사진명렬표출력}</span>은 조회된 반의 전체 학생의 사진명렬표를 조회하고 출력할 수 있으며, <span class="btn">{선택사진명렬표출력}</span>은 선택한 학생을 대상으로 사진명렬표를 조회하고 출력할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>업무담당자별 출력 메뉴</h4><ul><li>학급담임교사 — <code>[학적-기본학적관리-명렬표출력]</code>의 <span class="btn">{사진명렬표출력}</span>.</li><li>교과담당교사 — <code>[학적-출결관리-교과시간별출석부출력]</code>에서 ‘사진명렬표’ 선택.</li><li>동아리활동 지도교사 — <code>[학생생활-창의적체험활동-동아리활동관리-동아리활동관리]</code>의 ‘동아리활동 출석 목록’에서 <span class="btn">{사진명렬표출력}</span>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="C" data-when="학기중수시" data-who="학급담임교사">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE C · 사진·명렬표">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 중 수시</span></div>
+    <h3>학생명렬표 내용 선택 및 출력</h3>
+    <p class="desc">학급 업무에 필요한 명렬표를 뽑는 업무입니다. 기본 출력도 가능하지만 필요한 항목을 골라 제목까지 붙여 만들 수 있습니다. <strong>명렬표는 학생 개인정보가 담긴 자료이므로 유출되지 않도록 관리해야 합니다</strong>.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 학급 학생 명단이 필요한 때 수시로</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-기본학적관리-명렬표출력]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학년’, ‘반’ 확인 후 <span class="btn">{조회}</span>하고 <span class="btn">{출력}</span>을 클릭하면 나타나는 ‘명렬표출력’ 창에서 출력함 → 필요시 <span class="btn">{명렬표내용선택}</span>을 클릭해 ‘명렬표내용선택’ 창에서 ‘명렬표 제목’을 입력하고 좌측 ‘명렬표 내용’을 선택하여 추가한 후 ‘선택한 내용’을 확인하고 <span class="btn">{선택}</span> → <span class="btn">{출력}</span>을 클릭하면 나타나는 ‘명렬표출력’ 창에서 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학급 운영에 필요한 항목만 담은 명단을 손으로 다시 정리하지 않고 확보하려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{선택자료출력}</span>은 목록에서 특정 학생을 선택하고 출력하는 기능임.</li><li>명렬표 출력 시 ‘주민등록번호(외국인등록번호)’의 경우 ‘091101-4******’ 형식으로 출력됨. 외부 활동으로 여행자보험 가입 등 주민등록번호가 필요할 경우 <span class="btn">{엑셀내려받기}</span>하여 저장한 파일을 편집하여 활용할 수 있음.</li><li><b>학생개인정보 유출이 되지 않도록 해야 하며</b>, 「개인정보 보호법」을 위반한 행위로 손해가 발생한 경우 「개인정보 보호법」 제39조에 따라 손해배상의 책임을 질 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t12" data-num="12" data-stage="D" data-when="학기중수시" data-who="학급담임교사">
+  <div class="gutter"><b>12</b><span class="gstage" title="원문 STAGE D · 학적 변경">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">반 변경 사유 발생 시</span><span class="tag opt">부득이한 사유 한정</span></div>
+    <h3>계열/학과/반변경 학생 등록과 승인요청</h3>
+    <p class="desc">학교폭력대책심의위원회 조치사항, 동일 학급내 동명이인, 학생의 진로 변경 등 부득이한 사유로 반 변경을 하는 경우에만 해당한다. <strong>동명이인으로 반 변경을 진행해야 하는 경우 반드시 [학적-기본학적관리-계열/학과/반변경]에서 반 변경을 해야 함.</strong> 등록 후 결재권자의 결재까지 완료해야 다음 단계인 학적반영으로 넘어갈 수 있다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 학교폭력대책심의위원회 조치사항·동일 학급내 동명이인·학생의 진로 변경 등 부득이한 사유가 확인된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-기본학적관리-계열/학과/반변경]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’ 확인 후 ‘기간’을 설정하고 ‘미반영된자료’ 선택 후 <span class="btn">{조회}</span> → <span class="btn">{등록}</span>을 클릭하면 나타나는 ‘반변경 등록’ 창에서 <span class="btn">{개인별}</span> 선택 후 ‘학년도’, ‘계열/학년/학과’, ‘반’, ‘학생명’을 확인 또는 설정하고 <span class="btn">{조회}</span> → ‘조회목록’에서 해당 학생 선택 후 ‘변경후 학적내역’에서 ‘계열’, ‘학과’, ‘반’, ‘번호’를 설정하고 <span class="btn">{저장}</span> 후 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>반이 바뀐 사실을 학적 자료로 정식 확정해, 이후 출결·성적·학교생활기록부가 학생의 실제 소속반을 기준으로 쌓이게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>동명이인으로 반 변경을 진행해야 하는 경우 <b>반드시 [학적-기본학적관리-계열/학과/반변경]에서 반 변경을 해야 함.</b> 주민등록번호와 관련 정보(건강기록부, 진로정보 등) 등을 수정하여 반 변경을 하는 경우 나이스플러스에서 하급학교 자료가 잘못 조회될 수 있음.</li><li>반 변경으로 필수 이수학점을 이수하지 못할 상황이 발생할 수 있으므로 <b>반드시 해당 학생의 이전학기 이수과목의 이수학점을 확인해야 함.</b></li><li>전입생 학적반영이 완료된 이후에 반 변경을 하고자 할 때는 [학적-기본학적관리-계열/학과/반변경]에서 <span class="btn">{학적반영취소}</span>하고 다시 전입요청을 하면서 반을 변경해야 함. 재학생의 경우 [학적-기본학적관리-계열/학과/반변경]에서 반 변경을 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t13" data-num="13" data-stage="D" data-when="학기중수시" data-who="학급담임교사">
+  <div class="gutter"><b>13</b><span class="gstage" title="원문 STAGE D · 학적 변경">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">반변경 결재 완료 직후</span></div>
+    <h3>반변경 학적반영과 개설과목·강의실 변경</h3>
+    <p class="desc">반변경 등록과 결재가 끝난 학생에 대해서만 해당한다. 학적반영을 하면 ‘개설과목 변경’ 창이 떠서 수강과목과 강의실을 함께 정리해야 하는데, <strong>반 변경 이전과 이후의 수강과목이 동일한 경우에는 과목명을 변경하지 않고 강의실만 변경함.</strong> 수강과목이 다를 경우에는 성적자료 등록 여부에 따라 처리 방법이 갈린다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 반변경 등록에 대한 결재권자의 결재가 완료된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-기본학적관리-계열/학과/반변경]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’ 확인 후 ‘기간’을 설정하고 ‘미반영된자료’ 선택 후 <span class="btn">{조회}</span> → 목록에서 해당 학생 선택 후 <span class="btn">{학적반영}</span>을 클릭하면 나타나는 ‘확인’ 창에서 <span class="btn">{확인}</span> → ‘개설과목 변경’ 창에서 변경전 ‘과목명’과 ‘강의실’의 ‘변경가능’ 여부 확인 후 변경후 ‘과목명’과 ‘강의실’을 선택하고 <span class="btn">{반영}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>바뀐 반의 시간표대로 수업을 듣고 그 과목으로 평가를 받게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>수강과목 편성 방법</h4><ul><li>반 변경 이전과 이후의 수강과목이 동일한 경우 — ‘개설과목 변경’ 창에서 과목명을 변경하지 않고 강의실만 변경함.</li><li>반 변경 이전과 이후의 수강과목이 상이할 경우, <b>성적자료가 등록되어 있지 않은 학기초의 반 변경일 경우</b> — 변경 전 반의 개설과목 편성을 삭제한 후 변경 후 반의 과목을 새롭게 편성함.</li><li>반 변경 이전과 이후의 수강과목이 상이할 경우, <b>성적자료가 등록되어 있는 학기중의 반 변경일 경우</b> — 변경 전 반의 개설과목 편성은 그대로 둔 상태에서 변경 후 수강과목을 추가 편성함.</li><li>반 변경 이전의 수강과목의 지필평가 성적자료가 존재하는 경우 학기말 성적처리 시 반 변경 이전의 수강과목에 대해 성적처리 대상자에 포함하지 않고 성적처리함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>과목이 조회되지 않을 때</h4><ul><li>‘개설과목 변경’ 창에서 편성하고자 하는 과목이 조회되지 않을 경우 <span class="btn">{학적반영}</span> 후 임시로 변경 전 반의 과목으로 편성하고 <span class="btn">{반영}</span>함. 이후 반 변경 학생의 개설과목 변경이 필요한 경우 [교육과정-편제및과목개설관리-학생별수강과목편성]에서 변경함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t14" data-num="14" data-stage="D" data-when="학년말" data-who="학급담임교사">
+  <div class="gutter"><b>14</b><span class="gstage" title="원문 STAGE D · 학적 변경">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적반영 후, 학년말</span></div>
+    <h3>반변경 학생의 번호·출결·이수시간 후속 처리</h3>
+    <p class="desc">반변경 학적반영이 끝난 학생에게만 해당하는 마무리 작업이다. 학생번호·월출결·창의적 체험활동 이수시간은 학적반영만으로 자동 정리되지 않는다. <strong>반 변경 학생의 월출결 현황은 변경 전 소속반과 변경 후 소속반으로 나뉘어 조회됨.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중 학적반영 직후부터 학년말까지, 반변경 학적반영을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-기본학적관리-기본신상관리]</code>, <code>[학적-기본학적관리-계열/학과/반변경]</code>, <code>[학적-출결관리-출결관리-반별월출결마감관리]</code>, <code>[학생부-학교생활기록부-학교생활기록부-학생부반영]</code>, <code>[학생생활-창의적체험활동-자율･자치활동(자율활동)관리]</code>, <code>[학생생활-창의적체험활동-진로활동관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>[학적-기본학적관리-기본신상관리]에서 ‘번호수정’을 선택 후 <span class="btn">{조회}</span>하여 학생번호를 수정함 → [학적-기본학적관리-계열/학과/반변경]에서 해당 학생의 학적반영일자 확인 후 [학적-출결관리-출결관리-반별월출결마감관리]에서 학적반영된 월에 대해 변경 전과 변경 후 반을 모두 마감 취소하고 다시 마감함 → [학생부-학교생활기록부-학교생활기록부-학생부반영]에서 반 변경 학생을 선택 후 ‘학생부 반영 항목’에서 ‘출결상황’을 선택하고 <span class="btn">{개인별반영}</span>함 → 학년말에 자율･자치활동(자율활동)･진로활동 누가기록 이수시간을 직접 합산하여 등록함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>반이 갈리면서 둘로 쪼개진 출결과 이수시간을 한 학생의 기록으로 합쳐, 학교생활기록부에 누락 없이 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>반 변경 학생의 월출결 현황은 변경 전 소속반과 변경 후 소속반으로 나뉘어 조회됨.</li><li>결석일수 반영은 <b>학적반영된 월에 대해 변경 전과 변경 후 반을 모두 마감 취소하고 다시 마감한 후</b> 학생부반영에서 ‘출결상황’을 <span class="btn">{개인별반영}</span>해야 함.</li><li>반 변경 학생의 경우 [학생생활-창의적체험활동-자율･자치활동(자율활동)관리]의 {학생부자료기록} 탭과 [학생생활-창의적체험활동-진로활동관리]의 {학생부자료기록} 탭에서 <span class="btn">{이수시간반영}</span> 시 <b>반 변경 이전의 누가기록 이수시간만 반영되므로</b> 학년말에 반 변경 이후 자율･자치활동(자율활동)･진로활동 누가기록 이수시간과 반 변경 이전의 누가기록 이수시간을 직접 합산하여 등록함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t17" data-num="17" data-stage="D" data-when="학기중수시" data-who="학급담임교사">
+  <div class="gutter"><b>17</b><span class="gstage" title="원문 STAGE D · 학적 변경">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 중도 입학자 발생 시</span><span class="tag opt">전산자료 없는 학생 한정</span></div>
+    <h3>추가입학 및 입력누락자 등록과 학적반영</h3>
+    <p class="desc">이전 학적이 존재하지 않거나 전산자료가 없는 편입학생(학기 중도 입학자 등) 등의 자료를 등록하여 사용하는 업무다. 나이스를 사용하지 않는 재외한국학교에서 학생이 전입학한 경우도 여기서 전입생으로 등록한다. <strong>타학교에 재학정보가 등록되어 있는 경우에는 등록할 수 없음.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 이전 학적이나 전산자료가 없는 학생의 입학·편입학 서류가 접수된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-기본학적관리-추가입학/입력누락자등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’ 확인 후 ‘미반영된자료’를 선택하고 <span class="btn">{조회}</span> → <span class="btn">{추가}</span>하여 화면 하단의 ‘학적변동구분’, ‘학적변동사유’, ‘학적반영일자’, ‘성명’, ‘주민등록번호(외국인등록번호)’, ‘학년’, ‘반’, ‘번호’ 선택 또는 입력 후 <span class="btn">{저장}</span> → <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료한 후 해당 학생을 선택하여 <span class="btn">{학적반영}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>전산으로 넘어오는 자료가 없는 학생에게도 학적을 만들어 주어, 재학생으로서 출결·성적·학교생활기록부가 생성되게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>등록 대상과 학적변동구분</h4><ul><li>이전 학적이 존재하지 않거나 전산자료가 없는 편입학생(학기 중도 입학자 등) 등의 자료를 등록하여 사용함. <b>타학교에 재학정보가 등록되어 있는 경우에는 등록할 수 없음.</b></li><li>나이스를 사용하지 않는 재외한국학교에서 학생이 전입학한 경우에는 [학적-기본학적관리-추가입학/입력누락자등록]에서 전입생으로 등록함.</li><li>외국 국적의 학생이 국내학교로 편입학하는 경우에도 기존에 등록된 나이스 자료가 없는 경우 동일한 방법으로 등록하되, 편입학으로 처리함(입급하고자하는 학교의 <b>수업일수가 3분의 2 이상 남은 시점에서 1학년에 처음으로 들어오는 경우에는 ‘입학’으로 처리함</b>).</li><li>2024학년도부터 신입생 학적 생성일을 ‘학년도 시작일(3.1.)’로 일원화됨[관련 : 기초학력진로교육과-669(2024. 2. 21.)]. 대입특례자격과 관련하여 필요할 경우 3월 1일 동일 날짜에 전출･입 처리 가능함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>검정고시 합격자 처리</h4><ul><li>중학교 졸업학력 검정고시에 합격한 학생이 추가 입학할 경우 [학적-기본학적관리-추가입학/입력누락자등록]에서 등록 처리한 후 [학적-기본학적관리-기본신상관리]의 {학적사항} 탭을 선택하여 <span class="btn">{등록}</span>하여 관리함.</li><li>검정고시 합격자는 검정고시 합격 연월일과 검정고시 합격 내용을 입력하되, <b>‘중학교 졸업학력 검정고시 합격’으로 입력함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t18" data-num="18" data-stage="D" data-when="학기중수시" data-who="학급담임교사">
+  <div class="gutter"><b>18</b><span class="gstage" title="원문 STAGE D · 학적 변경">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">추가입학 학적반영 직후</span><span class="tag opt">이전학년도 자료 있을 때</span></div>
+    <h3>추가입학·입력누락자 이전학년도 자료 입력</h3>
+    <p class="desc">추가입학･입력누락자로 등록한 학생 중 이전학년도 기록을 옮겨 적어야 하는 경우에만 해당한다. 재외한국학교에서 받은 전학서류(학교생활기록부, 건강기록부 등)를 참고하여 입력하고 없는 경우에는 공란으로 둔다. <strong>학년 자료의 등록은 {출결상황} 탭에서만 가능하므로 학년의 ‘학년도’와 ‘기준일자’를 정확하게 입력해야 함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 추가입학/입력누락자등록의 학적반영이 끝나고 전학서류를 확보한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-기본학적관리-추가입학/입력누락자자료입력]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’ 확인 후 <span class="btn">{조회}</span>하여 해당 학생을 선택함 → 추가입학･입력누락자 학생의 서류를 참고하여 ‘인적사항’을 항목별로 입력하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>전산으로 넘어오지 않은 이전 학년의 기록을 사람 손으로 채워, 학생이 재학 기간 전체를 갖춘 학교생활기록부를 갖게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>입력 순서와 범위</h4><ul><li><b>학년 자료의 등록은 {출결상황} 탭에서만 가능하므로 학년의 ‘학년도’와 ‘기준일자’를 정확하게 입력해야 함.</b></li><li>이전학년도 자료(예 : 자율･자치활동(자율활동) 이수시간 및 특기사항)를 등록하기 위해서는 <b>{출결상황}에서 이전학년도 출결을 입력하여야</b> 자료 입력 시 해당 학년도와 해당 학년(예 : 2024학년도 1학년)을 선택하여 자료를 등록할 수 있음.</li><li>인적사항은 [학적-기본학적관리-기본신상관리]의 각각의 탭에서 등록할 수 있음(당해학년도 자료는 각각의 메뉴에서 등록할 수 있음).</li><li>재외한국학교에서 받은 전학서류(학교생활기록부, 건강기록부 등)를 참고하여 이전학년도 학생자료를 입력하고 없는 경우에는 공란으로 둠.</li></ul></div><div class="memo" style="margin-top:12px"><h4>재외한국학교 성적 처리</h4><ul><li>재외한국학교에서 취득한 학업성적은 국내 해당 학년의 동일(유사) 교과 학업성적으로 반영하여 처리함. 다만, 유사 교과 인정 및 결시에 따른 인정점 부여 등의 사항은 <b>전입교 학업성적관리위원회의 결정에 따름.</b></li><li>재외한국학교의 성적산출 방식이 국내학교와 다른 경우 [성적-성적처리-개인별세부능력및특기사항]에 교과목 성적을 직접 등록함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t19" data-num="19" data-stage="E" data-when="학기중수시" data-who="학급담임교사">
+  <div class="gutter"><b>19</b><span class="gstage" title="원문 STAGE E · 현황 조회">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적변동 처리 후</span><span class="tag">조회·수정</span></div>
+    <h3>학생이동부 조회와 변동내용 수정</h3>
+    <p class="desc">전출·전입·자퇴·퇴학 등 학적변동자가 있는 학급이라면 확인해야 하는 업무입니다. 학적변동자에 대한 변동 상태 등을 조회 및 출력하여 관리하며, <strong>학생이동부의 '변동일자'와 반편성내역의 학적반영일이 동일해야만 학생 수 계산이 정상적으로 이루어집니다.</strong> 일자가 다른 경우 붉은색으로 표시되므로 이를 기준으로 확인합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 학적변동(전출·전입·자퇴·퇴학 등) 처리가 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-기본학적관리-학생이동부]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도' 확인 후 '학년', '기간'을 설정하고 '날짜순 조회' 선택, '학적변동구분' 선택 후 <span class="btn">{조회}</span> 함 → 목록에서 학생 '성명'을 클릭하면 나타나는 '학생이동부 수정' 창에서 학적변동 내용을 확인함 → 오류가 있는 경우 '변동일자', '변동구분', '이동사유'를 수정 후 <span class="btn">{저장}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학적변동 기록과 반편성 학적반영일을 맞춰 학생 수 통계가 어긋나지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>학생이동부에 오류가 있는 경우 해당 학생 '성명'을 클릭하면 나타나는 '학생이동부 수정' 창에서 '변동일자', '변동구분', '이동사유'를 수정 후 <span class="btn">{저장}</span> 함. <b>학생이동부의 '변동일자'와 반편성내역의 학적반영일이 동일해야만 학생 수 계산이 정상적으로 이루어짐</b>(일자가 다른 경우 붉은색으로 표시됨).</li><li>교무학년도 기준으로 5개 학년도를 조회할 수 있음(2026학년도 기준으로 2022~2026학년도를 조회할 수 있음).</li><li><b>휴학 후 자퇴하거나 유예 후 면제 처리하면 학생이동부에 등록되지 않음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t20" data-num="20" data-stage="E" data-when="학기중수시" data-who="학급담임교사">
+  <div class="gutter"><b>20</b><span class="gstage" title="원문 STAGE E · 현황 조회">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적변동 처리 후</span><span class="tag">조회·출력</span></div>
+    <h3>학적현황 조회 및 출력</h3>
+    <p class="desc">재학생과 재학아닌학생의 학적 상태를 한눈에 확인해야 할 때 사용하는 업무입니다. '학적구분'에서 '재학', '재학아님'을 선택할 수 있으며 선택한 학적구분에 따라 고를 수 있는 '학적변동 구분'이 달라집니다. <strong>특성화고등학교, 산업수요 맞춤형 고등학교, 특수목적고등학교에서 '계열'을 선택하면 '학과'별로 조회할 수 있습니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 학적변동 처리와 학적반영이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-기본학적관리-학적현황조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도' 확인 후 '계열', '학년', '학적구분', '학적변동구분'을 선택하고 <span class="btn">{조회}</span> 하여 <span class="btn">{출력}</span> 할 수 있음.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학적변동 처리 결과가 학교 전체 현황에 제대로 반영되었는지 확인하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>특성화고등학교, 산업수요 맞춤형 고등학교, 특수목적고등학교에서 '계열'을 선택하면 '학과'별로 조회할 수 있음.</li><li>'조회학년도 변동자료만조회' 선택 후 조회 시 <b>조회 학년도 기준 해당 학적변동만 조회</b>할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>학적구분별 학적변동 구분</h4><ul><li>전체 — 전체.</li><li>재학 — 전체, 입학, 재입학, 편입학, 전입학, 복학, 취학, 재취학.</li><li>재학아님 — 전체, 전출, 휴학, 면제, 유예, 제적, 자퇴, 퇴학, 검정고시 합격, 초등학교졸업학력검정고시 합격, 중학교졸업학력검정고시 합격, 초등학교졸업학력 문해교육 프로그램 이수, 중학교졸업학력문해교육 프로그램 이수, 명예졸업, 장기결석에 따른 정원외 학적관리(특수교육대상자).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t16" data-num="16" data-stage="D" data-when="학기중수시" data-who="학급담임교사">
+  <div class="gutter"><b>16</b><span class="gstage" title="원문 STAGE D · 학적 변경">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">타학과 24학점 이상 이수를 완료한 학년･학기</span><span class="tag opt">특성화고·마이스터고 한정</span></div>
+    <h3>부전공 및 세부전공 등록</h3>
+    <p class="desc">특성화고등학교 및 산업수요 맞춤형 고등학교에서 <strong>타학과 수업을 24학점 이상 이수하면 이수를 완료한 학년･학기의 ‘전공･과정’란에 ‘(부전공) 타학과 전공과정명’으로 입력함.</strong> 입력한 내용이 없으면 ‘전공･과정’란은 아예 출력되지 않으므로 해당 학생만 등록하면 된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 타학과 수업 24학점 이상 이수가 완료된 학년･학기에</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-기본학적관리-부전공/세부전공등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’, ‘계열/학년/학과’, ‘반’ 확인 후 <span class="btn">{조회}</span>하여 등록하고자 하는 학생을 클릭함 → ‘부전공’, ‘세부전공’을 입력한 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 자기 학과 밖에서 쌓은 전공 이수 사실을 학교생활기록부 ‘전공･과정’란에 드러내 취업·진학에서 인정받게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>2학기도 같은 내용인 경우 <span class="btn">{2학기로복사}</span>를 활용하여 등록함.</li><li>특성화고등학교 및 산업수요 맞춤형 고등학교에서 <b>타학과 수업을 24학점 이상 이수하면</b> 이수를 완료한 학년･학기의 ‘전공･과정’란에 ‘(부전공) 타학과 전공과정명’으로 입력함.</li><li>전공･과정은 [학적-위탁･현장실습학생관리-위탁･현장실습학생관리-위탁･현장실습학생등록]에서 ‘교육구분’을 ‘직업과정위탁교육’ 또는 ‘대안교육위탁기관’으로 입력되어 있는 경우 ‘교육구분(전공명)’ 형식으로 반영됨.</li><li><b>입력한 내용이 없을 경우에는 ‘전공･과정’란은 출력되지 않음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t15" data-num="15" data-stage="D" data-when="학년말" data-who="학급담임교사">
+  <div class="gutter"><b>15</b><span class="gstage" title="원문 STAGE D · 학적 변경">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">조기진급 인정 결정 후</span><span class="tag opt">해당 학생 있을 때만</span></div>
+    <h3>조기진급 및 부적응자 등록과 학적반영</h3>
+    <p class="desc">조기진급 대상자나 부적응 학생이 있는 학교에만 해당한다. 조기진급은 학칙에 따라 상급 학년의 교육과정을 조기 이수하여 차상급 학년으로 진급하는 것으로, <strong>조기진급 신청(학생, 학부모) → 대상자 선정 → 조기진급 평가 → 조기진급 인정 결정</strong> 절차를 마친 뒤 나이스에 등록한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년말, 조기진급 인정 결정 등 학교 내 결정 절차가 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-기본학적관리-조기진급부적응자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’ 확인 후 ‘계열’, ‘학년’, ‘미반영된자료’를 선택하고 <span class="btn">{조회}</span>하여 <span class="btn">{등록}</span> → ‘조기진급부적응자 등록’ 창에서 ‘학년도’, ‘계열’, ‘학년’ 확인 후 <span class="btn">{조회}</span>하여 해당 학생을 선택하여 <span class="btn">{저장}</span> → <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료한 후 <span class="btn">{학적반영}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>일반 진급 절차와 다른 학생을 미리 갈라놓아, 진급처리에서 학년이 잘못 올라가는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>조기진급은 학칙에 따라 상급 학년의 교육과정을 조기 이수하여 차상급 학년으로 진급함. 교과목별 조기이수 대상자가 조기진급 하고자 하는 경우, 중･고등학교에서는 <b>1학년에서 3학년으로 진급할 수 있음.</b></li><li>[학적-진급대상자반편성관리-진급대상자반편성관리-대상자생성]의 {조기진급자관리} 탭에서 조기진급대상자로 등록함.</li><li>조기진급에 관련된 세부절차와 방법 등 필요한 사항은 학교장이 학교 규칙으로 정함.</li><li>유급대상자는 학년도말에 [학적-진급대상자반편성관리-진급대상자반편성관리-대상자생성]의 {유급자관리} 탭에서 등록하여 <b>진급처리에서 제외함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part 3. 학적, Section_01 기본학적 관리 (209–244쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

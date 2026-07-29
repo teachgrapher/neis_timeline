@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<!-- 출결 관리 (교과담당교사) 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>출결 관리 (교과담당교사) · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>출결 관리 (교과담당교사)</b>
+    <span class="sub">업무 15개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Part 3. 학적 · Section_07 · pp. 335–361</p>
+    <h1>출결 관리 (교과담당교사)
+      <em>업무 15개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학기중</dd></div>
+      <div><dt>업무담당</dt><dd>교과담당교사</dd></div>
+      <div><dt>메뉴경로</dt><dd>[교과담임-학적-출결관리]</dd></div>
+      <div><dt>선행조건</dt><dd>교육과정 업무담당자가 학교교육과정 편제 및 교과담당교사를 입력하고, 각 과목별 시간표를 등록해야 함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>매 수업시간 직후 교시별 출결 입력</h3>
+            <p class="tl-sub">편제·교과담당교사 입력과 시간표 등록이 끝난 뒤 착수</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 과목별출결(일자순)"><span>01</span>과목별출결(일자순)</button><button type="button" class="tl-btn" data-go="t2" title="02 과목별출결(과목순)"><span>02</span>과목별출결(과목순)</button><button type="button" class="tl-btn" data-go="t3" title="03 나이스플러스 반영"><span>03</span>나이스플러스 반영</button><button type="button" class="tl-btn" data-go="t4" title="04 출결일괄마감"><span>04</span>출결일괄마감</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>일과 후 담임 일일 마감</h3>
+            <p class="tl-sub">교과담당교사의 교시별 출결 마감 이후</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 일일출결(담임용)"><span>05</span>일일출결(담임용)</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>출석부 출력과 현황 점검</h3>
+            <p class="tl-sub">출결 입력·마감 후 학기중 수시로 진행</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t6" title="06 주차별·학기 출석부"><span>06</span>주차별·학기 출석부</button><button type="button" class="tl-btn" data-go="t7" title="07 교과시간별 출석부"><span>07</span>교과시간별 출석부</button><button type="button" class="tl-btn" data-go="t10" title="10 월별출결마감현황"><span>10</span>월별출결마감현황</button><button type="button" class="tl-btn" data-go="t8" title="08 과목별 출결현황"><span>08</span>과목별 출결현황</button><button type="button" class="tl-btn" data-go="t9" title="09 반별과목출결현황"><span>09</span>반별과목출결현황</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>위탁·현장실습·정규외과목 처리</h3>
+            <p class="tl-sub">해당 학생이나 과목이 있는 학교만 · 2026학년도 1･2학년</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t11" title="11 위탁 시수 수기등록"><span>11</span>위탁 시수 수기등록</button><button type="button" class="tl-btn" data-go="t12" title="12 위탁생 과목매칭"><span>12</span>위탁생 과목매칭</button><button type="button" class="tl-btn" data-go="t13" title="13 정규외과목 출결"><span>13</span>정규외과목 출결</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>학기말 출결 마감</h3>
+            <p class="tl-sub">과목별 교시 마감 완료 후 · 2026학년도 1･2학년 한정</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t14" title="14 학기별과목출결마감"><span>14</span>학기별과목출결마감</button><button type="button" class="tl-btn" data-go="t15" title="15 과목전체마감·승인"><span>15</span>과목전체마감·승인</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="매수업시간" data-who="교과담당교사">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 매시간 출결 입력">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">매 수업시간 직후</span><span class="tag opt">일자 기준 입력</span></div>
+    <h3>과목별 출결 관리 (일자순)</h3>
+    <p class="desc">교과담당교사가 자기 수업의 교시별 출결을 처리하는 기본 업무이며, 창의적 체험활동은 이 메뉴에서 제외되므로 별도 메뉴에서 처리한다. <strong>수강 학생의 일자별·교시별 출결 처리에 대한 권한과 책임은 교과담당교사에게 있음.</strong> 하루에 여러 과목을 가르쳐 그날 수업을 한 번에 정리하고 싶을 때 '일자순'을 고른다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중 매 수업시간, 교육과정 업무담당자가 편제·교과담당교사 입력과 각 과목별 시간표 등록을 마친 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-학적-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '일자순' 선택 → '일자'를 선택하고 <span class="btn">{조회}</span> → 1학년 '과목'을 클릭하고 '출석상태'를 표기(결과 시 '/' 표기) → '비고'에 사유 입력 후 <span class="btn">{저장}</span> → <span class="btn">{출결마감}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 각 과목의 수업량 3분의 2 이상을 실제로 출석했는지를 그날그날 사실대로 남겨, 학점 취득 여부가 뒤에 정확히 판별되게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>출석률·결과 표기 기준</h4><ul><li>고등학교는 2025학년도 1학년부터 각 학년 과정의 수료에 필요한 출석일수(수업일수의 3분의 2 이상) 외에도 학점 취득을 위한 '과목출석률(실제 운영한 수업 횟수의 3분의 2 이상 출석)'이 적용됨.</li><li>나이스에 입력 시 결과 사유(질병/미인정/기타)에 대한 구분 없이 '/'로만 입력하고, 필요 시 '비고'란에 결과처리 사유를 입력할 수 있음.</li><li><b>출석인정으로 처리하는 교시는 결과 표시('/')를 하지 않고 '비고'란에만 '출석인정 결과'를 반드시 입력해야 함.</b> 교과담당교사가 학생의 출석인정 결과를 사전에 인지한 경우와 사후에 학급담임교사로부터 '기존에 처리한 결과 기록의 삭제 요청'이 있는 경우 모두 입력이 필요함.</li><li>수업시간에 불참한 학생이 없는 경우에는 <span class="btn">{출결마감}</span>만 함.</li><li>학교는 출결관련 규정에 결과처리 기준을 포함하여야 하며, 사전에 학생 및 학부모에게 안내하여 정확한 출결 관리가 이루어질 수 있도록 노력해야 함. 예시) 수업시간 중 ○○분 이상을 불참한 경우 결과처리, 같은 날짜에 '지각, 조퇴, 결과'가 발생하여 어느 한 가지로만 처리하는 경우 '출석인정' 사유는 제외하고 처리함(2026학년도 1･2학년).</li><li>교육부 기초학력진로교육과-3248(2024. 9. 12.) '2025학년도 이후 고교학점제 학점이수 인정기준 및 최소 성취수준 보장지도 운영 계획 안내'를 참고함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>화면 색 표시와 편의 기능</h4><ul><li>등록한 출결자료('/')가 다른 사용자에 의해 삭제된 경우 출결 부분 배경이 파란색으로 변경되며, 마우스를 가져가면 툴팁으로 최종 수정자를 확인할 수 있음.</li><li>다른 사용자가 출결자료('/')를 등록한 경우 출결자료('/')가 분홍색으로 변경되며, 마우스를 가져가면 툴팁으로 최종 수정자를 확인할 수 있음.</li><li><b>'비고'란에 같은 내용을 여러 학생에게 입력하기 위해서는 해당 학생들을 선택한 후 '비고 일괄'에 내용을 입력하고 <span class="btn">{적용}</span>함.</b></li><li>학생 '성명'을 클릭하면 나타나는 '학생별 교시출결 상세조회' 창에서 일자별 결시여부와 비고(사유)를 확인할 수 있으며, <span class="btn">{엑셀다운로드}</span>로 엑셀 파일, 한셀 파일, CSV 파일로 다운받을 수 있음.</li><li><span class="btn">{현장실습/인정결적용}</span>으로 현장실습생의 출결 내용을 자동으로 반영함.</li><li>학급담임교사가 <code>[학적-출결관리-출결관리-일일출결관리(담임용)]</code>에서 수정한 교시는 이 메뉴에서 파란색으로 표기되며, 삭제 요청 전달사항은 <span class="btn">{나의할일}</span> 또는 이 메뉴의 '종모양' 아이콘을 클릭하여 확인할 수 있음.</li><li>2026학년도 1･2학년 대상으로 '비고'란은 학생의 결과처리 사유를 학급담임교사와 교과담당교사 간에 공유하기 위한 것이며, '출석인정 결과'를 포함한 결과 사유 입력은 학교에서 자율적으로 정하여 활용할 수 있음.</li><li>창의적 체험활동은 기존 동아리활동 출결관리와 동일하게 영역별 관리에서 출결을 관리하며(이수시간과 연동) 처리 방법은 과목과 동일함. 다만, 해당 교시에 '출석 인정'인 학생은 특기사항을 입력하지 않으므로 누가기록은 제외하거나 '활동내용'란에 '활동내용 없음'으로 입력함. 관련 메뉴는 <code>[학생생활-창의적체험활동-자율･자치활동(자율활동)관리]</code>, <code>[학생생활-창의적체험활동-자율･자치활동(자율활동)누가기록]</code>, <code>[학생생활-창의적체험활동-진로활동관리]</code>, <code>[학생생활-창의적체험활동-진로활동누가기록]</code>임.</li></ul></div><div class="memo" style="margin-top:12px"><h4>오류 수정 시한</h4><ul><li><b>나이스 교시별 출결 처리 오류는 당해 학년도 내에서만 수정 가능하므로 과목 '이수/미이수' 처리 및 학교생활기록부 마감 전 반드시 확인해야 함.</b></li><li>학년도 종료일(학교생활기록부 마감) 이후에 발견된 출결 처리 오류는 학교생활기록부 정정 절차에 따라 처리하며, 이 경우에는 학교생활기록부 '출결상황'만 정정 가능함(나이스 원자료 정정은 불가함).</li><li>출결처리 결과의 진위 여부 논란, 학생･학부모의 이의 제기 등 업무 곤란 상황 발생 시 학업성적관리위원회의 심의를 통해 처리 가능함.</li><li>'과목별 출석률'의 엄격한 관리를 위해 교과담당교사 및 학급담임교사의 교차 점검 등 수업 교시별 정확한 출결 관리가 필요함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="매수업시간" data-who="교과담당교사">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 매시간 출결 입력">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">매 수업시간 직후</span><span class="tag opt">과목 기준 입력</span></div>
+    <h3>과목별 출결 관리 (과목순)</h3>
+    <p class="desc">입력 화면과 저장·마감 절차는 일자순과 같고, 조회 기준만 '담당과목'으로 바뀐다. <strong>한 과목의 여러 교시를 몰아서 확인하거나 놓친 교시를 과목 단위로 찾아 채울 때 이 방식을 쓴다.</strong> 174학점 이내로 개설된 공동교육과정도 거점교 교과담당교사가 이 메뉴에서 처리한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중 매 수업시간, 교육과정 업무담당자가 편제·교과담당교사 입력과 각 과목별 시간표 등록을 마친 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-학적-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '과목순' 선택 → '담당과목'을 선택하고 <span class="btn">{조회}</span> → '과목'을 클릭하고 '출석상태'를 표기(결과 시 '/' 표기) → '비고'에 사유 입력 후 <span class="btn">{저장}</span> → <span class="btn">{출결마감}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>과목 단위로 교시 출결을 빠짐없이 채워, 학기말 과목 출석률 산정에서 빠진 교시가 남지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>학기별 과목 출결 마감 시, 과목별･일자별･전체시간표의 출결 현황이 일치해야 최종 학기 마감 버튼이 활성화됨.</b></li><li>174학점 이내로 개설된 공동교육과정의 경우 거점교 교과담당교사가 이 메뉴에서 '출석상태'를 체크하고 <span class="btn">{저장}</span> 후 <span class="btn">{출결마감}</span>하면, 타교수강생은 소속교(참여교)의 학급담임교사가 <code>[학급담임-학적-출결관리-출결관리-일일출결관리(담임용)]</code>에서 공동교육과정 수강생 '성명'을 클릭하면 나타나는 '타학교출결내역' 창에서 <span class="btn">{결시}</span> 또는 <span class="btn">{출석}</span>을 클릭하여 반영함.</li><li>기존 출결관리 업무 절차에서 과목별 출결관리 절차가 새롭게 추가됨(2025학도부터 전체 학년에 동일하게 사용함).</li><li>창의적 체험활동의 경우 기존 동아리활동 출결관리와 동일하게 영역별 관리에서 출결도 같이 처리할 수 있도록 분리함.</li><li>교과담당교사는 이 메뉴에서 해당 교시에 결과 표시('/')와 '비고'에 사유를 등록하며, 일과 후 학급담임교사가 <code>[학급담임-학적-출결관리-출결관리-일일출결관리(담임용)]</code>에서 <span class="btn">{출결마감}</span> 시 수업 불참의 종류(마감구분)를 표시하고 '사유'란에 불참 사유를 입력함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="A" data-when="매수업시간" data-who="교과담당교사">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE A · 매시간 출결 입력">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수업 중 실시간 처리 후</span><span class="tag opt">나이스플러스 사용 시 선택</span></div>
+    <h3>나이스플러스 출결자료 나이스 반영</h3>
+    <p class="desc">나이스플러스로 수업 중 실시간 출결을 처리하는 교사에게만 해당한다. <strong>나이스플러스에서 <span class="btn">{마감}</span>하면 출결정보가 <code>[교과담임-학적-출결관리-출결관리-교과시간별출결등록]</code>에 자동으로 반영된다.</strong> 나이스 쪽에서는 반영 내용을 확인해 걸러 넣는 작업만 한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 나이스플러스에서 해당 차시 출결을 저장·마감한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-학적-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)]</code>, <code>[교과담임-학적-출결관리-출결관리-교과시간별출결등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>나이스플러스(https://neisplus.kr)에서 수업 강의실 해당 차시의 수업 미참여 학생 '출석상태'를 체크하고 <span class="btn">{저장}</span> 후 <span class="btn">{마감}</span> → 나이스에서 <span class="btn">{나이스플러스출결조회}</span>를 클릭 → '나이스플러스 출결조회' 창에서 반영할 출결 내용을 선택 후 <span class="btn">{반영}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>수업 현장에서 확인한 참여 여부가 옮겨 적는 과정에서 어긋나지 않도록, 실시간으로 잡은 자료를 그대로 학적 원자료에 넘기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>교과담당교사는 나이스플러스를 활용하여 출결 관리를 실시간으로 진행 후 <span class="btn">{나이스플러스출결조회}</span>로 출결자료를 나이스에 반영할 수 있음.</li><li><b>반영은 자동이 아니라 '나이스플러스 출결조회' 창에서 반영할 내용을 선택한 뒤 <span class="btn">{반영}</span>해야 완료됨.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="A" data-when="일과후" data-who="교과담당교사">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE A · 매시간 출결 입력">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">일과 후 또는 월말</span><span class="tag opt">밀린 교시가 있을 때</span></div>
+    <h3>출결일괄마감(일자별·월별)로 밀린 교시 마감</h3>
+    <p class="desc">교시마다 마감을 놓쳐 미마감 교시가 남았을 때 쓰는 보조 기능이다. <strong>월별·일자별로 과목별 출결 일괄 마감처리가 가능하고 출결현황도 함께 확인할 수 있다.</strong> 학기별 과목 출결마감 전에 미마감 교시를 모두 없애 두어야 한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중 일과 후 또는 월말, 해당 교시의 출결 입력과 저장이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-학적-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{출결일괄마감(일자별･월별)}</span>을 클릭 → 나타나는 '출결일괄마감(일자별･월별)' 창에서 월별･일자별로 과목별 출결 일괄 마감처리하고 출결현황을 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>마감이 빠진 교시가 남으면 과목 출석률 집계와 학기 마감이 막히므로, 밀린 교시를 한 번에 정리해 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>결과시수는 과목별출결관리(창의적체험활동제외)에서 마감한 자료를 기준으로 집계함.</b> 개선 이후에는 교시별 <span class="btn">{출결마감}</span> 시 집계됨.</li><li>학생의 과목 이수 여부 판별(과목출석률 산정 등)을 위한 학기별 과목 출결마감은 교과담당교사가 처리함.</li><li><span class="btn">{월별출결마감현황}</span>으로 월별로 일자 단위로 출결마감을 확인할 수 있음(해당일자의 모든 교시가 마감된 경우에 마감으로 표시됨).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="A" data-when="일과후" data-who="학급담임교사">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE A · 매시간 출결 입력">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">교과담당교사의 교시별 마감 이후</span><span class="tag opt">학급담임교사 업무</span></div>
+    <h3>학급담임교사의 일일출결관리(담임용) 마감</h3>
+    <p class="desc">교과담당교사의 교시별 마감 뒤 학급담임교사가 조･종례 시간의 출결상황을 포함해 일일 출결을 마감한다. <strong>학급담임교사는 교과담당교사의 과목별 출결 마감여부와 관계없이 출결자료를 수정할 수 있으며, 이때 과목별출결관리(창의적체험활동제외)에서는 수정된 교시가 파란색으로 표기됨.</strong> 출석인정으로 처리해야 할 교시가 결과 처리된 경우에는 교과담당교사에게 삭제를 요청한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 교과담당교사가 일자별･교시별 출결 마감을 마친 뒤 일과 후.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-출결관리-출결관리-일일출결관리(담임용)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 교시별 출결자료를 확인･수정 → 조･종례 시간의 학생 출결상황을 포함하여 수업 불참의 종류(마감구분)를 표시 → '사유'란에 불참 사유를 입력하고 <span class="btn">{출결마감}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교시 기록과 조･종례 상황을 합쳐 그날의 출결을 한 사람이 최종 확인함으로써, 학교생활기록부 출결상황이 사실과 어긋나지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>출석인정 처리와 사유 입력</h4><ul><li><b>출석인정 결석･지각･조퇴･결과에 해당하는 시간(조･종례 시간 포함)은 '/'로 표기하지 않으며, '사유'란에 관련 내용을 반드시 입력하고 일일 출결을 마감해야 함.</b> 예) 교외체험학습으로 인한 출석인정 결석, 경조사로 인한 출석인정 조퇴 등.</li><li>같은 날짜에 '지각, 조퇴, 결과'가 발생하여 어느 한 가지로만 처리하는 경우에는 사유는 '미인정/질병/기타' 중에 하나로 처리해야 함.</li><li>'출석인정'으로 처리해야 하는 교시에 '결과' 처리된 경우 교과담당교사에게 삭제를 요청해야 함(교시 정보에 마우스 우클릭 시 해당 교과담임교사에게 전달사항을 작성하여 전송할 수 있음).</li><li><code>[학생생활-창의적체험활동]</code>에서 영역별 메뉴의 <span class="btn">{출결관리}</span> 탭에서 본인 이외의 교사가 출결자료를 수정한 경우에는 노란색으로 표기됨.</li><li>학급담임교사의 창의적 체험활동 출결은 <code>[학생생활-창의적체험활동]</code> 하위 영역 메뉴의 <span class="btn">{출결관리}</span> 탭에서 <span class="btn">{출결마감}</span>함. 자율･자치활동(자율활동)은 <code>[학생생활-창의적체험활동-자율･자치활동(자율활동)관리]</code>의 <span class="btn">{출결관리}</span> 탭에서 <span class="btn">{저장}</span>과 <span class="btn">{출석마감}</span>, 진로활동은 교과담당교사가 <code>[학생생활-창의적체험활동-진로활동누가기록]</code>의 <span class="btn">{출결관리}</span> 탭에서 <span class="btn">{저장}</span>과 <span class="btn">{출석마감}</span>, 동아리지도 교사는 <code>[학생생활-창의적체험활동-동아리활동관리-이수시간기준등록]</code>에서 동아리활동 시간을 등록한 뒤 <code>[학생생활-창의적체험활동-동아리활동관리-동아리활동관리]</code>의 <span class="btn">{출결관리}</span> 탭에서 <span class="btn">{저장}</span>과 <span class="btn">{마감}</span>함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>마감 순서와 예외 처리</h4><ul><li>고등학교 교원의 출결처리 업무 편의성 제고를 위해 2025학년도 1학년 출결처리 시 교과담당교사의 과목별‧교시별 마감 여부와 관계없이 학급담임교사의 일출결 및 월출결 마감이 가능함(고교학점제 운영 개선 대책에 따른 나이스 기능개선 사항임(2025. 9. 26.(금)).</li><li>교과담당교사가 출결을 입력하고 과목별‧교시별 출결을 마감한 후, 학급담임교사가 일출결‧월출결 마감하는 것이 원칙임.</li><li>부득이한 경우 학급담임교사의 월출결 마감으로 교과담당교사의 과목별･교시별 마감을 대신할 수 있으며, 퇴직교원･시간강사 계약 종료 등으로 과목담당 교사의 출결 마감처리가 불가한 경우임.</li><li><b>학급담임교사의 월출결 마감 이후에는 출결 입력‧수정이 불가하며, 출결 처리 오류는 학급담임교사의 월출결 마감 취소 이후 수정 가능함.</b></li><li>담임교사도 이 메뉴에서 과목담당교사와 동일하게 수업 교시별 출결처리가 가능함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="B" data-when="일과후" data-who="교과담당교사">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE B · 출석부·명렬표 출력">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">출결 입력·마감 후</span><span class="tag opt">필요시</span></div>
+    <h3>과목별출결조회에서 주차별·학기 출석부 내려받기</h3>
+    <p class="desc">교과담당교사가 자기 담당 과목의 출결을 종이 출석부 형태로 확인하거나 보관할 때 쓰는 업무이다. <strong>[학적-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)]에서 등록한 출결 정보만 조회된다.</strong> 조회 화면에서 바로 주차별 또는 한 학기 출석부를 내려받을 수 있다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 과목별 출결관리에서 출결을 입력한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-출결관리-과목별출결관리-과목별출결조회(창의적체험활동제외)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-출결관리-과목별출결관리-과목별출결조회(창의적체험활동제외)]</code>에서 '학년도', '학기' 확인 후 '과목', '주차'를 선택하고 <span class="btn">{조회}</span>하여 필요시 <span class="btn">{엑셀내려받기}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>매시간 나이스에 입력한 교시별 출결을 종이 출석부 형태로 남겨 교차 점검과 증빙에 쓰려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><code>[학적-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)]</code>에서 등록한 출결 정보를 조회할 수 있으며, <span class="btn">{엑셀내려받기}</span>를 통해 <b>주차별 또는 한 학기 출석부 출력</b>을 할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="B" data-when="일과후" data-who="교과담당교사">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE B · 출석부·명렬표 출력">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">출결 입력·마감 후</span><span class="tag opt">출석부 / 사진명렬표 선택</span></div>
+    <h3>교과시간별 출석부 및 교과 사진명렬표 출력</h3>
+    <p class="desc">같은 메뉴에서 라디오 선택만 바꿔 출석부와 사진명렬표를 각각 뽑는 업무이다. <strong>결·보강 수업을 한 교사가 조회하면 본인이 담당하는 '교과목'뿐만 아니라 결·보강 수업을 한 '교과목'도 조회된다.</strong> 수업 중 학생 확인용으로 사진명렬표를 함께 준비할 수 있다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 교과담당교사 및 시간표 등록이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-학적-출결관리-교과시간별출석부출력]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교과담임-학적-출결관리-교과시간별출석부출력]</code>에서 '학년도', '학기' 확인 후 '교과목'을 선택하고 '출석부' 선택 후 <span class="btn">{조회}</span>하여 출력함 → 사진명렬표가 필요하면 같은 메뉴에서 '학년도', '학기' 확인 후 '교과목'을 선택하고 '사진명렬표' 선택 후 <span class="btn">{조회}</span>하여 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>수업 현장에서 학생을 눈으로 확인하며 출결을 챙길 수 있는 종이 자료를 손에 들고 들어가려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>결·보강 수업을 한 교사를 <code>[교과담임-학적-출결관리-교과시간별출석부출력]</code>에서 조회할 경우 <b>본인이 담당하는 '교과목'뿐만 아니라 결·보강 수업을 한 '교과목'도 조회됨.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="C" data-when="수시확인" data-who="교과담당교사 학급담임교사">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE C · 이수기준 점검">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수시 확인</span></div>
+    <h3>월별출결마감현황으로 일자 단위 마감 여부 점검</h3>
+    <p class="desc">내가 담당하는 과목의 출결마감이 어느 일자까지 끝났는지 월 단위로 훑어보는 업무입니다. <strong>해당일자의 모든 교시가 마감된 경우에만 마감으로 표시됩니다.</strong> 학생 개인의 누락을 확인하려면 ‘성명’을 클릭해 상세조회 창에서 일자별 결시여부와 비고를 볼 수 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 과목별 출결 입력과 교시별 {출결마감}을 진행하는 동안 수시로 확인함.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사, 학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-학적-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’ 확인 후 <span class="btn">{월별출결마감현황}</span>을 클릭하여 ‘월별 출결마감 현황 조회’ 창에서 월별로 일자 단위 출결마감을 확인함. → 필요시 학생 ‘성명’을 클릭하여 ‘학생별 교시출결 상세조회’ 창에서 일자별 결시여부와 비고(사유)를 확인하고 <span class="btn">{엑셀다운로드}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>마감이 빠진 일자를 학기 마감 전에 찾아내 학기별 과목 출결마감이 막히는 일을 막으려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>{월별출결마감현황}은 해당일자의 모든 교시가 마감된 경우에 마감으로 표시됨.</b></li><li>학생 ‘성명’을 클릭하면 나타나는 ‘학생별 교시출결 상세조회’ 창에서 일자별 결시여부와 비고(사유)를 확인할 수 있음.</li><li><span class="btn">{엑셀다운로드}</span>로 엑셀 파일, 한셀 파일, CSV 파일로 다운받을 수 있음.</li><li>등록한 출결자료(‘/’)가 다른 사용자에 의해 삭제된 경우 출결 부분 배경이 파란색으로 변경되며, 마우스를 가져가면 툴 팁으로 최종 수정자를 확인할 수 있음.</li><li>다른 사용자가 출결자료(‘/’)를 등록한 경우 출결자료(‘/’)가 분홍색으로 변경되며, 마우스를 가져가면 툴 팁으로 최종 수정자를 확인할 수 있음.</li><li><b>나이스 교시별 출결 처리 오류는 당해 학년도 내에서만 수정 가능하므로 과목 ‘이수/미이수’ 처리 및 학교생활기록부 마감 전 반드시 확인해야 함.</b> 학년도 종료일(학교생활기록부 마감) 이후에 발견된 출결 처리 오류는 학교생활기록부 정정 절차에 따라 처리하며, 이 경우에는 학교생활기록부 ‘출결상황’만 정정 가능함(나이스 원자료 정정은 불가함).</li><li>학기별 과목 출결 마감 시, 과목별･일자별･전체시간표의 출결 현황이 일치해야 최종 학기 마감 버튼이 활성화됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="C" data-when="수시확인" data-who="교과담당교사">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE C · 이수기준 점검">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수시 확인</span><span class="tag opt">과목개설에 등록된 교과담당교사만 접근</span></div>
+    <h3>과목별 출결현황으로 이수기준 충족 여부 확인</h3>
+    <p class="desc">내가 담당하는 과목의 수강생이 과목 출석률을 채우고 있는지 확인하는 업무입니다. <strong>[교육과정-편제및과목개살관리-편제및과목개살관리-과목개설]에서 등록한 교과담당교사만 접근할 수 있는 메뉴</strong>이며, 결과시수는 과목별출결관리(창의적체험활동제외)에서 교시별 마감한 자료를 기준으로 집계됩니다. 2026학년도 3학년 공동교육과정 과목과 위탁과정 과목 출결자료는 조회되지 않습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 과목별 출결관리에서 교시별 {출결마감}이 이루어진 뒤 수시로 확인함.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교과담임-학적-출결현황및통계-과목별출결현황]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’ 확인 후 ‘과목’을 선택하고 <span class="btn">{조회}</span>하여 필요시 출력함. → <span class="btn">{출력}</span>을 클릭하면 나타나는 ‘과목별 출결 현황’ 창에서 저장 또는 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>과목 출석률에 미달할 위험이 있는 학생을 학기가 끝나기 전에 찾아내 이수 처리에 문제가 생기지 않게 하려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>‘총 수업시수(학점당시수)’는 강의실별 실제 수업한 시수와 학점당 계획된 시수(1학점당 16시수)임.</li><li>2026학년도 1･2학년은 1학점당 수업량(16회)의 3분의 2 이상 출석한 경우, 과목 출석률을 충족함.</li><li>고교학점제 운영 개선 대책에 따른 나이스 기능개선 사항(2025. 9. 23.(화) 교육부 발표)으로 2025학년도 1학년 2학기부터 적용됨. (기존) [교육과정-시간표관리-전체시간표관리]에 등록된 총 수업시수 → (개선) 학점*16시수.</li><li><b>결과시수는 [교과담임-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)]에서 마감한 자료를 기준으로 집계함.</b> (기존) [학급담임-출결관리-출결관리-일일출결관리(담임용)]에서 {출결마감} 시 집계 → (개선) 교시별 {출결마감} 시 집계.</li><li>2026학년도 3학년 공동교육과정 과목 출결자료와 위탁과정 과목 출결자료는 조회되지 않음.</li><li>전입생, 위탁학생, 일과 내 공동교육과정 수강학생, 해외 귀국학생, 복학생 등의 과목 출결 집계기준이 일반 재학생과 다른 경우 ‘결과시수’를 클릭하면 나타나는 ‘수강생 편성 내역 및 타학교 출결 전송 내역’ 창에서 해당 학생에 대한 집계기준을 확인할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>툴 팁으로 보이는 출결정보</h4><ul><li>총 수업시수(학점당시수): 전체시간표에 등록된 과목 총 횟수(학점당 횟수).</li><li>현재 수업시수: 교시별 출결 마감한 수업 횟수.</li><li>출석 수업시수: 현재 수업시수 - 결과시수.</li><li>현재 수업시수 기준 충족 여부: 현재 수업시수 - 결과시수 ≧ 현재 수업시수 × (2/3), 만족이면 충족, 미만족이면 ○○(부족 시수).</li><li><b>이수기준 충족 여부: 현재 수업시수 - 결과시수 ≧ 학점당 시수 × (2/3)</b>, 만족이면 충족, 미만족이면 ○○(부족 시수).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="C" data-when="수시확인" data-who="학급담임교사">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE C · 이수기준 점검">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수시 확인</span><span class="tag opt">학급담임교사 메뉴</span></div>
+    <h3>반별과목출결현황으로 학생별 수강과목 충족 여부 확인</h3>
+    <p class="desc">담임 학급 학생 한 명이 수강하는 모든 과목의 이수기준 충족 여부를 한 화면에서 확인하는 업무입니다. <strong>[학적-출결관리-출결관리-일일출결관리(담임용)]에서 {출결마감}한 자료만 조회됩니다.</strong> 2026학년도 3학년 공동교육과정 과목과 위탁과정 과목 출결자료는 조회되지 않습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 일일출결관리(담임용)에서 {출결마감}이 이루어진 뒤 수시로 확인함.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-출결현황및통계-반별과목출결현황]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’, ‘계열/학년/학과’, ‘반’ 확인 후 <span class="btn">{조회}</span>함. → 학생을 클릭하고 수강과목별 이수기준 충족 여부를 확인함. → 필요시 <span class="btn">{엑셀다운로드}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>담임이 학생별로 어느 과목에서 출석률이 위태로운지 미리 파악해 교과담당교사와 교차 점검하려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>[학적-출결관리-출결관리-일일출결관리(담임용)]에서 {출결마감}한 자료만 조회됨.</b></li><li>2026학년도 3학년 공동교육과정 과목 출결자료와 위탁과정 과목 출결자료는 조회되지 않음.</li><li>[교과담임-학적-출결현황및통계-과목별출결현황]에서 전입생, 위탁학생, 일과 내 공동교육과정 수강학생, 해외 귀국학생, 복학생 등의 과목출결 집계기준이 일반 재학생과 다른 경우 ‘결과시수’를 클릭하면 나타나는 ‘수강생 편성 내역 및 타학교 출결 전송 내역’ 창에서 해당 학생에 대한 집계 기준을 확인할 수 있음.</li><li><span class="btn">{엑셀다운로드}</span>로 엑셀 파일, 한셀 파일, CSV 파일로 다운받을 수 있음.</li><li>‘과목별 출석률’의 엄격한 관리를 위해 교과담당교사 및 학급담임교사의 교차 점검 등 수업 교시별 정확한 출결 관리가 필요함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>툴 팁으로 보이는 출결정보</h4><ul><li>총 수업시수(학점당시수): 전체시간표에 등록된 과목 총 횟수(학점당 횟수).</li><li>현재 수업시수: 교시별 출결 마감한 수업 횟수.</li><li>출석 수업시수: 현재 수업시수 - 결과시수.</li><li>현재 수업시수 기준 충족 여부: 현재 수업시수 - 결과시수 ≧ 현재 수업시수 × (2/3), 만족이면 충족, 미만족이면 ○○(부족 시수).</li><li>이수기준 충족 여부: 현재 수업시수 - 결과시수 ≧ 학점당 시수 × (2/3), 만족이면 충족, 미만족이면 ○○(부족 시수).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t11" data-num="11" data-stage="D" data-when="수시확인" data-who="교과담당교사">
+  <div class="gutter"><b>11</b><span class="gstage" title="원문 STAGE D · 예외 학생 출결">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">위탁·현장실습 기간 중 또는 복교·전출 시</span><span class="tag opt">2022 개정 교육과정을 적용받는 2026학년도 1･2학년 한정</span></div>
+    <h3>위탁·현장실습 과목별 출결 시수 수기 등록</h3>
+    <p class="desc">위탁학생이나 현장실습생이 있는 학교만 해당하는 업무입니다. 위탁학생과 현장실습생이 중도 복교하거나 전출 시 또는 성적 미산출 위탁교육기관의 위탁학생으로 재적교에서 학기말 성적을 산출하는 경우 위탁기간 동안의 재적교 개설 과목별 출결 시수를 산정합니다. <strong>위탁교육기관에서 학기말 성적을 산출하는 전일제 위탁 또는 당해 학기를 모두 이수한 경우에는 입력할 필요 없음.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 위탁학생·현장실습생이 중도 복교하거나 전출할 때 또는 재적교에서 학기말 성적을 산출할 때. 위탁교육기관과 현장실습기관에서 과목별 출결 시수를 송부받은 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-출결관리-과목별출결관리-위탁･현장실습과목별출결관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’, ‘기관명(타학교)’ 확인 후 ‘학년’, ‘반’을 선택하고 <span class="btn">{조회}</span> 함 → 위탁교육기관에서 수강한 과목을 등록하기 위해 목록에서 해당 위탁학생을 클릭 후 <span class="btn">{과목/실무과목 추가}</span>를 클릭하면 나타나는 ‘과목및능력단위추가’ 창에서 <span class="btn">{교육과정등록}</span> 탭 -‘보통교과’-‘교과(군)’ 클릭하고 ‘과목’ 입력 후 <span class="btn">{(찾기)}</span> 함 → ‘과목찾기’ 창에서 해당 과목 클릭 후 <span class="btn">{선택}</span> 하고, ‘학점’ 입력 후 <span class="btn">{입력}</span> 하고 ‘현재수업시수’, ‘결과시수’ 입력 후 <span class="btn">{저장}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>위탁기간 동안 다른 기관에서 쌓인 수업·결과 시수를 재적교 과목에 합산해 학생이 과목 출석률을 채웠는지 제대로 판단받게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>등록한 시수가 쓰이는 곳</h4><ul><li>위탁학생과 현장실습생이 재적교로 복교 이후 전출 시 또는 중도 복귀하여 과목별 출결 시수를 합산해야 함에 따라 위탁교육기관과 현장실습기관에서 송부한 과목별 출결 시수를 수기로 등록함.</li><li>전출 시 — 등록한 과목별 출결 시수가 전출교로 송부되어 전입교 기준 과목의 수업시수 계산에 활용됨.</li><li>중도 복교 시 — 등록한 과목별 출결 시수 및 재적교에서 수업한 출결 시수를 합산하여 과목별 출결 이수기준 판단 자료로 활용됨.</li><li><b>위탁교육기관에서 학기말 성적을 산출하는 전일제 위탁 또는 당해 학기를 모두 이수한 경우에는 입력할 필요 없음.</b></li><li>목록에서 위탁학생 ‘성명’을 클릭하면 나타나는 ‘학생 상세내용’ 창에서 위탁학생의 정보 및 위탁상태 등을 확인할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>입력 항목과 방법 1 환산식</h4><ul><li>&lt;방법 1&gt; 재적교 개설 과목 기준으로 <span class="btn">{과목/실무과목추가}</span> 후 위탁교육기관에서 개설되지 않은 비매칭 과목은 비매칭 과목 결과 횟수 환산식에 따라 <b>수기로 산출하여 등록함</b>.</li><li>편제명, 과목명 — 재적교 개설 과목의 편제와 과목.</li><li>학점 — 위탁교육기관 과목의 개설 학점.</li><li>총수업시수 — 학점 ×16회 (자동 계산됨).</li><li>현재수업시수 — 위탁기간 동안 위탁교육기관에서 수업한 시수.</li><li>결과시수 — 위탁교육기관에서 위탁기간 동안 수업시간에 참여하지 않은 시수. <b>출석인정결석, 출석인정지각, 출석인정조퇴, 출석인정결과는 제외함.</b></li><li>매칭 과목 결과횟수 환산식 — (재적교 해당 과목의 학점 ÷ 위탁교육기관 해당 과목의 학점) × 위탁교육기관 해당 과목의 위탁기간 중 결과 횟수. 나이스에서 자동으로 환산하여 반영함. 예시) 위탁교육기관의 미용(3학점) 과목을 재적교의 미용(4학점)으로 연계하여 과목 출석률 반영 시, 총 결과횟수가 10회이면 (4/3)×10회 = 13.33으로 13회를 반영함.</li><li>비매칭 과목 결과 횟수 환산식 — (위탁교육기관 전체 수강과목(창의적 체험활동 포함)의 위탁기간 중 총 결과 횟수 ÷ 위탁교육기관 전체 수강과목(창의적 체험활동 포함)의 위탁기간 중 총 수업 횟수) × 재적교 수강과목의 위탁기관 중 총 수업 횟수. <b>방법 1에서는 수기 계산하여 입력함(소수 첫째 자리에서 반올림함).</b></li><li>[과목 개설 현황 예시] 재적교 — 편제명 국어 / 과목명 공통국어 1 / 학점 4 / 총수업시수 64. 위탁교육기관 — 편제명 국어 / 과목명 공통국어 1 / 학점 2 / 총수업시수 32.</li><li>[입력 예시] 국어 / 공통국어 1 / 학점 2 / 총수업시수 32 / 현재수업시수 20 / 결과시수 2.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t12" data-num="12" data-stage="D" data-when="수시확인" data-who="교과담당교사">
+  <div class="gutter"><b>12</b><span class="gstage" title="원문 STAGE D · 예외 학생 출결">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">과목/실무과목추가로 위탁 수강과목을 등록한 뒤</span><span class="tag opt">보통 교과목과 대안 교과목이 나이스에서 모두 검색될 때(방법 2)</span></div>
+    <h3>위탁생 수강과목매칭으로 과목 출석률 자동 산정</h3>
+    <p class="desc">위탁학생이 있는 학교 중에서도 <strong>보통 교과목을 포함하여 대안 교과목도 나이스에서 모두 검색되는 경우에 등록하는 과정</strong>입니다. 재적교에서 학기말 성적을 산출하는 위탁학생, 위탁 중도 복교생을 대상으로 재적교 개설 과목과 위탁교육기관 수강 과목을 매칭·비매칭하면 과목 출석률이 자동으로 산정됩니다. 비매칭 과목도 자동으로 과목 출석률이 산정됩니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 위탁교육기관 또는 현장실습기관에서 수강한 과목을 <span class="btn">{과목/실무과목추가}</span>로 등록하고 학점·총수업시수·현재수업시수(교시마감횟수)·결과시수를 입력한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-출결관리-과목별출결관리-위탁･현장실습과목별출결관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{수강과목매칭}</span>을 클릭하면 나타나는 ‘위탁생 수강과목매칭’ 창에서 왼쪽의 재적교 개설과목에 대해 오른쪽의 위탁교육기관의 동일(유사) 과목명을 선택하거나 비매칭 출결 결과 산출을 선택하고 <span class="btn">{저장}</span> 후 <span class="btn">{닫기}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>손으로 환산식을 계산하지 않고도 위탁기간 결과 시수가 재적교 과목 학점 기준으로 바뀌어 과목 출석률에 정확히 반영되게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>&lt;방법 2&gt; 보통 교과목을 포함하여 대안 교과목도 나이스에서 모두 검색되는 경우에 등록하는 과정으로 <span class="btn">{과목/실무과목추가}</span> 후 <span class="btn">{수강과목매칭}</span> 함. 비매칭 과목도 자동으로 과목 출석률이 산정됨.</li><li>입력 항목 — 편제명, 과목명, 학점은 위탁교육기관 개설과목의 편제와 과목, 학점. 총 수업시수는 학점 ×16회(자동 계산됨). 현재 수업시수는 위탁기간 동안 위탁교육기관에서 수업한 시수. 결과시수는 위탁교육기관에서 위탁기간 동안 수업시간에 참여하지 않은 시수이며 <b>출석인정결석, 출석인정지각, 출석인정조퇴, 출석인정결과는 제외함</b>.</li><li>[입력 예시] 국어 / 공통국어 1 / 학점 2 / 총수업시수 32 / 현재수업시수 20 / 결과시수 2.</li><li>매칭 과목 결과횟수 환산식 — (재적교 해당 과목의 학점 ÷ 위탁교육기관 해당 과목의 학점) × 위탁교육기관 해당 과목의 위탁기간 중 결과 횟수. 나이스에서 자동으로 환산하여 반영함. 예시) 위탁교육기관의 미용(3학점) 과목을 재적교의 미용(4학점)으로 연계하여 반영 시, 총 결과횟수가 10회이면 (4/3)×10회 = 13.33으로 13회를 반영함.</li><li>비매칭 과목 결과횟수 환산식 — (위탁교육기관 전체 수강과목(창의적 체험활동 포함)의 위탁기간 중 총 결과 횟수 ÷ 위탁교육기관 전체 수강과목(창의적 체험활동 포함)의 위탁기간 중 총 수업 횟수) × 재적교 수강과목의 위탁기관 중 총 수업 횟수. <b>방법 2에서는 나이스에서 자동으로 환산하여 반영됨(소수 첫째 자리에서 반올림됨)</b>.</li><li>재적교에서 학기말 성적을 산출하는 위탁학생, 위탁 중도 복교생을 대상으로 <span class="btn">{수강과목매칭}</span>에서 재적교 개설 과목과 위탁교육기관 수강 과목을 매칭･비매칭하면 과목 출석률이 자동으로 산정됨.</li><li><b>사전에 위탁교육기관 또는 현장실습기관에서 수강한 과목을 <span class="btn">{과목/실무과목추가}</span>로 등록하되, 학점, 총수업시수, 현재수업시수(교시마감횟수), 결과시수를 입력함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t13" data-num="13" data-stage="D" data-when="수시확인" data-who="학급담임교사">
+  <div class="gutter"><b>13</b><span class="gstage" title="원문 STAGE D · 예외 학생 출결">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">방과 후·주말·방학 기간 과목 운영 중</span><span class="tag opt">2022 개정 교육과정을 적용받는 2026학년도 1･2학년부터</span></div>
+    <h3>정규외과목별출결관리로 방과후·주말·174학점 초과 과목 출결 등록</h3>
+    <p class="desc">방과 후, 주말, 방학 기간에 개설되는 정규교육과정으로 174학점을 초과하여 개설되는 공동교육과정 등을 운영하는 학교에 해당합니다. <strong>이 과목들은 나이스에서 시간표를 관리하지 않으므로 해당 과목들의 출결은 수기로 관리하여야 함.</strong> 과목출석률에 미도달한 경우 ‘추가학습대상여부’에서 ‘대상자’로 선택하여 저장합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 나이스 전체시간표로 관리되지 않는 방과 후·주말·방학 기간 과목을 운영하는 동안</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-출결관리-과목별출결관리-정규외과목별출결관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’ 확인 후 ‘학년’, ‘반’을 선택하고 <span class="btn">{조회}</span> 함 → 왼쪽 목록에서 해당 학생을 클릭 후 오른쪽 목록에서 해당 과목의 ‘총수업시수’, ‘현재수업시수’, ‘결과시수’를 입력하고 <span class="btn">{저장}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>시간표에 잡히지 않는 과목까지 출결을 남겨 학생이 추가학습 대상인지 가려내고 학점 이수를 놓치지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년부터 방과 후, 주말, 방학 기간에 개설되는 정규교육과정으로 174학점을 초과하여 개설되는 공동교육과정 등의 경우 나이스에서 시간표를 관리하지 않으므로 해당 과목들의 출결은 수기로 관리하여야 하며, 과목출석률에 미도달한 경우 ‘추가학습대상여부’에서 ‘대상자’로 선택하여 저장함.</li><li>수기 입력한 출결정보에 맞춰 ‘추가학습대상여부’는 자동으로 선택됨(<b>학점당 시수 3분의 2 미충족 시 대상자로 변경됨</b>).</li><li><b>수강하는 모든 학생의 출결정보를 입력하면 자동으로 과목 출결 마감처리됨.</b></li><li>[정규외과목별출결관리]는 학년반 자료권한으로 ‘학급담임’에게 권한이 부여됨.</li><li>타교수강생인 경우 <code>[학적-타교수강생관리(공동교육과정)-타교수강생관리(공동교육과정)-자료관리]</code>에서 출결정보 수기 계산 후 ‘성적’-‘성적’에서 ‘일과시간 외’로 선택하고 최소 성취수준 보장지도 처리 결과를 등록해야 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t14" data-num="14" data-stage="E" data-when="학기말" data-who="교과담당교사">
+  <div class="gutter"><b>14</b><span class="gstage" title="원문 STAGE E · 학기 마감">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">과목별 교시 출결관리 마감 이후</span><span class="tag opt">2026학년도 1･2학년 한정</span></div>
+    <h3>학기별과목출결마감(창의적체험활동제외)</h3>
+    <p class="desc">2022 개정 교육과정을 적용받는 2026학년도 1･2학년 대상 업무이며, 2026학년도 기준 1･2학년만 마감처리가 가능합니다. <strong>'과목 교시마감 수', '반별 일 출결마감수', '시간표 총 수업수'가 3개 모두 일치하는 경우에만 {학기별과목마감}을 할 수 있습니다.</strong> 개설과목 기준 교과담당교사가 자기 과목을 마감합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 과목별 교시 출결관리 마감이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>개설과목 기준 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-출결관리-과목별출결관리-학기별과목출결마감(창의적체험활동제외)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-출결관리-과목별출결관리-학기별과목출결마감(창의적체험활동제외)]</code>에서 '학년도', '학기' 확인 후 '학년'을 선택하고 <span class="btn">{조회}</span>함 → 과목별 '과목교시마감수', '반별일출결마감수', '시간표총수업수'를 확인 후 <span class="btn">{학기별과목마감}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 그 과목을 이수했는지(과목출석률 충족 여부)를 판별할 수 있는 상태로 학기 출결을 확정하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년은 최소 성취수준 보장 대상으로, 과목별 교시 출결관리 마감 이후 학기별 운영 과목에 대한 출결마감을 해야 함.</li><li><b>학기별 과목 출결마감이 되어야 [성적-성적처리-최소성취수준보장지도(추가학습)이수관리]에서 과목별 출결 결과에 따른 대상자 가져오기 업무가 가능함.</b></li><li>창의적 체험활동은 졸업 시점에 학점 이수 처리가 진행됨에 따라 학기 마감에서 제외함.</li><li>학기별 과목 출결 마감 시, 과목별･일자별･전체시간표의 출결 현황이 일치해야 최종 학기 마감 버튼이 활성화됨.</li><li>학생의 과목 이수 여부 판별(과목출석률 산정 등)을 위한 학기별 과목 출결마감은 교과담당교사가 처리함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>검증에서 빠지는 경우와 숫자의 뜻</h4><ul><li>이동수업 과목과 공동교육과정 과목은 일출결 마감을 하지 않으므로 <span class="btn">{학기별과목마감}</span> 시 '반별일출결마감수'를 검증하지 않음.</li><li><b>위탁학생의 과목은 [학적-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)] 또는 [학적-출결관리-출결관리-일일출결관리(담임용)]에서 교시별 출결 마감을 하지 않으므로 '과목교시마감수', '반별일출결마감수'를 검증하지 않음.</b></li><li>과목 교시 마감 수 : 교과담당교사가 [학적-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)]에서 해당 과목의 일자별 교시 출결마감이 되어야 집계됨.</li><li>반별 일출결 마감 수 : 학급담임교사가 [학적-출결관리-출결관리-일일출결관리(담임용)]에서 일출결 마감 완료가 되어야 집계됨.</li><li>시간표 총 수업 수 : 학기 기준 시간표 상 총 수업 횟수.</li><li>과목별 출결 관리 관련 업무담당자는 과목별 출결관리는 개설과목 기준 교과담당교사, 학기별 과목 출결 마감은 개설과목 기준 교과담당교사, 과목 전체 마감은 최소 성취수준 보장지도 업무담당자임.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t15" data-num="15" data-stage="E" data-when="학기말" data-who="최소성취수준보장지도업무담당자">
+  <div class="gutter"><b>15</b><span class="gstage" title="원문 STAGE E · 학기 마감">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">모든 과목의 학기별 과목 출결마감 완료 후</span><span class="tag opt">2026학년도 1･2학년 한정</span></div>
+    <h3>과목전체마감(창의적체험활동포함) 및 승인요청</h3>
+    <p class="desc">2022 개정 교육과정을 적용받는 2026학년도 1･2학년 과목에 해당하는 업무로, 최소 성취수준 보장지도 업무담당자가 처리합니다. <strong>모든 과목의 학기별 과목 출결마감이 완료되어야 과목 전체마감을 할 수 있습니다.</strong> 전체마감 후에는 과목별 출결마감 취소 및 변경이 불가하므로 마감 전 확인이 필요합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 모든 과목의 학기별 과목 출결마감이 완료된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>최소 성취수준 보장지도 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-출결관리-과목별출결관리-과목전체마감(창의적체험활동포함)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-출결관리-과목별출결관리-과목전체마감(창의적체험활동포함)]</code>에서 '학년도', '학기' 확인 후 '학년', '정렬순서'를 선택하고 <span class="btn">{조회}</span>함 → 학기별 모든 과목의 출결마감 여부 확인 후 <span class="btn">{전체마감}</span>하고 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생의 학점 이수 인정 처리를 학교 차원에서 확정하고 결재로 책임 소재를 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년 대상으로 학점 이수 인정 처리를 위한 학기별 운영 과목에 대한 전체 마감처리를 해야 함.</li><li><b>학기별 과목 전체마감이 되면 과목별 출결마감 취소 및 변경할 수 없음.</b></li><li><b>모든 과목의 학기별 과목 출결마감이 완료되어야 과목 전체마감을 할 수 있음.</b></li><li>학기별 과목 전체 마감 시 [학생생활-창의적체험활동]의 영역별 하위 메뉴의 <span class="btn">{출결관리}</span> 탭에서 등록･수정･삭제할 수 없음.</li><li>창의적 체험활동은 학기별 과목 출결마감과 상관없이 전체 마감을 할 수 있음.</li><li><span class="btn">{엑셀다운로드}</span> 시 엑셀 파일, 한셀 파일, CSV 파일로 다운로드할 수 있으며, 자료 활용 및 관리의 편의성 향상과 업무 효율성을 높일 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>마감 전 확인 사항</h4><ul><li><b>나이스 교시별 출결 처리 오류는 당해 학년도 내에서만 수정 가능하므로 과목 '이수/미이수' 처리 및 학교생활기록부 마감 전 반드시 확인해야 함.</b></li><li>학년도 종료일(학교생활기록부 마감) 이후에 발견된 출결 처리 오류는 학교생활기록부 정정 절차에 따라 처리하며, 이 경우에는 학교생활기록부 '출결상황'만 정정 가능함(나이스 원자료 정정은 불가함).</li><li>출결처리 결과의 진위 여부 논란, 학생･학부모의 이의 제기 등 업무 곤란 상황 발생 시 학업성적관리위원회의 심의를 통해 처리 가능함.</li><li>'과목별 출석률'의 엄격한 관리를 위해 교과담당교사 및 학급담임교사의 교차 점검 등 수업 교시별 정확한 출결 관리가 필요함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part 3. 학적, Section_07 출결 관리 (교과담당교사) (335–361쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

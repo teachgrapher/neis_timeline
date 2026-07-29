@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<!-- 자격증 및 NCS 이수상황 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>자격증 및 NCS 이수상황 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>자격증 및 NCS 이수상황 관리</b>
+    <span class="sub">업무 10개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">학생생활 · Section_07 · pp. 707–715</p>
+    <h1>자격증 및 NCS 이수상황 관리
+      <em>업무 10개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>연중</dd></div>
+      <div><dt>업무담당</dt><dd>자격증 관리 담당교사, 학급담임교사</dd></div>
+      <div><dt>메뉴경로</dt><dd>[학생생활-자격증및NCS이수상황]</dd></div>
+      <div><dt>선행조건</dt><dd>머리말에 표기 없음</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>교육과정 편성 시점</h3>
+            <p class="tl-sub">자격기반 능력단위 운영 학교만 · 학기 시작 전 자격종목 확정 후</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t7" title="07 자격종목 등록"><span>07</span>자격종목 등록</button><button type="button" class="tl-btn" data-go="t8" title="08 편성 능력단위 확인"><span>08</span>편성 능력단위 확인</button><button type="button" class="tl-btn" data-go="t9" title="09 수강학생 편성"><span>09</span>수강학생 편성</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>편성 확정 후 점검</h3>
+            <p class="tl-sub">자격기반 운영 학교 · 수강학생 편성 반영 뒤 필요할 때</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t10" title="10 자격종별 편성 조회"><span>10</span>자격종별 편성 조회</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>학기 중 이수 점검</h3>
+            <p class="tl-sub">능력단위 편성과 수강생 편성이 끝난 뒤 수시</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t6" title="06 이수예정 단위 조회"><span>06</span>이수예정 단위 조회</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>위탁기관 결과 수신 직후</h3>
+            <p class="tl-sub">위탁학생 한정 · 실무과목 없이 능력단위 결과만 받은 경우</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 위탁 능력단위 입력"><span>04</span>위탁 능력단위 입력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>입력 후 확인과 정리</h3>
+            <p class="tl-sub">능력단위 입력이나 일출결마감이 끝난 뒤</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 이수상황 조회·재계산"><span>05</span>이수상황 조회·재계산</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">06</p>
+            <h3>자격증 취득 직후</h3>
+            <p class="tl-sub">코드 등록이 담임 입력보다 앞섬 · 연중 수시</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 자격증코드 등록"><span>01</span>자격증코드 등록</button><button type="button" class="tl-btn" data-go="t2" title="02 개인별 등록"><span>02</span>개인별 등록</button><button type="button" class="tl-btn" data-go="t3" title="03 반별 일괄등록"><span>03</span>반별 일괄등록</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t7" data-num="7" data-stage="D" data-when="사전준비" data-who="자격증관리담당교사">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE D · 자격기반 편성">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">교육과정 편성 시점</span><span class="tag opt">자격기반 능력단위 운영 학교</span></div>
+    <h3>자격기반 능력단위 자격종목 등록과 학기별 단위수 입력</h3>
+    <p class="desc">자격기반으로 능력단위를 편성해 운영하는 학교에서 가장 먼저 하는 업무입니다. 입학학년도와 기준학년을 기준으로 자격종목을 먼저 올려 두어야 이후의 편성 능력단위 확인과 수강학생 편성이 이어집니다. <strong>수강학생 편성이 안 되는 경우에는 전문교과Ⅱ 과목의 자격기반 능력단위 등록 뒤 과목개설 및 수강생편성까지 되어 있어야 진행됩니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 교육과정 편성에 맞추어 자격종목을 확정한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>자격증 관리 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-자격증및NCS이수상황-자격기반능력단위편성관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학생생활-자격증및NCS이수상황-자격기반능력단위편성관리]</code>에서 '입학학년도', '기준학년' 확인하고 <span class="btn">{조회}</span> → <span class="btn">{자격종목등록}</span> → '자격기반 능력단위 등록' 창에서 <span class="btn">{자격종목추가}</span> → '자격종목찾기' 창에서 '자격명'을 입력하여 <span class="btn">{조회}</span> → 자격종목을 클릭하여 <span class="btn">{선택}</span> → '자격기반 능력단위 등록' 창에서 학기별 단위수 입력하여 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 목표로 하는 자격을 기준으로 능력단위를 학기별로 배분해, 취득 목표에 맞는 이수 경로를 학교 교육과정에 붙여 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>자격기반 능력단위 편성 관리에서 수강학생 편성이 안되는 경우는 <code>[교육과정-편제및과목개설관리-편제및과목개설관리]</code>에서 <span class="btn">{편제및시간배당관리}</span> → 전문교과Ⅱ 과목의 <b>자격기반 능력단위 등록한 뒤 과목개설 및 수강생편성을 하여야 진행이 됨</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="D" data-when="사전준비" data-who="자격증관리담당교사">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE D · 자격기반 편성">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">자격종목 등록 직후</span><span class="tag opt">자격기반 능력단위 운영 학교</span></div>
+    <h3>자격기반 능력단위 편성 조회와 능력단위 추가</h3>
+    <p class="desc">자격종목을 등록한 학교에서 그 자격종목에 어떤 능력단위가 묶여 있는지 확인하는 업무입니다. <strong>{편성된능력단위} 탭에서 편성 내용을 확인하고, 빠진 능력단위는 '능력단위추가'로 직접 넣을 수 있습니다.</strong> 수강학생 편성 전에 편성 목록이 맞는지 먼저 봐야 합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 자격종목 등록과 학기별 단위수 입력을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>자격증 관리 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-자격증및NCS이수상황-자격기반능력단위편성관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학생생활-자격증및NCS이수상황-자격기반능력단위편성관리]</code>에서 '입학학년도', '기준학년' 확인하고 <span class="btn">{조회}</span> → <span class="btn">{자격종목명}</span>을 선택 → <span class="btn">{편성된능력단위}</span> 탭에서 편성된 능력단위를 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>자격 취득에 필요한 능력단위가 빠짐없이 편성되어 있는지 미리 짚어, 학생이 이수하고도 자격 요건을 못 채우는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'능력단위추가'를 클릭한 후 '능력단위 과목 추가' 창에서 <b>'검색방법선택', '대분류', '세분류'</b>를 선택하여 추가할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="D" data-when="사전준비" data-who="자격증관리담당교사">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE D · 자격기반 편성">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">편성 능력단위 확인 후</span><span class="tag opt">자격기반 능력단위 운영 학교</span></div>
+    <h3>자격기반 능력단위 수강학생 편성</h3>
+    <p class="desc">등록한 자격종목에 실제로 어떤 학생이 붙는지 확정하는 업무입니다. <strong>수강학생 가져오기가 되지 않으면 전문교과Ⅱ 과목의 자격기반 능력단위 등록과 과목개설·수강생편성이 먼저 되어 있는지 확인해야 합니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 자격종목 등록과 편성된 능력단위 확인을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>자격증 관리 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-자격증및NCS이수상황-자격기반능력단위편성관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학생생활-자격증및NCS이수상황-자격기반능력단위편성관리]</code>에서 '입학학년도', '기준학년' 확인하고 <span class="btn">{조회}</span> → '자격종목명' 클릭 → <span class="btn">{수강학생 편성}</span> 탭에서 <span class="btn">{수강학생 가져오기}</span> → <span class="btn">{확인}</span> → <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>자격기반으로 편성한 능력단위를 실제 수강 학생과 연결해, 학생별 이수 현황과 필수 이수시간이 제대로 집계되게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>자격기반 능력단위 편성 관리에서 수강학생 편성이 안되는 경우는 <code>[교육과정-편제및과목개설관리-편제및과목개설관리]</code>에서 <span class="btn">{편제및시간배당관리}</span> → 전문교과Ⅱ 과목의 자격기반 능력단위 등록한 뒤 <b>과목개설 및 수강생편성</b>을 하여야 진행이 됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="D" data-when="수시확인" data-who="자격증관리담당교사">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE D · 자격기반 편성">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수시 확인</span><span class="tag opt">자격기반 능력단위 운영 학교</span></div>
+    <h3>자격종별 능력단위 편성 정보 확인</h3>
+    <p class="desc">자격기반 능력단위를 운영하는 학교에서 학년도와 계열/학년/학과 기준으로 자격종별 편성 정보를 확인하는 조회 업무입니다. <strong>'자격종명'을 클릭하면 '자격증 상세정보' 창에서 상세 내용을 볼 수 있습니다.</strong> 입력하는 화면이 아니라 확인용 화면입니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 자격종목 등록과 수강학생 편성이 반영된 뒤 필요할 때</dd></dl>
+      <dl><dt>누가?</dt><dd>자격증 관리 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-자격증및NCS이수상황-자격종별능력단위편성정보]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학생생활-자격증및NCS이수상황-자격종별능력단위편성정보]</code>에서 '학년도', '계열/학년/학과'를 선택하고 <span class="btn">{조회}</span> → '자격종명' 클릭 → '자격증 상세정보' 창에서 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학과별로 어떤 자격종에 어떤 능력단위가 붙어 있는지 한눈에 대조해, 편성이 학과 교육과정 의도와 어긋나지 않았는지 점검하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>자격기반 능력단위 편성 관리에서 수강학생 편성이 안되는 경우는 <code>[교육과정-편제및과목개설관리-편제및과목개설관리]</code>에서 <span class="btn">{편제및시간배당관리}</span> → 전문교과Ⅱ 과목의 자격기반 능력단위 등록한 뒤 과목개설 및 수강생편성을 하여야 진행이 됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="C" data-when="수시확인" data-who="학급담임교사">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE C · NCS 이수상황">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 중 수시 확인</span></div>
+    <h3>학생별 이수예정 능력단위 및 필수 이수시간조회</h3>
+    <p class="desc">NCS 능력단위를 편성한 학교의 담임이 학생별로 이수해야 할 능력단위와 이수시간을 확인하는 업무이다. <strong>'학년도', '학기', '계열/학년/학과', '반'을 확인한 뒤 학생을 클릭해야 이수시간이 보인다.</strong> 입력이 아니라 확인 전용 화면이다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 능력단위 편성과 수강생 편성이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학생생활-자격증및NCS이수상황-학생별이수능력단위및필수이수시간조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기', '계열/학년/학과', '반' 확인하고 <span class="btn">{조회}</span> → 학생을 클릭하여 이수시간을 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 필수 이수시간을 못 채운 상태로 학기가 끝나는 일을 미리 막으려고.</dd></dl>
+    </div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="C" data-when="결과수신시" data-who="학급담임교사">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE C · NCS 이수상황">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">위탁기관 이수 결과 수신 직후</span><span class="tag opt">위탁학생 한정</span></div>
+    <h3>위탁학생 능력단위 추가 입력</h3>
+    <p class="desc"><strong>위탁기관에서 위탁학생의 실무과목 없이 능력단위 이수 결과만을 보내온 경우에만 입력 가능하며, 본교 학생은 할 수 없음.</strong> 위탁기관이 보내온 능력단위별 이수 결과를 담임이 학생 자료에 직접 얹는 업무이다. 실무과목이 함께 있는 경우에는 이 화면으로 추가하지 않는다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 위탁기관에서 능력단위 이수 결과를 보내온 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학생생활-자격증및NCS이수상황-국가직무능력표준이수상황관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '계열/학년/학과', '반' 확인하고 <span class="btn">{조회}</span> → 학생 클릭 후 <span class="btn">{능력단위추가}</span> → '능력단위 과목 변경' 창에서 검색 조건 확인 및 선택하고 능력단위코드 클릭 후 <span class="btn">{선택}</span> → '이수시간', '원점수', '성취도'를 입력 및 선택하여 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>위탁기관에서 이수한 능력단위 결과가 학교 자료에서 빠지지 않도록 학생 이수 이력에 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>위탁기관에서 위탁학생의 실무과목 없이 능력단위 이수 결과만을 보내온 경우에 입력 가능하며, <b>본교 학생은 할 수 없음.</b></li><li>능력단위의 이수시간, 원점수, 성취도를 입력함. 단 <b>실무과목은 공란으로 입력이 되지 않음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="C" data-when="수시확인" data-who="학급담임교사">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE C · NCS 이수상황">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">입력 후 수시 확인</span></div>
+    <h3>국가직무능력표준 이수상황 조회와 삭제·이수시간재계산</h3>
+    <p class="desc">NCS 능력단위를 이수하는 학생이 있는 학교에서 입력 결과를 확인하고 잘못된 항목을 정리하는 업무이다. <strong>일출결마감 이후 시간표가 변경되거나 일출결마감을 취소한 경우에는 계산내역이 반영되지 않으므로 <span class="btn">{이수시간재계산}</span>을 다시 수행함.</strong> 조회 화면이지만 삭제와 재계산까지 여기서 함께 처리한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 능력단위 이수상황 입력이나 일출결마감이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학생생활-자격증및NCS이수상황-국가직무능력표준이수상황조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '계열/학년/학과', '반' 확인하고 <span class="btn">{조회}</span> → 학생 클릭 후 '국가직무능력표준 이수상황'을 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>기업과 학교에서 실제로 이수한 능력단위와 시간이 학생 기록과 어긋나지 않게 맞추려고.</dd></dl>
+    </div>
+<div class="memo"><h4>능력단위코드 입력과 정리</h4><ul><li>가장 최신 버전의 '능력단위코드'를 선택하여 입력하고, '능력단위명'이 존재하지 않는 경우에는 가장 유사한 '능력단위명(능력단위코드)'을 선택하여 우선 입력한 후 <code>[학적-위탁․현장실습학생관리-위탁․현장실습학생관리-자료관리]</code>의 '세부능력및특기사항'에서 '유사교과명 : 실제 이수 교과명, 실제 능력단위코드' 등을 입력함.</li><li><b>삭제할 능력단위를 선택한 후</b> <span class="btn">{삭제}</span> 가능함.</li><li>현장실습생으로 등록한 학생의 능력단위 이수시간은 일출결마감에 따라 능력단위의 시간표와 해당 교시의 출결 정보에 따라 이수 시간이 자동 계산되나 <b>일출결마감 이후 시간표가 변경되거나 일출결마감을 취소한 경우에는 계산내역이 반영되지 않으므로</b> <span class="btn">{이수시간재계산}</span>을 다시 수행함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>학생 선택 능력단위와 성취도 표기</h4><ul><li><code>[교육과정-편제및과목개설관리-편제및시간배당관리]</code>에서 교육과정 편성 시 '*학생 선택' 능력단위로 수강 편성된 학생(도제학교 참여 학생 포함)은 <code>[학생생활-자격증및NCS이수상황-국가직무능력표준이수시간관리]</code>에서 <span class="btn">{학생선택추가}</span>를 이용하여 '능력단위명', '이수시간', '원점수', '성취도'를 학생이 기업에서 실제 이수한 능력단위로 추가 등록함.</li><li>현장실습으로 인해 인정점으로 부여된 능력단위의 성취도는 <b>'P'</b>로 입력하고, 정규교육과정 이외의 교육활동으로 이수한 능력단위와 학적 변동(전출･자퇴･퇴학･전입학 등)으로 성취도 산출이 불가한 능력단위의 경우 성취도는 <b>'･'</b>로 입력함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="사전준비" data-who="자격증관리담당교사">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 코드 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">자격증 등록 전 사전준비</span><span class="tag">자격증 관리 담당교사 전용</span></div>
+    <h3>자격증코드 등록과 발급기관 선택</h3>
+    <p class="desc">자격증 등록 화면에서 쓸 자격증명을 미리 코드로 올려두는 업무이다. 담임교사가 학생 자격증을 입력하다가 <strong>자격증명이 목록에 없으면 자격증 관리 담당자에게 '자격증 코드 등록'을 요청</strong>하게 되므로, 요청이 들어올 때마다 이 화면에서 처리한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 담임교사의 자격증 등록보다 앞선 시점 또는 코드 등록 요청을 받은 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>자격증 관리 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-자격증및NCS이수상황-자격증코드관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{등록}</span>하여 '자격증찾기' 창에서 자격증명 입력 후 <span class="btn">{조회}</span>함 → 자격증을 선택하고 <span class="btn">{등록}</span> 후 <span class="btn">{닫기}</span>하여 '발급기관 선택'을 선택하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생마다 제각각 적히는 자격증명을 학교가 관리하는 하나의 코드로 통일해, 담임이 자격증을 등록할 때 골라 쓰기만 하면 되도록 해두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>자격증 등록 중 자격증명이 없는 경우 <b>자격증 관리 담당자에게 '자격증 코드 등록'을 요청</b>함.</li><li>'발급기관 선택'은 자격증 선택 후 <span class="btn">{닫기}</span>한 다음 지정하고 <span class="btn">{저장}</span>해야 마무리됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="B" data-when="취득직후" data-who="학급담임교사">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE B · 자격증 등록">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">자격증 취득 직후</span><span class="tag">학생 한 명씩 입력</span></div>
+    <h3>자격증 개인별 등록</h3>
+    <p class="desc">학생이 자격증을 취득했을 때 학급담임교사가 학생 한 명씩 자격증 내역을 입력하는 업무입니다. <strong>등록하려는 자격증명이 목록에 없으면 먼저 자격증 관리 담당자에게 '자격증 코드 등록'을 요청해야 합니다.</strong> 취득 인원이 적거나 학생마다 자격증 종류가 다를 때 쓰는 경로입니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 학생이 자격증을 취득한 뒤 자격증코드가 등록되어 있는 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생생활-자격증및NCS이수상황-자격증등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학생생활-자격증및NCS이수상황-자격증등록]</code>의 <span class="btn">{개인}</span> 탭에서 '학년도', '학년', '반' 확인하고 <span class="btn">{조회}</span>하여 해당 학생을 클릭함 → <span class="btn">{행추가}</span>하여 자격증의 '명칭 또는 종류', '번호 또는 내용', '취득연월일', '발급기관'을 입력 및 선택 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 실제로 취득한 자격증을 학교생활기록부에 정확한 번호와 취득일로 남겨 진학·취업 자료로 쓰이게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>자격증 입력 방법</h4><ul><li><span class="btn">{과정평가형･일학습병행자격종목조회}</span>, <span class="btn">{민간자격증현황}</span>, <span class="btn">{자격종목조회}</span>은 각 해당 사이트로 연결됨.</li><li>자격증 번호 입력시 <b>'제', '호'는 입력하지 않고 번호 사이의 하이픈(-)은 입력함.</b> 번호 입력 시 숫자와 영문을 구분하여 정확하게 입력함.</li><li>자격증의 '취득연월일'은 <b>자격증 합격일(등록일)</b>을 기준으로 입력함.</li><li>자격증 발급기관에는 <b>기관장이 아닌 기관명</b>을 입력함. (예시) 한국산업인력공단, 대한상공회의소, 한국생산성본부</li></ul></div><div class="memo" style="margin-top:12px"><h4>정정과 증빙 처리</h4><ul><li>이전 학년도에 등록된 자격증 번호 등의 정정이 필요한 경우 <b>학교생활기록부 정정대장</b>을 통해 정정함.</li><li>재학 중에 취득한 자격증의 경우 전년도의 경우라도 정정 없이 추가 입력함.</li><li>자격증 등록 중 자격증명이 없는 경우 자격증 관리 담당자에게 '자격증 코드 등록'을 요청함.</li><li>자격증 증빙자료 자격증 사본이나 자격증 취득확인서를 별도로 보관함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="B" data-when="취득직후" data-who="학급담임교사">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE B · 자격증 등록">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">자격증 취득 직후</span><span class="tag opt">같은 자격증 다수 취득 시 권장</span></div>
+    <h3>자격증 반별 일괄등록과 학생별 보완 입력</h3>
+    <p class="desc">한 반에서 여러 학생이 같은 자격증을 취득했을 때 <span class="btn">{반별}</span> 탭에서 한 번에 등록하는 경로입니다. <strong>자격증명은 일치하여도 '번호 또는 내용', '취득연월일'은 학생마다 다르므로 <span class="btn">{일괄등록}</span> 후 각 학생에게 맞도록 등록해야 합니다.</strong> 일괄등록만으로 끝나는 업무가 아니라 학생별 보완 입력까지가 한 덩어리입니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 학생이 자격증을 취득한 뒤 자격증코드가 등록되어 있는 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학생생활-자격증및NCS이수상황-자격증등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학급담임-학생생활-자격증및NCS이수상황-자격증등록]</code>의 <span class="btn">{반별}</span> 탭에서 '학년도', '학년', '반' 확인하고 <span class="btn">{조회}</span>하여 <span class="btn">{일괄등록}</span>함 → '자격증 일괄등록' 창에서 학생을 선택하고 '자격증명', '취득년월일', '발급기관'을 입력하고 <span class="btn">{등록}</span>하여 <span class="btn">{닫기}</span> 후 '번호 또는 내용'을 입력하여 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>같은 자격증을 딴 학생들의 공통 항목을 한 번에 처리하고 학생마다 다른 번호만 따로 채워 입력 누락과 반복 입력을 줄이려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><code>[학생생활-자격증및NCS이수상황-자격증등록]</code>의 <span class="btn">{개인}</span> 탭에서 조회 후 출력함.</li><li>자격증명은 일치하여도 '번호 또는 내용', '취득연월일'은 학생마다 다르므로 <b><span class="btn">{일괄등록}</span> 후, 각 학생에게 맞도록 등록함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 학생생활, Section_07 자격증 및 NCS 이수상황 관리 (707–715쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

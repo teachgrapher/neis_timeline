@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<!-- 타교수강생 관리(위탁) 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>타교수강생 관리(위탁) · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>타교수강생 관리(위탁)</b>
+    <span class="sub">업무 10개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">학적 · Section_12 · pp. 453–469</p>
+    <h1>타교수강생 관리(위탁)
+      <em>업무 10개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학기초, 학기중, 학기말</dd></div>
+      <div><dt>업무담당</dt><dd>위탁과정 업무담당자</dd></div>
+      <div><dt>메뉴경로</dt><dd>[학적-타교수강생관리(위탁)]</dd></div>
+      <div><dt>선행조건</dt><dd>타교수강생 소속교에서 학적이 구성되어 있어야 함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>학기초 반 편성 준비</h3>
+            <p class="tl-sub">거점교(개설교) 한정 · 위탁학생 등록 전에 반을 먼저 만듭니다.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 타교수강생 반정보"><span>01</span>타교수강생 반정보</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>위탁학생 등록</h3>
+            <p class="tl-sub">반정보 등록 후 · 소속교의 나이스 사용여부에 따라 한쪽만 씁니다.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t2" title="02 나이스 사용교 등록"><span>02</span>나이스 사용교 등록</button><button type="button" class="tl-btn" data-go="t3" title="03 미사용교 직접등록"><span>03</span>미사용교 직접등록</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>2학기 전환 직후</h3>
+            <p class="tl-sub">1학기 등록 학생을 이어서 받는 경우만 · 교무학기 2학기 이후 활성화됩니다.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 2학기 재등록"><span>04</span>2학기 재등록</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>소속교 확인과 학적반영</h3>
+            <p class="tl-sub">등록 완료 후 · 소속교 요청확인이 끝나야 학적반영이 가능합니다.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 확인요청·요청확인"><span>05</span>확인요청·요청확인</button><button type="button" class="tl-btn" data-go="t6" title="06 학적반영"><span>06</span>학적반영</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>학기중 운영</h3>
+            <p class="tl-sub">학적반영 후 · 변경 정리를 먼저 하고 출결과 자료를 쌓습니다.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t7" title="07 정보수정·중도해제"><span>07</span>정보수정·중도해제</button><button type="button" class="tl-btn" data-go="t8" title="08 월출결 마감·전송"><span>08</span>월출결 마감·전송</button><button type="button" class="tl-btn" data-go="t9" title="09 자료관리 입력"><span>09</span>자료관리 입력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">06</p>
+            <h3>학기말 자료전송</h3>
+            <p class="tl-sub">자료관리 입력 후 · 성적을 보낸 뒤 세특을 전송합니다.</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t10" title="10 자료전송"><span>10</span>자료전송</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="학기초준비" data-who="위탁과정업무담당자">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 반 편성 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기초, 위탁학생 등록 전</span><span class="tag opt">거점교(개설교) 한정</span></div>
+    <h3>타교수강생 반정보 등록</h3>
+    <p class="desc">직업교육 위탁과정, 한국어학급, 공동실습소 등을 운영하는 거점교(개설교)에서 위탁학생을 담을 반을 먼저 만드는 업무입니다. <strong>타교수강생 반정보 관리는 학년 단위로 관리함.</strong> 여기서 등록한 '계열', '학과', '학년', '반' 정보만 이후 위탁학생 등록 시 '위탁학교 학생정보'로 설정할 수 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 타교수강생 소속교에서 학적이 구성된 뒤 위탁학생 타교수강생 등록에 앞서.</dd></dl>
+      <dl><dt>누가?</dt><dd>위탁과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(위탁)-타교수강생반정보관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학년' 확인 후 <span class="btn">{조회}</span> 함 → <span class="btn">{행추가}</span> 후 '반 정보'에서 '학년도', '계열', '학과', '학년', '반코드' 확인 및 선택하고 '반명', '정렬순서', '성적반코드' 입력 후 <span class="btn">{저장}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>위탁학생을 거점교의 계열·학과·학년·반 체계에 앉혀, 이후 등록·출결·성적·자료전송이 모두 이 반을 기준으로 굴러가게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>타교수강생 반정보 관리는 <b>학년 단위</b>로 관리함.</li><li>'반 정보'에서 '계열'을 '일반계'로 선택하는 경우 <b>'학과'는 공란으로 선택할 수 없으며</b>, 공업계, 상업계 등 이외의 계열을 선택하면 거점교에 개설된 '학과'를 선택할 수 있음.</li><li>'성적반코드'는 OMR 시트(카드) 등록 시 사용하는 코드이며, <b>21부터 등록할 수 있음.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>운영기관 범위</h4><ul><li>운영기관은 직업교육 위탁과정, 한국어학급, 공동실습소 등을 운영하는 「초･중등교육법」 제2조에 따른 고등학교(급)임.</li><li>「초･중등교육법」 제2조에 따른 고등학교가 아닌 기관에서 직업교육 위탁과정, 대안교육 위탁기관, 다문화 위탁교육기관 등은 <b>나이스플러스(NEIS+, https://neisplus.kr)</b>를 활용할 수 있으며, 위탁학생을 관리하고 교과･비교과 관련 자료를 나이스로 전송함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="B" data-when="등록" data-who="위탁과정업무담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE B · 학생 등록·학적반영">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기초, 위탁학생 반정보 등록 후</span><span class="tag opt">소속교가 나이스 사용교인 경우</span></div>
+    <h3>타교수강생 등록 — 소속교가 나이스를 사용하는 경우</h3>
+    <p class="desc">위탁학생 소속교가 나이스를 사용하는 학교라면 원적교 학적을 불러와 등록한다. <strong>타교수강생 소속교에서 학적이 구성되어 있어야</strong> 학생찾기로 불러올 수 있다. 위탁학교 학생정보의 '계열', '학과', '학년', '반'은 앞서 등록한 반정보 범위 안에서만 지정된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 타교수강생 소속교에서 학적이 구성되고 타교수강생 반정보관리가 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>위탁과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(위탁)-타교수강생관리(위탁)-등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기', '원적교', '성명' 확인 후 <span class="btn">{조회}</span> 함 → <span class="btn">{등록}</span> 을 클릭하면 나타나는 '타교수강생(위탁)등록' 창에서 <span class="btn">{학생찾기}</span> 하고, '시작일자', '종료일자', '교육구분', '위탁기관구분'을 선택 후 거점교인 '기관명', '위탁상태'를 확인하고 필요시 '전공'과 '비고' 입력 후 <span class="btn">{저장}</span> 함 → '원적교 학생정보'에서 '나이스 사용여부(예)'를 선택하고 위탁학생의 '학교명', '학기', '과정', '학년', '반', '번호' 선택 및 확인 후 '위탁학교 학생정보'에서 '학년', '반' 선택하고 '번호' 입력 후 <span class="btn">{저장}</span> 하고 목록에서 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>위탁학생을 거점교 학생으로 붙잡아 두어야 이후 출결·성적·학생생활 자료를 소속교로 되돌려 보낼 수 있다.</dd></dl>
+    </div>
+<div class="memo"><h4>교육구분과 위탁기관구분</h4><ul><li>교육구분 — 직업과정 위탁교육, 현장실습, 공동실습소, 대안교육위탁기관, 병원학교, 원격수업, 학교 밖 교육, 기타.</li><li>'직업과정 위탁교육' 선택 시 위탁기관구분 — 산업정보학교, 직업교육거점학교, 공공직업훈련시설, 지정직업훈련시설, 전문대학, 교육부지정 위탁기관.</li><li>'학교 밖 교육' 선택 시 위탁기관구분 — 학교 밖 교육기관.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li><b>'위탁학교 학생정보'는 [타교수강생 반정보관리]에서 등록한 '계열', '학과', '학년', '반' 정보만 설정할 수 있음.</b></li><li>'위탁학교 학생정보'에서 '계열'을 '일반계'로 선택하는 경우 '학과'는 입력하지 않으며, 공업계, 상업계 등 이외의 계열을 선택하면 거점교에 개설된 '학과'를 선택할 수 있음.</li><li>위탁학생 타교수강생 등록 시 '확인미요청'과 '미반영'이 '0'에서 '1'로 변경됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="B" data-when="등록" data-who="위탁과정업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE B · 학생 등록·학적반영">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기초, 위탁학생 반정보 등록 후</span><span class="tag opt">소속교가 나이스 미사용 기관인 경우</span></div>
+    <h3>타교수강생 직접등록 — 소속교가 나이스를 사용하지 않는 경우</h3>
+    <p class="desc">위탁학생 소속교가 나이스를 사용하지 않는 학교(기관)일 때만 해당한다. 원적교 학적을 불러올 수 없으므로 <strong>'나이스 사용여부'를 '아니오'로 선택하고 위탁교육 정보, 원적교 학생정보, 위탁학교 학생정보를 직접 등록</strong>해야 한다. 학과는 <span class="btn">{학과조회}</span> 로 검색해 넣는다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 소속교가 나이스 미사용 기관임을 확인하고 타교수강생 반정보관리가 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>위탁과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(위탁)-타교수강생관리(위탁)-등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기', '원적교', '성명' 확인 후 <span class="btn">{조회}</span> 함 → <span class="btn">{등록}</span> 을 클릭하면 나타나는 '타교수강생(위탁)등록' 창에서 '시작일자', '종료일자', '교육구분', '위탁기관구분'을 선택 후 거점교인 '기관명', '위탁상태'를 확인하고 필요시 '전공'과 '비고' 입력 후 <span class="btn">{저장}</span> 함 → '원적교 학생정보'에서 '나이스 사용여부'를 '아니오'로 선택하고 위탁교육 정보, 원적교 학생정보, 위탁학교 학생정보를 직접 등록한 후 <span class="btn">{저장}</span> 하고 목록에서 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>나이스에 학적이 없는 기관 소속 학생도 거점교에서 관리 대상으로 잡아 자료가 빠지지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>위탁학생 소속교가 나이스를 사용하지 않는 학교(기관)인 경우 '원적교 학생정보'에서 '나이스 사용여부'를 '아니오'로 선택하고 위탁교육 정보, 원적교 학생정보, 위탁학교 학생정보를 직접 등록해야 함.</b></li><li><span class="btn">{학과조회}</span> 시 현재 나이스에 등록된 학과를 검색하여 등록할 수 있음('학과찾기' 창).</li><li>'위탁학교 학생정보'는 [타교수강생 반정보관리]에서 등록한 '계열', '학과', '학년', '반' 정보만 설정할 수 있음.</li><li>｢초･중등교육법｣ 제2조에 따른 고등학교가 아닌 기관에서 직업교육 위탁과정, 대안교육 위탁기관, 다문화 위탁교육기관 등은 나이스플러스(NEIS+, https://neisplus.kr)를 활용할 수 있으며, 위탁학생을 관리하고 교과･비교과 관련 자료를 나이스로 전송함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="등록" data-who="위탁과정업무담당자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 학생 등록·학적반영">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">교무학기가 2학기로 넘어간 직후</span><span class="tag opt">1학기 등록 학생을 이어서 받는 경우만</span></div>
+    <h3>1학기 타교수강생 2학기 재등록(가져오기)</h3>
+    <p class="desc">1학기에 등록한 위탁학생을 2학기에도 계속 받는 경우에만 쓴다. <strong>교무학기가 2학기이면 <span class="btn">{가져오기}</span> 가 활성화된다.</strong> 학생을 하나씩 다시 등록하지 않고 목록에서 골라 옮긴다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 교무학기가 2학기로 넘어가고 1학기에 타교수강생이 등록되어 있는 상태.</dd></dl>
+      <dl><dt>누가?</dt><dd>위탁과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(위탁)-타교수강생관리(위탁)-등록]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기', '원적교', '성명' 확인 후 <span class="btn">{조회}</span> 함 → <span class="btn">{가져오기}</span> 를 클릭하면 나타나는 '타교수강생가져오기' 창에서 해당 학생을 선택하고 <span class="btn">{가져오기}</span> 함 → 목록에서 등록된 위탁학생을 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학기가 바뀌어도 같은 학생을 다시 입력하는 수고를 줄이고 입력 착오를 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>교무학기가 2학기이면 <span class="btn">{가져오기}</span> 가 활성화되며, 1학기에 기 등록된 타교수강생을 2학기에 재등록이 필요한 경우에 '타교수강생가져오기' 창에서 해당 학생을 선택하고 <span class="btn">{가져오기}</span> 함.</b></li><li>가져온 뒤에도 확인요청과 학적반영 절차는 새로 진행함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="확인반영" data-who="위탁과정업무담당자 소속교업무담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 학생 등록·학적반영">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">타교수강생 등록을 마친 직후</span></div>
+    <h3>타교수강생 확인요청과 소속교 요청확인</h3>
+    <p class="desc">등록만 해 두면 소속교는 우리 학교가 그 학생을 받았다는 사실을 모른다. 등록한 학생을 골라 <span class="btn">{확인요청}</span> 하면 소속교 담당자에게 요청이 넘어간다. <strong>소속교가 업무승인과정을 거쳐 <span class="btn">{요청확인}</span> 해야 '전송상태'가 '전송대기'에서 '전송완료'로 바뀐다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 타교수강생 등록이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>위탁과정 업무담당자, 위탁학생 소속교 위탁학생 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(위탁)-타교수강생관리(위탁)-확인요청]</code> · <code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-확인요청접수및전송]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기', '계열/학년/학과', '성명' 확인 후 <span class="btn">{조회}</span> 함 → 등록한 위탁학생 타교수강생 선택 후 <span class="btn">{확인요청}</span> 함 → 위탁학생 소속교에서 학생 '성명'을 클릭하면 나타나는 '위탁학생 상세정보' 창에서 정보 확인 후 위탁학생을 선택하고 <span class="btn">{승인요청}</span> 함 → '기안문서상신' 창에서 '내용' 입력 후 <span class="btn">{결재자지정}</span> 으로 결재권자를 등록하고 위탁학생 타교수강생을 선택하여 <span class="btn">{상신}</span> 함 → 결재가 완료되면 <span class="btn">{요청확인}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>위탁 사실을 소속교와 서로 맞춰 두어야 이후 자료가 엉뚱한 학생에게 붙지 않는다.</dd></dl>
+    </div>
+<div class="memo"><h4>상태값 변화</h4><ul><li>위탁학생 <span class="btn">{확인요청}</span> 시 '확인미요청'은 '1'에서 '0'으로, '확인요청'은 '0'에서 '1'로 변경됨.</li><li><span class="btn">{승인요청}</span> 시 결재권자의 결재가 완료되면 '상태'가 '확인요청접수'에서 '상신완결'로 변경됨.</li><li><b><span class="btn">{요청확인}</span> 시 '전송상태'가 '전송대기'에서 '전송완료'로 변경됨.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>소속교에서 확인할 것</h4><ul><li>위탁학생 소속교에서 위탁학생 업무담당자가 나이스 로그인 시 '업무요청내역'에 공동교육과정 수강생에 대한 확인요청 안내가 표시됨.</li><li>위탁학생 소속교의 <code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-위탁･현장실습학생등록]</code> 에서 자동으로 등록된 내용을 확인함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="B" data-when="확인반영" data-who="위탁과정업무담당자 소속교업무담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE B · 학생 등록·학적반영">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">소속교가 요청확인을 완료한 뒤</span></div>
+    <h3>타교수강생 학적반영</h3>
+    <p class="desc">소속교가 <span class="btn">{요청확인}</span> 하면 거점교의 '승인상태'가 '확인요청'에서 '확인요청완료'로 바뀌고, 이때부터 학적반영이 가능하다. <strong>'승인상태'가 '확인요청완료'임을 확인하고 <span class="btn">{승인요청}</span> 으로 결재를 마쳐야 <span class="btn">{학적반영}</span> 할 수 있다.</strong> 반영 후에는 명렬표로 확인한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 위탁학생 소속교에서 <span class="btn">{요청확인}</span> 을 완료해 '승인상태'가 '확인요청완료'가 된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>위탁과정 업무담당자, 위탁학생 소속교 위탁학생 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(위탁)-타교수강생관리(위탁)-학적반영]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기', '성명(공란)' 확인 후 '미반영된자료'를 선택하고 <span class="btn">{조회}</span> 함 → '승인상태'가 '확인요청완료'임을 확인하고 위탁학생을 선택 후 <span class="btn">{승인요청}</span> 으로 업무승인과정을 거쳐 결재권자의 결재가 완료되면 위탁학생을 선택 후 <span class="btn">{학적반영}</span> 함 → '학적반영된자료'를 선택하고 <span class="btn">{조회}</span> 하여 위탁학생 정보를 확인하고 <span class="btn">{명렬표출력}</span> 으로 타교수강생 명렬표를 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>거점교 학적에 정식으로 올려야 출결·성적·학생생활 자료를 입력하고 전송할 수 있는 학생이 된다.</dd></dl>
+    </div>
+<div class="memo"><h4>상태값 변화</h4><ul><li>위탁학생 소속교에서 <code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-확인요청접수및전송]</code> 에서 <span class="btn">{요청확인}</span> 하면 거점교에서 '승인상태'가 '확인요청'에서 '확인요청완료'로 변경됨.</li><li><b><span class="btn">{승인요청}</span> 시 '결재상태'가 '미상신'에서 '상신(진행)'으로 변경되며, 업무승인과정을 거쳐 결재권자의 결재가 완료되면 '완결'로 변경됨.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>반영 결과 확인</h4><ul><li>위탁학생 소속교에서 <span class="btn">{요청확인}</span> 하면 <code>[위탁･현장실습학생등록]</code> 에서 자동으로 등록된 것을 확인할 수 있음('등록구분'이 '타학교'임).</li><li><span class="btn">{학적반영}</span> 후 '학적반영된자료'를 선택하고 <span class="btn">{조회}</span> 하면 위탁학생 정보를 확인할 수 있으며, <span class="btn">{명렬표출력}</span> 으로 타교수강생 명렬표를 출력할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="C" data-when="학기중" data-who="위탁과정업무담당자 소속교업무담당자">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE C · 학기중 관리">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적반영 후 변경 발생 시</span><span class="tag opt">변경 있는 학생만</span></div>
+    <h3>위탁학생 정보 수정·위탁중도해제와 재확인요청</h3>
+    <p class="desc">이미 학적반영이 끝난 위탁학생의 교육기간이나 기본정보가 바뀌었거나, 전출 등의 학적변동으로 위탁을 중간에 끊어야 할 때만 해당한다. <strong>거점교에서 {재확인요청}을 하면 위탁교에서는 추가적인 {승인요청} 없이 {요청확인}만 한다.</strong> 개명한 학생은 수정 대신 원적교 정보를 다시 끌어와 현행화한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 학적반영된 위탁학생의 교육기간·기본정보가 변경되거나 학적변동이 생긴 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>위탁과정 업무담당자, 위탁학생 소속교 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(위탁)-타교수강생관리(위탁)]</code>, <code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-확인요청접수및전송]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'성명'을 클릭하면 나타나는 '타교수강생 수정' 창에서 변경된 위탁학생 정보를 수정하여 <span class="btn">{저장}</span>함 → <span class="btn">{재확인요청}</span>함 → 위탁학생 소속교에서 <code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-확인요청접수및전송]</code>에서 수정된 위탁학생 정보를 확인 후 <span class="btn">{요청확인}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>거점교에서 바뀐 교육기간·학적 상태를 소속교 학교생활기록부와 어긋나지 않게 맞추려고.</dd></dl>
+    </div>
+<div class="memo"><h4>재확인요청 대상</h4><ul><li>학적반영된 위탁학생의 교육기간 및 기본정보가 변경된 경우.</li><li>전출 등의 학적변동으로 '위탁상태'를 '위탁중도해제'한 경우.</li><li><b>거점교에서 {재확인요청} 시 위탁교에서는 추가적인 {승인요청} 없이 {요청확인}함.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>개명·비나이스교 처리</h4><ul><li>위탁학생이 개명한 경우 '성명'을 클릭하면 나타나는 '타교수강생 수정' 창에서 <span class="btn">{원적교 학생정보반영}</span>으로 위탁학생 정보를 현행화함.</li><li>위탁학생 소속교가 나이스를 사용하지 않는 학교(기관)인 경우 '원적교 학생정보'에서 '나이스 사용여부'를 '아니오'로 선택하고 위탁교육 정보, 원적교 학생정보, 위탁학교 학생정보를 직접 등록해야 함.</li><li><span class="btn">{학과조회}</span> 시 현재 나이스에 등록된 학과를 검색하여 등록할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="C" data-when="학기중" data-who="위탁과정업무담당자 소속교업무담당자">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE C · 학기중 관리">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">매월 말, 월 단위</span><span class="tag">학기말 자료전송에서 제외</span></div>
+    <h3>월출결 입력·마감·전송</h3>
+    <p class="desc">위탁학생의 출결은 거점교가 입력해 소속교로 보낸다. <strong>출결자료는 월 단위로 위탁학생의 소속교로 전송하므로 학기말 자료전송에서는 별도로 전송하지 않는다.</strong> 전체 학생의 '수업일수'가 같으면 일괄 적용으로 처리한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 학적반영이 끝난 뒤 매월 출결 집계가 확정된 시점</dd></dl>
+      <dl><dt>누가?</dt><dd>위탁과정 업무담당자, 위탁학생 소속교 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(위탁)-출결관리]</code>, <code>[학적-위탁･현장실습학생관리-출결관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '계열/학년/학과', '반'을 선택하고 '마감' 확인 후 <span class="btn">{조회}</span>함 → '월목록'에서 '월'을 선택하고 '학생별 월출결목록'에서 출결자료('수업일수', 유형별 '결석일수', 유형별 '지각', 유형별 '조퇴', 유형별 '결과') 입력 후 <span class="btn">{저장}</span>하고 위탁학생을 선택 후 <span class="btn">{마감}</span>함 → '학생별 월출결목록'에서 위탁학생을 선택 후 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재가 완료되면 위탁학생을 선택하고 <span class="btn">{전송}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>거점교에서 수업받은 실제 출결을 매달 소속교로 넘겨 학생의 출결이 소속교 기록에 빠짐없이 남게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>전체 위탁학생 대상으로 '수업일수'를 일괄 입력하기 위해서는 순번 앞에 체크박스를 선택하고 '수업일수'를 입력하고 <span class="btn">{적용}</span>함.</li><li><span class="btn">{마감}</span>하면 '마감여부'가 'N'에서 'Y'로 변경됨.</li><li><span class="btn">{승인요청}</span>하면 '승인상태'가 '미상신'에서 '상신(진행중)'으로 변경되며, 결재권자의 결재가 완료되면 '완결'로 변경됨.</li><li><span class="btn">{자료전송}</span>하면 '전송상태'가 '미전송'에서 '전송완료'로 변경됨.</li><li><b>출결자료는 월 단위로 위탁학생의 소속교로 전송함.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>소속교 후속 처리</h4><ul><li>위탁학생 소속교에서는 <code>[학적-위탁･현장실습학생관리-출결관리]</code>에서 전송한 월을 클릭 후 위탁학생 성명을 클릭하면 나타나는 '타학교 출결내역' 창에서 반영할 '월' 확인 후 체크박스 선택하고 <span class="btn">{반영}</span> 클릭 후 <span class="btn">{닫기}</span>하고 <span class="btn">{저장}</span>함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="C" data-when="학기중" data-who="위탁과정업무담당자">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE C · 학기중 관리">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기중, 자료전송 전까지</span><span class="tag opt">항목별로 담당 메뉴가 다름</span></div>
+    <h3>타교수강생 자료관리(독서활동 등 항목별 입력)</h3>
+    <p class="desc">학기말에 소속교로 보낼 학생생활·성적 자료를 거점교가 미리 채워 두는 업무다. 항목마다 입력하는 곳이 달라서 <strong>수상내역·성적·관찰내용은 각각의 원래 메뉴에서 등록한 자료가 올라오고, 창의적체험활동·봉사활동실적·독서활동(공통)·행동특성및종합의견은 이 메뉴에서 직접 등록한다.</strong> 아래 절차는 독서활동을 예로 든 것이다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 학적반영이 끝나고 학기말 자료전송을 하기 전까지</dd></dl>
+      <dl><dt>누가?</dt><dd>위탁과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(위탁)-타교수강생관리(위탁)-자료관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '계열/학년/학과', '반'을 선택하고 <span class="btn">{조회}</span>함 → '학생목록'에서 위탁학생을 클릭하고 '학생생활'의 '독서활동'을 선택 후 '공통' 영역에 '도서명(저자)' 형식으로 입력하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>거점교에서 이루어진 학생의 활동과 성적을 소속교 학교생활기록부에 그대로 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>항목별 관련 메뉴</h4><ul><li>수상내역 — <code>[학생생활-수상경력-수상대장관리]</code>에서 등록한 수상자료.</li><li>창의적체험활동 — <b>누가기록은 입력하지 않음.</b> 자율･자치활동(자율활동)･동아리활동･진로활동･진로희망 직접 등록함.</li><li>봉사활동실적 — 봉사활동실적은 직접 입력함.</li><li>독서활동 — 공통 영역은 직접 등록함. 교과담당교사는 <code>[성적-성적처리-과목별독서활동]</code>.</li><li>행동특성및종합의견 — 행동특성및종합의견은 직접 입력함.</li><li>성적 — <code>[성적-성적처리-성적산출관리-과목별성적산출]</code>.</li><li>관찰내용 — <code>[성적-관찰기록관리-관찰내용관리]</code>, 나이스플러스(NEIS+)로부터 반영한 관찰내용.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li><span class="btn">{엑셀내려받기}</span>를 클릭하면 엑셀 프로그램이 실행되면서 항목별 자료가 조회됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="D" data-when="학기말" data-who="위탁과정업무담당자 소속교업무담당자">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE D · 학기말 자료전송">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말</span><span class="tag opt">성적 전송 후 세특 전송</span></div>
+    <h3>타교수강생 자료전송(마감·승인요청·자료전송)</h3>
+    <p class="desc">거점교(개설교)에서 위탁학생의 학기말 자료를 소속교로 넘기는 마지막 업무입니다. 전송항목은 '출결', '성적', '세특', '학생생활'로 분리해서 보낼 수 있고 기본 선택값은 '성적', '학생생활'입니다. <strong>'성적'과 '세특'을 분리 전송할 때는 '성적'을 먼저 전송하고 이후 '세특'을 전송해야 합니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 자료관리에서 항목별 자료 입력이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>위탁과정 업무담당자(전송 후 확인은 위탁학생 소속교 업무담당자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-타교수강생관리(위탁)-타교수강생관리(위탁)-자료전송]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '계열/학년/학과', '반'을 선택하고 '마감', '승인', '전송'을 확인 후 <span class="btn">{조회}</span> → '타교수강생 목록'에서 위탁학생 성명을 클릭하면 나타나는 '타교 수강생 자료전송' 창에서 '학생생활'의 '독서활동'을 선택 후 전송자료를 확인하고 <span class="btn">{닫기}</span> → '전송항목선택'에서 전송자료를 선택하고 '타교수강생목록'에서 위탁학생을 선택 후 <span class="btn">{마감}</span> → '타교수강생목록'에서 위탁학생 선택 후 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재가 완료되면 위탁학생을 선택하고 <span class="btn">{자료전송}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>거점교에서 이수한 위탁학생의 성적과 학교생활 기록이 소속교 학교생활기록부에 빠짐없이 남게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>전송자료별 관련 내용</h4><ul><li>월출결 — <code>[출결]</code> 월출결.</li><li>성적 — <code>[성적]</code> 학기말성적, 지필평가성적, 수행평가성적, 관찰내용.</li><li>세부능력및특기사항 — <code>[성적]</code> 세부능력 및 특기사항.</li><li>학생생활 — <code>[학생생활]</code> 수상내역, NCS 이수상황, 창의적체험활동(자율･자치활동(자율활동)･동아리활동･진로활동･진로희망), 봉사활동실적, 독서활동, 행동특성및종합의견.</li><li><b>'성적'과 '세특'은 분리해서 전송할 수 있으며, '성적'을 먼저 전송하고 이후 '세특'을 전송해야 함</b>(소속교에서는 성적과 세특은 자동 반영되며, <code>[학생부-학교생활기록부-학교생활기록부-학생부반영]</code>에서 교과학습발달상황에 성적과 세부능력 및 특기사항을 반영함).</li><li><b>'출결'은 <code>[학적-타교수강생관리(위탁)-출결관리]</code>에서 월별로 소속교에 출결자료를 전송하므로 학기말에는 별도로 전송하지 않음.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>상태 변화와 소속교 확인</h4><ul><li><span class="btn">{마감}</span>하면 '마감상태'가 '미마감'에서 '마감'으로 변경됨.</li><li><span class="btn">{승인요청}</span>하면 '승인상태'가 '미상신'에서 '상신(진행중)'으로 변경되며, 결재권자의 결재가 완료되면 '완결'로 변경됨.</li><li><span class="btn">{자료전송}</span>하면 '전송상태'가 '미전송'에서 '전송'으로 변경됨.</li><li>거점교에서 위탁학생의 소속교로 성적, 세특, 학생생활을 <span class="btn">{자료전송}</span>하면 위탁학생의 소속교에서는 나이스 관련 메뉴에서 확인 후 반영함.</li><li>소속교의 <code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-타학교자료전송확인]</code>에서 위탁학생 성명을 클릭하면 나타나는 '위탁학생 타학교 자료내역' 창에서 성적, 세부능력 및 특기사항, 학생생활 전송자료별로 관련 내용을 확인할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 학적, Section_12 타교수강생 관리(위탁) (453–469쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

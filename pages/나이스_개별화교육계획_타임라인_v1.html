@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<!-- 개별화교육계획 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>개별화교육계획 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>개별화교육계획</b>
+    <span class="sub">업무 21개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Part Ⅳ 개별화교육계획 · Section_01~04 · pp. 585–615</p>
+    <h1>개별화교육계획
+      <em>업무 21개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학기 전 또는 학기초, 전입학 및 재취학 이후, 학기초·학기말, 수시</dd></div>
+      <div><dt>업무담당</dt><dd>특수교육업무 담당교사</dd></div>
+      <div><dt>메뉴경로</dt><dd>[개별화교육계획-인적사항관리], [개별화교육계획-개별화교육계획영역관리], [개별화교육계획-개별화교육계획관리], [개별화교육계획-개별화교육조회]</dd></div>
+      <div><dt>선행조건</dt><dd>[학급담임-학적-기본학적관리-기본신상관리]에서 학생 인적사항을 등록하고 개별화교육계획 담당자에게 해당 학생이 있는 학년반 권한을 부여함. [교육과정-편제및과목개설관리-편제및과목개설관리-강의실관리]에서 특수학급 강의실이 개설되어 있어야 함. [교육과정-편제및과목개설관리-편제및과목개설관리]에서 교과 편제, 과목 개설, 수강학생 편성과 [개별화교육계획-인적사항관리]에서 특수교육대상자로 등록함. 개별화교육계획을 나이스로 관리하며 진학 시 개별화교육계획 자료를 상급학교로 전송함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>학기 전·학기초 대상자 등록</h3>
+            <p class="tl-sub">기본신상관리 등록 이후 · 모든 개별화 업무의 선행조건</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 대상자 등록"><span>01</span>대상자 등록</button><button type="button" class="tl-btn" data-go="t2" title="02 기본사항 Ⅰ"><span>02</span>기본사항 Ⅰ</button><button type="button" class="tl-btn" data-go="t3" title="03 기본사항 Ⅱ"><span>03</span>기본사항 Ⅱ</button><button type="button" class="tl-btn" data-go="t5" title="05 진단평가 결과"><span>05</span>진단평가 결과</button><button type="button" class="tl-btn" data-go="t6" title="06 관련 서비스"><span>06</span>관련 서비스</button><button type="button" class="tl-btn" data-go="t7" title="07 기타 제공서비스"><span>07</span>기타 제공서비스</button><button type="button" class="tl-btn" data-go="t4" title="04 인적 첨부파일"><span>04</span>인적 첨부파일</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>영역 개설과 수강학생 편성</h3>
+            <p class="tl-sub">생활지원 영역 중심 학교만 · 특수학급 강의실 개설 이후</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t8" title="08 영역 개설"><span>08</span>영역 개설</button><button type="button" class="tl-btn" data-go="t9" title="09 수강학생 편성"><span>09</span>수강학생 편성</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>학기초 계획 수립</h3>
+            <p class="tl-sub">과목 개설·수강학생 편성과 대상자 등록이 끝난 뒤</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t20" title="20 재학생 자료 조회"><span>20</span>재학생 자료 조회</button><button type="button" class="tl-btn" data-go="t10" title="10 학기별 계획"><span>10</span>학기별 계획</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>학기 중 월별 운영</h3>
+            <p class="tl-sub">학기별 계획 작성 이후 · 매월 반복</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t11" title="11 월별 계획"><span>11</span>월별 계획</button><button type="button" class="tl-btn" data-go="t13" title="13 월별 평가"><span>13</span>월별 평가</button><button type="button" class="tl-btn" data-go="t19" title="19 월별 조회"><span>19</span>월별 조회</button><button type="button" class="tl-btn" data-go="t14" title="14 전입생 자료 반영"><span>14</span>전입생 자료 반영</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>학기말 평가 입력</h3>
+            <p class="tl-sub">학기목표 도달 결과 기록 · 학기별 계획이 있어야 조회됨</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t12" title="12 학기별 평가"><span>12</span>학기별 평가</button><button type="button" class="tl-btn" data-go="t18" title="18 학기별 조회"><span>18</span>학기별 조회</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">06</p>
+            <h3>마감과 승인 처리</h3>
+            <p class="tl-sub">학기·월 입력 완료 후 · 교과담당에서 담임 순서로 진행</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t15" title="15 교과담당 마감"><span>15</span>교과담당 마감</button><button type="button" class="tl-btn" data-go="t16" title="16 담임 마감·승인"><span>16</span>담임 마감·승인</button><button type="button" class="tl-btn" data-go="t17" title="17 수정이력 승인"><span>17</span>수정이력 승인</button><button type="button" class="tl-btn" data-go="t21" title="21 졸업생 자료 조회"><span>21</span>졸업생 자료 조회</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="학기전학기초" data-who="특수교육업무담당교사">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 대상자와 인적사항">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 전 또는 학기초</span><span class="tag">전입학·재취학 이후</span></div>
+    <h3>개별화교육대상자 등록과 선정배치취소</h3>
+    <p class="desc">특수교육대상자가 있는 학교에서 가장 먼저 하는 일이다. <strong>여기에서 {등록}한 학생만 [개별화교육계획-개별화교육계획관리-개별화교육계획 관리]에서 계획과 평가를 등록할 수 있다.</strong> 학기 중 선정이 취소된 학생도 이 화면에서 정리한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 전 또는 학기초, 전입학 및 재취학 이후. [학급담임-학적-기본학적관리-기본신상관리]에서 학생 인적사항 등록과 해당 학년반 권한 부여가 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-인적사항관리-인적사항관리-개별화교육대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘계열/학년/학과’, ‘반’ 확인 후 <span class="btn">{조회}</span>하고 <span class="btn">{등록}</span>함 → ‘개별화교육대상자등록’ 창에서 ‘성명’ 입력 후 <span class="btn">{조회}</span>하여 개별화교육 대상자를 선택하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>개별화교육계획과 평가를 입력할 수 있는 학생 명단을 확정해 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>이 화면에서 <span class="btn">{등록}</span>한 개별화교육계획 대상자에 대해 [개별화교육계획-개별화교육계획관리-개별화교육계획 관리]에서 개별화교육계획 및 평가를 등록함.</li><li>학기중 특수교육대상자 선정이 취소된 경우 ‘선정배치취소여부’를 선택하고 ‘선정배치취소일’을 설정 후 <span class="btn">{저장}</span>함.</li><li>등록된 개별화교육대상자를 삭제하고자 할 경우 <b>해당 학생을 선택한 후</b> <span class="btn">{삭제}</span>함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="학기전학기초" data-who="특수교육업무담당교사">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 대상자와 인적사항">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 전 또는 학기초</span><span class="tag">특수교육통계 필수 입력</span></div>
+    <h3>기본사항 Ⅰ 입력(특수교육통계 필수 항목)</h3>
+    <p class="desc">등록된 개별화교육대상자마다 배치와 장애 정보를 입력하는 업무다. <strong>여기에 입력한 정보는 특수교육통계, 특수교육대상자 인권실태조사와 연동되므로 정확한 자료를 입력해야 한다.</strong> 성명·성별·생년월일·주소는 학적 자료와 연동되어 따로 입력하지 않는다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 전 또는 학기초, 개별화교육대상자 등록을 마친 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-인적사항관리-인적사항관리-인적사항관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘계열/학년/학과’, ‘반’ 확인 후 <span class="btn">{조회}</span>하여 개별화교육 대상자를 클릭함 → <span class="btn">{기본사항 Ⅰ}</span> 탭의 ‘배정구분’에서 ‘일반학급’, ‘특수학급’, ‘특수학교’ 중 실제 배정된 학급을 선택함 → ‘특수교육법 상 선정유형’에서 장애유형을 선택하고 중도중복장애 여부를 선택함 → ‘장애인등록여부’에서 ‘등록’ 또는 ‘미등록’을 선택함 → ‘장애인복지법 상 장애유형 및 정도’에서 ‘주장애’와 ‘부장애’ 및 이에 따른 ‘장애정도’를 선택함 → ‘순회교육지원여부’에서 ‘지원’ 또는 ‘미지원’을 선택하되, ‘지원’을 선택한 경우 ‘기관유형’, ‘학급유형’을 추가로 선택하고 입력된 정보를 확인 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>특수교육통계와 인권실태조사에 학생의 실제 배치와 장애 정보가 그대로 집계되도록 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>선택 항목 목록</h4><ul><li>‘특수교육법 상 선정유형’으로 시각장애, 청각장애, 지적장애, 지체장애, 정서･행동장애, 자폐성장애, 의사소통장애, 학습장애, 건강장애, 발달지체, 그 밖에 대통령으로 정하는 장애 중에서 선택하며, 중도중복장애 여부를 선택할 수 있음.</li><li>‘장애인복지법 상 장애유형’으로 지체장애, 뇌병변장애, 시각장애, 청각장애, 언어장애, 지적장애, 자폐성장애, 정신장애, 신장장애, 심장장애, 호흡기장애, 간장애, 안면장애, 장루･요루장애, 뇌전증장애를 선택할 수 있음.</li><li>‘기관유형’으로 병원, 가정, 시설, 일반학급을 선택할 수 있으며 ‘학급유형’으로는 파견, 순회를 선택할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>배치구분에서 실제 특수교육대상 학생이 배치된 일반학급, 특수학급, 특수학교를 선택하며, 인적사항에서 입력한 정보는 특수교육통계, 특수교육대상자 인권실태조사와 연동되므로 <b>정확한 자료를 입력해야 함</b>.</li><li>특수교육통계 취합 항목으로 <b>필수 입력 항목은 배치구분, 특수교육법상 선정유형, 장애인 등록여부, 장애인복지법상 장애유형 및 정도, 순회교육 지원여부</b>를 입력함.</li><li>학생의 성명, 성별, 생년월일, 주소는 [학적-기본학적관리-기본신상관리]의 <span class="btn">{기본신상}</span>에 등록된 자료와 연동되고, 학기 시작/종료일은 [학교정보-학교정보-기준년도/학기관리]와 연동됨.</li><li><span class="btn">{기본사항 Ⅰ}</span> 탭에서 <span class="btn">{이전학년도기본사항 Ⅰ}</span>과 <span class="btn">{기본사항 Ⅱ}</span> 탭에서 <span class="btn">{이전학년도기본사항 Ⅱ}</span>로 기본사항에 입력된 이전학년도 내용을 <span class="btn">{조회}</span>할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="A" data-when="학기전학기초" data-who="특수교육업무담당교사">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE A · 대상자와 인적사항">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 전 또는 학기초</span><span class="tag opt">이전학년도 자료 적용 선택</span></div>
+    <h3>기본사항 Ⅱ 입력과 이전학년도 자료 적용</h3>
+    <p class="desc">학생의 흥미·강점과 행동특성, 희망사항 등 서술 정보를 남기는 업무다. <strong>이전학년도에 작성한 내용이 있으면 ‘조회학년도’를 선택해 {적용}한 뒤 고쳐 쓰는 편이 빠르다.</strong> 새로 작성할 경우에는 네 항목을 직접 입력한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 전 또는 학기초, 개별화교육대상자 등록을 마친 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-인적사항관리-인적사항관리-인적사항관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘계열/학년/학과’, ‘반’ 확인 후 <span class="btn">{조회}</span>하여 개별화교육 대상자를 클릭함 → <span class="btn">{기본사항 Ⅱ}</span> 탭에서 <span class="btn">{이전학년도 기본사항 Ⅱ}</span>을 클릭하면 나타나는 ‘이전학년도 기본사항 Ⅱ’ 창에서 이전학년도 자료를 참고하여 작성할 경우 ‘조회학년도’를 선택한 후 <span class="btn">{조회}</span>하여 <span class="btn">{적용}</span>함 → 이전학년도 자료를 수정하거나 새로 작성하고자 할 경우 해당 학생의 ‘학생흥미 및 강점’, ‘행동특성’, ‘가족 또는 학생의 희망사항’, ‘기타사항’을 입력하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생을 처음 맡는 교사도 학생의 강점과 가족의 희망을 알고 계획을 세우게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{기본사항 Ⅰ}</span> 탭에서 <span class="btn">{이전학년도기본사항 Ⅰ}</span>과 <span class="btn">{기본사항 Ⅱ}</span> 탭에서 <span class="btn">{이전학년도기본사항 Ⅱ}</span>로 기본사항에 입력된 이전학년도 내용을 <span class="btn">{조회}</span>할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="A" data-when="학기전학기초" data-who="특수교육업무담당교사">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE A · 대상자와 인적사항">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 전 또는 학기초</span></div>
+    <h3>진단평가 결과와 첨부파일 등록</h3>
+    <p class="desc">개별화교육계획의 현행수준을 잡기 위한 진단평가 결과를 영역별로 남기는 업무다. 검사를 실시한 영역만큼 <span class="btn">{행추가}</span>하여 입력한다. <strong>진단평가와 관련한 검사 결과지가 있으면 같은 화면에서 {파일추가}로 첨부한다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 전 또는 학기초, 개별화교육대상자 등록을 마치고 진단평가를 실시한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-인적사항관리-인적사항관리-인적사항관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘계열/학년/학과’, ‘반’ 확인 후 <span class="btn">{조회}</span>하여 개별화교육 대상자를 클릭함 → <span class="btn">{행추가}</span>하여 진단평가 ‘영역’, ‘도구명’, ‘검사일자’, ‘검사결과’, ‘평가자’를 입력하고 <span class="btn">{저장}</span>함 → 첨부파일을 업로드 할 경우 <span class="btn">{파일추가}</span>하여 해당 파일을 찾아 선택 후 첨부하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생의 현재 수준을 근거 있는 검사 결과로 남겨 학기 목표를 세울 때 기준으로 쓰려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>‘영역’에는 지능, 사회성, 학습, 정서적응행동, 운동능력, 언어능력, 진로직업이 있음.</li><li>진단평가와 관련하여 첨부파일이 있는 경우 <span class="btn">{파일추가}</span>하여 해당 파일을 <span class="btn">{저장}</span>함.</li><li>첨부파일의 크기는 <b>10MB를 초과할 수 없음</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="A" data-when="학기전학기초" data-who="특수교육업무담당교사">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE A · 대상자와 인적사항">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 전 또는 학기초</span></div>
+    <h3>특수교육 관련 서비스 등록</h3>
+    <p class="desc">장애인 등에 대한 특수교육법에 따른 관련서비스를 학생별로 등록하는 업무다. <strong>실제로 제공되는 관련서비스만 입력한다.</strong> 통학지원처럼 서비스 종류에 따라 입력할 항목이 달라진다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 전 또는 학기초, 개별화교육대상자 등록을 마친 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-인적사항관리-인적사항관리-특수교육관련서비스관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘계열/학년/학과’, ‘반’ 확인 후 <span class="btn">{조회}</span>하여 개별화교육 대상자를 클릭함 → <span class="btn">{행추가}</span>하여 ‘제공서비스’를 선택하고 ‘제공서비스’에 해당하는 ‘시작일’, ‘종료일’, ‘통학수단’, ‘통학소요시간’, ‘장소’, ‘지원 요일 및 시간’, ‘특기 사항’을 입력하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 실제로 받는 지원 내역을 남겨 관련서비스가 빠지거나 겹치지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>장애인 등에 대한 특수교육법 특수교육관련서비스에는 상담지원･가족지원･치료지원･지원인력배치･보조공학기기지원･학습보조기기지원･통학지원 및 정보접근지원 등을 말하며 <b>해당 특수교육대상자에게 실제로 제공되는 관련서비스를 입력</b>함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="A" data-when="학기전학기초" data-who="특수교육업무담당교사">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE A · 대상자와 인적사항">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 전 또는 학기초</span></div>
+    <h3>기타정보(기타 제공서비스) 등록</h3>
+    <p class="desc">특수교육 관련 서비스 외에 학생이 참여하는 서비스를 남기는 업무다. 해당 내용이 없으면 건너뛴다. <strong>잘못 등록한 서비스는 삭제할 서비스를 선택한 후 {삭제}로 지운다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 전 또는 학기초, 개별화교육대상자 등록을 마친 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-인적사항관리-인적사항관리-기타정보관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘계열/학년/학과’, ‘반’ 확인 후 <span class="btn">{조회}</span>하여 개별화교육 대상자를 클릭함 → <span class="btn">{행추가}</span>하여 ‘제공서비스’, ‘시작일’, ‘종료일’, ‘장소’, ‘참여요일 및 시간’, ‘특기사항’을 입력하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>관련서비스로 분류되지 않는 지원까지 모아 학생이 받는 전체 지원을 한눈에 보이게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>삭제 시에는 <b>삭제할 서비스를 선택한 후</b> <span class="btn">{삭제}</span>함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="A" data-when="학기전학기초" data-who="특수교육업무담당교사">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE A · 대상자와 인적사항">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 전 또는 학기초</span><span class="tag opt">첨부할 자료가 있을 때</span></div>
+    <h3>인적사항 첨부파일 등록</h3>
+    <p class="desc">인적사항과 관련된 증빙 자료를 나이스에 붙여 두는 업무다. 붙일 자료가 없으면 건너뛴다. <strong>첨부할 수 있는 전체 용량은 무제한이나 단일 첨부파일이 10MB를 초과하면 업로드할 수 없다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 전 또는 학기초, 개별화교육대상자 등록을 마친 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-인적사항관리-인적사항관리-인적사항관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘계열/학년/학과’, ‘반’ 확인 후 <span class="btn">{조회}</span>하여 개별화교육 대상자를 클릭함 → <span class="btn">{첨부파일}</span> 탭에서 첨부파일을 업로드할 경우 <span class="btn">{파일추가}</span>하여 해당 파일을 찾아 선택 후 첨부하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생 관련 증빙 자료를 인적사항과 같은 자리에 두어 담당이 바뀌어도 찾을 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>첨부파일의 크기는 <b>10MB를 초과할 수 없음</b>.</li><li>첨부파일의 경우 첨부할 수 있는 용량은 무제한이나 단일 첨부파일의 경우 10MB를 초과할 경우 업로드를 할 수 없으므로 <b>단일 파일을 10MB 이하의 여러 파일로 나누어 업로드</b> 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="B" data-when="학기전학기초" data-who="특수교육업무담당교사">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE B · 영역 개설과 편성">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기초</span><span class="tag opt">생활지원 영역 중심으로 작성할 때</span></div>
+    <h3>개별화교육계획 영역 개설과 조회·삭제</h3>
+    <p class="desc">생활지원 영역 중심의 개별화교육계획을 작성하는 학교만 해당합니다. 영역을 개설하려면 <strong>[교육과정-편제및과목개설관리-편제및과목개설관리-강의실관리]에서 특수학급 강의실이 개설되어 있어야 함</strong>. 개설한 영역은 같은 화면의 {영역조회} 탭에서 확인하고 잘못 만든 영역은 삭제합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 강의실관리에서 특수학급 강의실 개설이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-개별화교육계획영역관리-개별화교육계획영역개설관리]</code>의 <code>{영역개설}</code> 탭, <code>{영역조회}</code> 탭</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>{영역개설} 탭에서 '학년도', '학기', '계열/학년/학과' 확인 후 <span class="btn">{조회}</span> → 일상생활 영역 중심의 개별화교육계획을 작성할 '교사명'과 '영역명', '강의실'을 선택한 후 <span class="btn">{저장}</span> → {영역조회} 탭에서 '학년도', '학기', '학년', '계열/학년/학과' 확인 후 <span class="btn">{조회}</span> → 개설된 영역을 삭제하고자 할 경우 삭제할 영역을 선택한 후 <span class="btn">{삭제}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교과 외 생활지원 영역까지 담당교사와 강의실을 붙여 두어야 학생별 개별화교육계획을 그 영역에 담아 작성할 수 있기 때문입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>[교육과정-편제및과목개설관리-편제및과목개설관리-강의실관리]에서 {행추가}로 '특수학급'을 등록하면 '강의실' 목록에 특수학급이 조회됨.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="B" data-when="학기전학기초" data-who="특수교육업무담당교사">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE B · 영역 개설과 편성">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">영역 개설 직후</span></div>
+    <h3>영역별 수강학생 편성</h3>
+    <p class="desc">영역 개설을 마친 학교가 이어서 하는 작업입니다. <strong>영역별로 수강학생을 편성해야 해당 영역의 개별화교육계획·평가 화면에 학생이 나타남</strong>. 미편성학생 목록에서 대상 학생을 골라 편성학생으로 옮깁니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 개별화교육계획 영역 개설이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-개별화교육계획영역관리-개별화교육계획영역개설관리]</code>의 <code>{수강학생편성}</code> 탭</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>{수강학생편성} 탭을 클릭하고 '학년도', '학기', '학년' 확인 후 <span class="btn">{조회}</span> → 수강 편성할 영역을 클릭한 후 '미편성학생' 목록에 있는 학생들 중 해당 학생을 선택하여 <span class="btn">{편성}</span>하여 '편성학생'으로 이동 → '편성학생' 목록에 있는 학생을 선택하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>어떤 학생이 어느 영역의 개별화교육을 받는지 확정해 두어야 계획과 평가가 그 학생에게 제대로 쌓이기 때문입니다.</dd></dl>
+    </div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t20" data-num="20" data-stage="E" data-when="수시" data-who="특수교육업무담당교사">
+  <div class="gutter"><b>20</b><span class="gstage" title="원문 STAGE E · 조회와 확인">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수시</span></div>
+    <h3>재학생 개별화교육 조회</h3>
+    <p class="desc">재학 중인 학생의 과거 개별화교육계획을 학년도별로 열어 보는 업무입니다. <strong>학기별개별화교육계획의 {과거학기별자료조회}·{과거월별자료조회}와 달리, 해당 학생의 과거 모든 영역의 개별화교육계획 및 평가 내용을 한 화면에서 확인할 수 있습니다.</strong> 새 학기 계획을 짜기 전 참고 자료로 씁니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 수시. 개별화교육계획을 나이스로 관리해 온 자료가 이전학년도에 남아 있을 때 조회함.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-개별화교육조회-개별화교육조회(재학생)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[개별화교육계획-개별화교육조회-개별화교육조회(재학생)]</code>에서 '학년도', '계열/학년/학과', '반' 확인 후 <span class="btn">{조회}</span>함 → 조회하고자 하는 학생을 선택 후 '조회학년도'에서 조회할 학년도를 선택함(이전학년도에 입력된 개별화교육계획 자료를 조회할 수 있음) → '입력구분'에서 조회할 영역과 학기, 월별 개별화 등을 선택하여 내용을 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 이전 학년도에 어디까지 도달했는지 확인하고 이어지는 목표를 세우려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>이전학년도에 작성된 개별화교육계획 내용을 조회하는 방법은 두 가지임. 방법 1은 <code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리-학기개별화교육계획]</code>, <code>[월별개별화교육계획]</code>에서 <span class="btn">{과거학기별자료조회}</span>, <span class="btn">{과거월별자료조회}</span>를 통해 해당 영역에 대한 이전학년도 내용을 조회하는 것임.</li><li>방법 2는 이 메뉴에서 해당 학생을 선택하여 <b>과거 모든 영역의 개별화교육계획 및 평가 내용</b>을 조회하는 것임.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="C" data-when="학기전학기초" data-who="특수교육업무담당교사 교과담당교사">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE C · 계획과 평가 입력">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기초</span></div>
+    <h3>학기별 개별화교육계획 작성과 마감</h3>
+    <p class="desc">인적사항관리에서 특수교육대상자로 등록된 학생에 한해 활성화된다. <strong>과목 편제·개설과 수강학생 편성이 끝난 뒤</strong>에 '교과영역' 또는 '생활지원영역'을 골라 학생별 현행수준과 학기목표를 입력한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 교과 편제·과목 개설·수강학생 편성과 특수교육대상자 등록이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사, 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리-학기별개별화교육계획]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기', '계열/학년/학과', '강의실' 확인 후 '입력구분'에서 '교과영역' 또는 '생활지원영역'을 선택하고 '과목'을 선택하여 <span class="btn">{조회}</span> → 해당 학생을 선택하고 해당 과목에 대한 '현행수준'과 학기별 개별화교육계획 '학기목표'를 입력한 후 <span class="btn">{저장}</span> → <span class="btn">{마감}</span>으로 마감하며, 마감된 이후에는 <span class="btn">{마감취소}</span>로 변경됨.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생의 현재 수준을 근거로 한 학기 동안 도달할 목표를 미리 합의해 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{교사찾기}</span>로 담당교사를 찾아 선택할 수 있음.</li><li>이전학년도에 작성된 내용은 <span class="btn">{과거학기별자료조회}</span>로 해당 영역에 대한 이전학년도 개별화교육계획 내용을 조회할 수 있음.</li><li><b>추가 입학생의 학기별 개별화교육계획은 마감이 완료된 경우 해당 학생에 대해 내용 입력 후 '마감이후 수정 사유'를 입력해야 함.</b> 등록한 내용은 <code>[개별화교육계획-개별화교육계획관리-마감이후수정이력조회]</code>에서 해당 학생 자료만 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t11" data-num="11" data-stage="C" data-when="학기중" data-who="특수교육업무담당교사 교과담당교사">
+  <div class="gutter"><b>11</b><span class="gstage" title="원문 STAGE C · 계획과 평가 입력">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 중, 매월</span></div>
+    <h3>월별 개별화교육계획 작성과 월마감</h3>
+    <p class="desc">학기목표를 월 단위로 쪼개어 실행 계획으로 옮기는 업무다. <strong>월마다 <span class="btn">{행추가}</span>로 '월'을 선택해 따로 입력하고 월별로 마감</strong>한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 중, 학기별 개별화교육계획을 작성한 뒤 해당 월별로.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사, 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리-월별개별화교육계획]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기', '계열/학년/학과', '강의실' 확인 후 '입력구분'에서 '교과영역' 또는 '생활지원영역'을 선택하고 '과목'을 선택하여 <span class="btn">{조회}</span> → 해당 학생을 선택하고 <span class="btn">{행추가}</span>하여 계획된 '월'을 선택 → '교육목표', '교육내용', '교육방법', '평가계획'을 입력 후 <span class="btn">{저장}</span> → <span class="btn">{행추가}</span>로 계획된 추가 '월'을 선택하고 해당 월의 '교육목표', '교육내용', '교육방법', '평가계획'을 입력한 후 <span class="btn">{저장}</span> → 마감할 '월'을 선택하고 <span class="btn">{월마감}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학기목표를 매달 실제로 무엇을 어떻게 가르칠지까지 내려 실행과 평가가 이어지게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{담당교사변경}</span>으로 해당 교사를 찾아 변경할 수 있음.</li><li><span class="btn">{과거월별자료조회}</span>를 통해 해당 영역에 대한 이전학년도 개별화교육계획 내용을 조회할 수 있음.</li><li><code>[개별화교육계획-개별화교육조회-개별화교육조회(재학생)]</code>에서 해당 학생을 선택하여 과거 모든 영역의 개별화교육계획 및 평가 내용을 조회할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>추가 입학생이 있을 때</h4><ul><li><b>마감이 완료된 경우에는 기존 마감된 월과 다르게 월을 선택하고 내용을 입력하고 저장함.</b> 등록한 내용은 <code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리-마감관리(담임)]</code>에서 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</li><li>기존 학생에 입력된 월과 동일하게 입력하고자 하는 경우 <code>[상신함]</code>에서 해당 결재문서명에 대해 <span class="btn">{기결문서취소}</span> 후 마감관리(담임)에서 <span class="btn">{마감취소}</span>, 이어서 마감관리(교과담당)에서 <span class="btn">{마감취소}</span>하고 내용 입력 후 다시 단계적으로 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t13" data-num="13" data-stage="C" data-when="학기중" data-who="특수교육업무담당교사 교과담당교사">
+  <div class="gutter"><b>13</b><span class="gstage" title="원문 STAGE C · 계획과 평가 입력">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 중, 매월</span></div>
+    <h3>월별 개별화교육평가 입력과 월마감</h3>
+    <p class="desc">월별 개별화교육계획에 적은 평가계획에 대응해 그 달의 결과를 기록한다. <strong>월별 계획이 입력된 월에 대해서만 평가를 입력하고 월 단위로 마감</strong>한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 중, 해당 월의 월별 개별화교육계획 입력 이후.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사, 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리-월별개별화교육평가]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기', '계열/학년/학과', '강의실' 확인 후 '입력구분'에서 '교과영역' 또는 '생활지원영역'을 선택하고 '과목'을 선택하여 <span class="btn">{조회}</span> → 해당 학생을 선택하고 해당 과목의 월별 개별화교육계획 평가내용을 입력한 후 <span class="btn">{저장}</span> → <span class="btn">{월마감}</span>으로 월별 개별화교육계획을 마감함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>매달의 지도 결과를 바로 남겨 다음 달 계획을 학생 상태에 맞게 고쳐 나가려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{담당교사변경}</span>으로 해당 교사를 찾아 변경할 수 있음.</li><li>이전학년도 내용은 <span class="btn">{과거월별자료조회}</span> 또는 <code>[개별화교육계획-개별화교육조회-개별화교육조회(재학생)]</code>에서 조회할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t19" data-num="19" data-stage="E" data-when="수시" data-who="특수교육업무담당교사 교과담당교사 담임교사">
+  <div class="gutter"><b>19</b><span class="gstage" title="원문 STAGE E · 조회와 확인">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">월별 계획·평가 저장 이후</span><span class="tag opt">교과담당·담임 두 경로</span></div>
+    <h3>월별 개별화교육계획/평가 조회(교과담당·담임)</h3>
+    <p class="desc">월별 개별화교육계획과 평가를 월 단위로 확인하는 업무입니다. <strong>교과담당 화면은 조회할 '월'을 직접 선택해야 하고, 담임 화면은 해당 학생의 모든 과목에 대한 월별 자료를 봅니다.</strong> 월마감 전에 각 월의 입력 상태를 점검하는 데 씁니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 월별개별화교육계획과 월별개별화교육평가를 저장한 뒤 월마감 전후로 확인함.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사, 교과담당교사, 담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-개별화교육계획관리-월별개별화교육계획/평가조회(교과담당)]</code>, <code>[개별화교육계획-개별화교육계획관리-월별개별화교육계획/평가조회(담임)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>교과담당교사가 <code>[개별화교육계획-개별화교육계획관리-월별개별화교육계획/평가조회(교과담당)]</code>에서 '학년도', '학기', '계열/학년/학과', '반' 확인 후 '입력구분'에서 '교과영역' 또는 '생활지원영역'을 선택하고 '과목'을 선택함 → 조회하고자 하는 '월'을 선택하고 '출력구분'에서 '교육계획' 또는 '교육평가'를 선택하여 <span class="btn">{조회}</span>함 → 담임은 <code>[개별화교육계획-개별화교육계획관리-월별개별화교육계획/평가조회(담임)]</code>에서 '학년도', '학기', '계열/학년/학과', '반' 확인 후 '입력구분'에서 '교과영역' 또는 '생활지원영역'을 선택함 → '출력구분'에서 '교육계획' 또는 '교육평가'를 선택한 후 <span class="btn">{조회}</span>하여 해당 학생의 모든 과목에 대한 월별 개별화 교육계획 및 평가를 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>월마감을 걸기 전에 그 달의 교육목표와 평가내용이 학생별로 다 채워졌는지 확인하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>교과담당 화면에서는 <b>조회할 '월'을 반드시 선택</b>해야 해당 월의 자료가 나옴.</li><li>담임 화면은 '월' 선택 없이 '출력구분'만 골라 해당 학생의 모든 과목 월별 자료를 확인함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t14" data-num="14" data-stage="C" data-when="수시" data-who="특수교육업무담당교사">
+  <div class="gutter"><b>14</b><span class="gstage" title="원문 STAGE C · 계획과 평가 입력">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">전입 요청 시 수시</span><span class="tag opt">전입생이 있을 때만</span></div>
+    <h3>전입생 개별화교육 자료 반영</h3>
+    <p class="desc">학기 중 특수교육대상 학생이 전입한 경우에만 하는 업무다. <strong>당해 학년도 특수교육대상학생으로 등록이 되어 있지 않으면 개별화교육계획이 비활성화되어 전송할 수 없으므로</strong> 인적사항관리 등록이 먼저다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>수시, 전입학 이후 특수교육대상자 등록을 마친 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-인적사항관리-인적사항관리]</code>, <code>[학적-전입관리-전편재입/복학생등록(2025학년도)]</code>, <code>[학적-전출관리-전출관리-전출자료전송]</code>, <code>[개별화교육계획-전입생개별화교육추가-전입생개별화교육추가]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[개별화교육계획-인적사항관리-인적사항관리]</code>에서 해당 학생을 특수교육대상학생으로 등록 → 전입교의 <code>[학적-전입관리-전편재입/복학생등록(2025학년도)]</code>에서 해당 학생을 등록 후 전출교에 전입을 요청 → 전출교에서는 <code>[학적-전출관리-전출관리-전출자료전송]</code>에서 개별화교육계획을 포함하여 <span class="btn">{전출자료보내기}</span> → 전입교에서는 <code>[개별화교육계획-전입생개별화교육추가-전입생개별화교육추가]</code>에서 전출교 개별화교육 자료를 활용하거나 수정하여 반영함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>전학으로 지도가 끊기지 않게 이전 학교의 목표와 평가를 이어받아 지원을 계속하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>학기 중 전출생의 전출자료를 전송하면 해당 학생의 개별화교육계획 및 평가자료가 마감여부와 상관없이 전송되므로 별도로 전출생의 개별화교육계획을 마감할 필요는 없음.</b></li><li>전입 후 내용 입력 시 이미 마감이 완료된 경우에는 학기별은 '마감이후 수정 사유'를 입력하고, 월별은 기존 마감된 월과 다르게 월을 선택해 입력해야 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t12" data-num="12" data-stage="C" data-when="학기말" data-who="특수교육업무담당교사 교과담당교사">
+  <div class="gutter"><b>12</b><span class="gstage" title="원문 STAGE C · 계획과 평가 입력">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말</span></div>
+    <h3>학기별 개별화교육평가 입력과 마감</h3>
+    <p class="desc">학기 목표에 대한 도달 결과를 기록하는 업무다. 계획 화면과 달리 '입력구분'이 '교과영역' 또는 '일상생활영역'이며, <strong>학기별 개별화교육계획을 먼저 작성해 두어야</strong> 평가 대상 과목이 조회된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 학기별 개별화교육계획 작성 이후.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사, 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리-학기별개별화교육평가]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기', '계열/학년/학과', '강의실' 확인 후 '입력구분'에서 '교과영역' 또는 '일상생활영역'을 선택하고 '과목'을 선택하여 <span class="btn">{조회}</span> → 해당 학생을 선택하고 해당 과목의 학기별 개별화교육계획 평가내용을 입력한 후 <span class="btn">{저장}</span> → <span class="btn">{마감}</span>으로 마감하며, 마감된 이후에는 <span class="btn">{마감취소}</span>로 변경됨.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>세운 학기목표에 학생이 어디까지 도달했는지를 남겨 다음 학년도 계획의 출발점으로 쓰려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{교사찾기}</span>로 담당교사를 변경할 수 있음.</li><li>상신 완료된 개별화교육계획과 평가에 대해서 <code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리]</code>에서 기결취소 없이 수정할 수 있음. <b>다만 수정 시 '마감이후 수정 사유'를 작성해야 하며 마감이후수정이력조회에서 수정된 내용을 <span class="btn">{승인}</span>해야 함</b>(수정 후 <span class="btn">{저장}</span>하면 <span class="btn">{승인}</span> 여부와 상관없이 바로 반영됨).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t18" data-num="18" data-stage="E" data-when="수시" data-who="특수교육업무담당교사 교과담당교사 담임교사">
+  <div class="gutter"><b>18</b><span class="gstage" title="원문 STAGE E · 조회와 확인">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 계획·평가 저장 이후</span><span class="tag opt">교과담당·담임 두 경로</span></div>
+    <h3>학기별 개별화교육계획/평가 조회(교과담당·담임)</h3>
+    <p class="desc">학기별 개별화교육계획과 평가를 저장한 뒤 내용을 확인하는 업무입니다. <strong>교과담당교사는 자기가 담당한 '과목'을 선택해 그 과목만 보고, 담임은 '반' 기준으로 모든 과목을 한 번에 봅니다.</strong> 입력 화면이 아니라 확인용 화면이므로 절차는 조건 선택 후 조회로 같습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초·학기말, 학기별개별화교육계획과 학기별개별화교육평가에 내용을 저장한 뒤 수시로 확인함.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사, 교과담당교사, 담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-개별화교육계획관리-학기별개별화교육계획/평가조회(교과담당)]</code>, <code>[개별화교육계획-개별화교육계획관리-학기별개별화교육계획/평가조회(담임)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>교과담당교사가 <code>[개별화교육계획-개별화교육계획관리-학기별개별화교육계획/평가조회(교과담당)]</code>에서 '학년도', '학기', '계열/학년/학과', '강의실' 확인 후 '입력구분'에서 '교과영역' 또는 '생활지원영역'을 선택하고 '과목'을 선택함 → '출력구분'에서 '교육계획' 또는 '교육평가'를 선택 후 <span class="btn">{조회}</span>하면 해당 과목에 대한 학기별 개별화교육계획관리 및 평가관리에서 등록한 평가내용을 확인할 수 있음 → 담임은 <code>[개별화교육계획-개별화교육계획관리-학기별개별화교육계획/평가조회(담임)]</code>에서 '학년도', '학기', '계열/학년/학과', '반' 확인 후 '입력구분'에서 '교과영역' 또는 '생활지원영역'을 선택함 → '출력구분'에서 '교육계획' 또는 '교육평가'를 선택 후 <span class="btn">{조회}</span>하면 모든 과목에 대한 학기별 개별화교육계획 및 평가를 확인할 수 있음.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>마감과 승인요청을 올리기 전에 학생별로 빠진 학기목표나 평가내용이 없는지 눈으로 확인해 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>교과담당 화면은 <b>'과목'을 선택해야</b> 조회되고, 담임 화면은 '반' 기준으로 모든 과목을 한 번에 확인함.</li><li>'출력구분'을 '교육계획'으로 두면 학기목표와 현행수준 쪽이, '교육평가'로 두면 학기별 평가내용이 나옴.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t15" data-num="15" data-stage="D" data-when="마감승인" data-who="특수교육업무담당교사 교과담당교사">
+  <div class="gutter"><b>15</b><span class="gstage" title="원문 STAGE D · 마감과 승인">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기·월 입력 완료 후</span><span class="tag">교과담당 단계</span></div>
+    <h3>마감관리(교과담당)</h3>
+    <p class="desc">교과영역과 생활지원영역의 개별화교육계획·평가 입력이 끝난 뒤 교과담당이 먼저 처리하는 마감 단계입니다. 담임 마감과 승인요청 이전 단계이므로 <strong>'학기계획', '학기평가', '월 계획', '월 평가' 구분별로 각각 마감여부를 확인해야 합니다</strong>. 과목 단위로 조회되므로 담당 과목이 여러 개면 과목마다 반복합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초·학기말, 학기별 및 월별 개별화교육계획과 평가 입력을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사, 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리-마감관리(교과담당)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리-마감관리(교과담당)]</code>에서 '학년도', '학기', '계열/학년/학과', '강의실' 확인 → '입력구분'에서 '교과영역' 또는 '생활지원영역'을 선택 → '과목' 선택과 '구분'에서 '학기계획', '학기평가', '월 계획', '월 평가' 중에서 선택한 후 <span class="btn">{조회}</span> → '마감여부'를 선택하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>담임 마감과 결재 상신으로 넘어가기 전에 과목별 입력 내용이 확정되었음을 교과담당이 책임지고 확인해 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>학기별개별화교육계획과 학기별개별화교육평가 화면에서도 <span class="btn">{마감}</span>으로 마감할 수 있으며, 마감된 이후에는 <span class="btn">{마감취소}</span>로 변경됨.</li><li>월별개별화교육계획과 월별개별화교육평가 화면에서는 마감할 '월'을 선택하고 <span class="btn">{월마감}</span>함.</li><li><b>기존 학생에 입력된 월과 동일하게 입력하고자 하는 경우</b> <code>[상신함]</code>에서 해당 결재문서명에 대해 <span class="btn">{기결문서취소}</span> 후 <code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리-마감관리(담임)]</code>에서 <span class="btn">{마감취소}</span>, 이어서 <code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리-마감관리(교과담당)]</code>에서 <span class="btn">{마감취소}</span>하고 내용 입력 후 다시 단계적으로 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t16" data-num="16" data-stage="D" data-when="마감승인" data-who="특수교육업무담당교사 담임교사">
+  <div class="gutter"><b>16</b><span class="gstage" title="원문 STAGE D · 마감과 승인">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">교과담당 마감 이후</span><span class="tag">결재 상신 단계</span></div>
+    <h3>마감관리(담임)와 승인요청</h3>
+    <p class="desc">교과담당 마감이 끝난 자료를 담임이 반 단위로 확인해 마감하고 결재까지 올리는 마지막 단계입니다. <strong>마감여부를 선택하고 {저장}한 뒤 {승인요청}으로 업무승인 과정을 거쳐 결재권자의 결재를 완료해야 마무리됩니다</strong>. 조회 조건이 '강의실'이 아니라 '반'이라는 점이 마감관리(교과담당)와 다릅니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초·학기말, 마감관리(교과담당)에서 마감여부 저장이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사, 담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리-마감관리(담임)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리-마감관리(담임)]</code>에서 '학년도', '학기', '계열/학년/학과', '반' 확인 → '입력구분'에서 '교과영역' 또는 '생활지원영역'을 선택 → '구분'에서 '학기계획', '학기평가', '월 계획', '월 평가' 중에서 선택한 후 <span class="btn">{조회}</span> → '마감여부'를 선택하고 <span class="btn">{저장}</span> 후 <span class="btn">{승인요청}</span>으로 업무승인 과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학급 학생 전원의 개별화교육계획과 평가를 결재로 확정해 학기 자료의 책임 소재를 남기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>전입생·전출생 처리</h4><ul><li>당해 학년도 특수교육대상학생으로 등록이 되어 있지 않은 경우 개별화교육계획이 비활성화되어 전송할 수 없으므로 <code>[개별화교육계획-인적사항관리-인적사항관리]</code>에서 <b>해당 학생을 특수교육대상학생으로 등록하는 것이 우선</b>되어야 함.</li><li>전입교의 <code>[학적-전입관리-전편재입/복학생등록(2025학년도)]</code>에서 해당 학생을 등록 후 전출교에 전입을 요청하고, 전출교에서는 <code>[학적-전출관리-전출관리-전출자료전송]</code>에서 개별화교육계획을 포함하여 <span class="btn">{전출자료보내기}</span>함.</li><li>전입교에서는 <code>[개별화교육계획-전입생개별화교육추가-전입생개별화교육추가]</code>에서 전출교 개별화교육 자료를 활용하거나 수정하여 반영함.</li><li>학기 중 전출생의 전출자료를 전송하면 해당 학생의 개별화교육계획 및 평가자료가 <b>마감여부와 상관없이 전송되므로 별도로 전출생의 개별화교육계획을 마감할 필요는 없음</b>.</li></ul></div><div class="memo" style="margin-top:12px"><h4>추가 입학생 입력</h4><ul><li>학기별 개별화교육계획은 마감이 완료된 경우에는 해당 학생에 대해 내용 입력 후 '마감이후 수정 사유'를 입력함. 등록한 내용은 <code>[개별화교육계획-개별화교육계획관리-마감이후수정이력조회]</code>에서 해당 학생 자료만 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</li><li>월별 개별화교육계획은 마감이 완료된 경우에는 <b>기존 마감된 월과 다르게 월을 선택하고</b> 내용을 입력하고 저장함. 등록한 내용은 <code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리-마감관리(담임)]</code>에서 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t17" data-num="17" data-stage="D" data-when="마감승인" data-who="특수교육업무담당교사 담임교사">
+  <div class="gutter"><b>17</b><span class="gstage" title="원문 STAGE D · 마감과 승인">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">마감·상신 이후 수정 발생 시</span><span class="tag opt">수정한 경우에만</span></div>
+    <h3>마감 이후 수정이력 조회와 승인</h3>
+    <p class="desc">마감과 상신이 끝난 개별화교육계획·평가를 수정한 경우에만 필요한 업무입니다. 상신 완료된 자료도 기결취소 없이 수정할 수 있지만 <strong>수정 시 '마감이후 수정 사유'를 작성해야 하며 마감이후수정이력조회에서 수정된 내용을 {승인}해야 합니다</strong>. 수정 후 <span class="btn">{저장}</span>하면 <span class="btn">{승인}</span> 여부와 상관없이 바로 반영되므로 승인 절차를 빠뜨리기 쉽습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초·학기말, 마감관리(담임)까지 결재가 완료된 자료를 수정한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사, 담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-개별화교육계획-마감이후수정이력조회]</code>, <code>[개별화교육계획-개별화교육계획관리-마감이후수정이력조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[개별화교육계획-개별화교육계획-마감이후수정이력조회]</code>에서 '학년도', '학기', '계열/학년/학과', '반' 확인 → '입력구분'에서 '교과영역' 또는 '생활지원영역'을 선택하고 '과목'을 선택 → '구분'에서 '학기계획', '학기평가', '월 계획', '월 평가'를 선택한 후 <span class="btn">{조회}</span>를 클릭하여 수정자료와 마감이후 수정 사유를 확인하고 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>결재까지 끝난 자료를 고친 사실과 그 사유를 기록으로 남겨 사후에 변경 경위를 설명할 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>상신 완료된 개별화교육계획과 평가에 대해서 <code>[개별화교육계획-개별화교육계획관리-개별화교육계획관리]</code>에서 <b>기결취소 없이 수정할 수 있음</b>. 다만 수정 시 '마감이후 수정 사유'를 작성해야 하며 <code>[개별화교육계획-개별화교육계획관리-마감이후수정이력조회]</code>에서 수정된 내용을 <span class="btn">{승인}</span>해야 함.</li><li>수정 후 <span class="btn">{저장}</span>하면 <b><span class="btn">{승인}</span> 여부와 상관없이 바로 반영됨</b>.</li><li>추가 입학생의 학기별 개별화교육계획을 마감 이후 입력한 경우 이 메뉴에서 해당 학생 자료만 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t21" data-num="21" data-stage="E" data-when="수시" data-who="특수교육업무담당교사">
+  <div class="gutter"><b>21</b><span class="gstage" title="원문 STAGE E · 조회와 확인">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수시</span><span class="tag opt">졸업생 한정</span></div>
+    <h3>졸업생 개별화교육 조회</h3>
+    <p class="desc">이미 졸업한 학생의 개별화교육계획과 평가자료를 찾아보는 업무입니다. <strong>학년·반으로는 찾을 수 없으므로 '졸업학년도'와 '성명'을 넣고 {학생찾기}로 학생을 특정해야 합니다.</strong> 상급학교 문의나 자료 확인 요청이 있을 때 씁니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>수시. 개별화교육계획을 나이스로 관리해 진학 시 자료를 상급학교로 전송한 이후에도 조회함.</dd></dl>
+      <dl><dt>누가?</dt><dd>특수교육업무 담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-개별화교육조회-개별화교육조회(졸업생)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[개별화교육계획-개별화교육조회-개별화교육조회(졸업생)]</code>에서 '졸업학년도'와 '성명' 입력 후 <span class="btn">{학생찾기}</span>함 → '고등학교 학생찾기' 창에서 찾고자 하는 졸업생의 '학생명'을 입력 후 <span class="btn">{조회}</span>하여 해당 졸업생을 선택하고 <span class="btn">{확인}</span>함 → '조회학년도'에서 조회하고자 하는 학년도를 선택한 후 '입력구분'에서 조회할 영역과 학기, 월별 개별화 등을 선택하고 <span class="btn">{조회}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>졸업 후에도 남은 개별화교육 기록으로 학생의 지원 이력을 확인해 주려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>졸업생은 학년·반으로 조회되지 않으므로 <b>'졸업학년도'와 '성명'을 입력해</b> <span class="btn">{학생찾기}</span>로 특정함.</li><li>'조회학년도'와 '입력구분'을 함께 선택해야 해당 학년도의 영역별·학기별·월별 자료가 나옴.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part Ⅳ 개별화교육계획, Section_01~04 개별화교육계획 (585–615쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

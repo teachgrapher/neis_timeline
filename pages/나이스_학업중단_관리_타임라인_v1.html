@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<!-- 학업중단 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>학업중단 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>학업중단 관리</b>
+    <span class="sub">업무 6개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">학적 · Section_05 · pp. 310–315</p>
+    <h1>학업중단 관리
+      <em>업무 6개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학년초, 학기중</dd></div>
+      <div><dt>업무담당</dt><dd>학적 업무담당자</dd></div>
+      <div><dt>메뉴경로</dt><dd>[학적-학업중단관리-휴학/자퇴/퇴학/제적관리]</dd></div>
+      <div><dt>선행조건</dt><dd>학업중단자를 확정하고 학적반영일 기준 학교생활기록부 모든 항목 입력 내용을 확인함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>특수교육대상학생 사전 등록</h3>
+            <p class="tl-sub">특수교육대상학생이 있는 학교만 · 학적 처리 착수 전</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 개별화교육 등록"><span>04</span>개별화교육 등록</button><button type="button" class="tl-btn" data-go="t5" title="05 장기결석 정원외"><span>05</span>장기결석 정원외</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>학업중단자 확정 직후</h3>
+            <p class="tl-sub">학적반영일 기준 학생부 전 항목 확인을 마친 뒤 착수</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 변동내용 입력"><span>01</span>변동내용 입력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>변동내용 저장 후</h3>
+            <p class="tl-sub">변동일자·변동구분 저장 완료가 선행조건</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t2" title="02 학생부생성"><span>02</span>학생부생성</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>학적 최종 확정</h3>
+            <p class="tl-sub">결재권자 결재 완료 후에만 학적반영 가능</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t3" title="03 승인요청·학적반영"><span>03</span>승인요청·학적반영</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>학적반영 이후</h3>
+            <p class="tl-sub">재학생 명부에서 빠진 학생의 서류가 필요할 때</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t6" title="06 변동자 학생부 출력"><span>06</span>변동자 학생부 출력</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t4" data-num="4" data-stage="C" data-when="사전준비" data-who="학적업무담당자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE C · 특수교육대상">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적 처리 전</span><span class="tag opt">특수교육대상학생 한정</span></div>
+    <h3>개별화교육 대상자 등록</h3>
+    <p class="desc">특수교육대상학생이 있는 학교에서만 하는 업무이다. 고등학교 특수교육대상학생은 의무교육 대상자의 학적처리에 준하여 처리하므로, <strong>특수교육대상학생의 학적 변동 시 먼저 개별화교육대상자로 등록하고 학적을 처리</strong>한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 특수교육대상학생의 학적 처리를 시작하기 전</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[개별화교육계획-인적사항관리-인적사항관리-개별화교육대상자관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[개별화교육계획-인적사항관리-인적사항관리-개별화교육대상자관리]</code>에서 '학년도', '학년', '반' 확인 후 <span class="btn">{조회}</span> → <span class="btn">{등록}</span>을 클릭하면 나타나는 '개별화교육대상자등록' 창에서 '학년도', '계열/학년/학과', '반' 확인 후 '성명'을 입력하고 <span class="btn">{조회}</span> → 해당 학생을 선택하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>특수교육대상학생에게 의무교육에 준하는 학적 용어를 쓸 수 있게 만들어, 뒤이은 학적 처리가 장기결석에 따른 정원 외 학적관리·유예·면제로 잡히게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>고등학교 특수교육대상학생은 의무교육 대상자의 학적처리에 준하여 처리함.</li><li>특수교육대상학생의 학적 변동 시 <b>먼저 개별화교육대상자로 등록하고 학적을 처리</b>하되, 의무교육 학적 용어를 사용함(장기결석에 따른 정원 외 학적관리, 유예, 면제 등).</li><li>의무교육에 준하는 학적 용어를 사용하려면 <code>[개별화교육계획-인적사항관리-인적사항관리-개별화교육대상자관리]</code>에서 개별화교육 대상자로 등록하고, 이후 <code>[학적-학업중단관리-휴학/자퇴/퇴학/제적관리]</code>에서 학적 처리를 <b>순으로</b> 진행함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="C" data-when="변동등록" data-who="학적업무담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE C · 특수교육대상">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">개별화교육 대상자 등록 후</span><span class="tag opt">특수교육대상학생 한정</span></div>
+    <h3>장기결석에 따른 정원 외 학적관리</h3>
+    <p class="desc">장기결석 중인 특수교육대상학생이 있는 경우에만 하는 업무이다. <strong>개별화교육 대상자로 등록을 마친 뒤</strong> 같은 휴학/자퇴/퇴학/제적관리 화면에서 의무교육 학적 용어로 학적을 처리한다. '변동사유'를 선택하면 '비고'가 자동 반영된다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 개별화교육 대상자 등록을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-학업중단관리-휴학/자퇴/퇴학/제적관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-학업중단관리-휴학/자퇴/퇴학/제적관리]</code>에서 '학년도' 확인 후 '기간' 설정 및 '미반영된자료'를 선택하고 <span class="btn">{조회}</span> → <span class="btn">{추가}</span> 후 '휴학/자퇴/퇴학/제적생 상세조회'에서 <span class="btn">{학생찾기}</span>로 해당 특수교육대상학생을 조회하고 '변동일자', '변동구분' 선택 후 '학년', '반', '번호' 확인 및 '변동사유'를 선택('비고' 자동 반영)하고 '학적특기사항' 입력 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>장기결석한 특수교육대상학생을 의무교육 대상자에 준하는 학적으로 남겨, 재학 정원과 출결·수업일수가 실제 학적 상태와 어긋나지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모 — 생성과 반영</h4><ul><li><code>[학적-학업중단관리-휴학/자퇴/퇴학/제적관리]</code>에서 자퇴 등의 학적변동일자 기준으로 <span class="btn">{학교생활기록부생성}</span>하면 학교생활기록부 인적･학적사항의 '학적사항'에 '(2025년 ○○월 ○○일 □□고등학교 자퇴)'로 표기되며, 출결상황의 출결자료도 학적변동일자 기준으로 반영됨(<b>학적변동일자까지 수업일수에 포함됨</b>).</li><li>휴학생･퇴학생･제적생 처리도 같은 방법으로 처리하되, '변동구분'을 '휴학', '퇴학', '제적'으로 선택함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모 — 출력</h4><ul><li>학적변동자(자퇴･퇴학 등)의 학교생활기록부 출력은 <code>[학생부-학교생활기록부-학교생활기록부-학생부조회및출력]</code>에서 <b>'재학아닌학생'을 선택</b>하고 '성명'을 입력 후 <span class="btn">{조회}</span>하여 출력할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="변동등록" data-who="학적업무담당자">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 학적변동 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학업중단자 확정 직후</span><span class="tag">휴학·자퇴·퇴학·제적 공통</span></div>
+    <h3>휴학·자퇴·퇴학·제적생 추가와 변동내용 입력</h3>
+    <p class="desc">학교생활부적응 및 유학 등의 사유로 학업을 중단한 학생이 있을 때 하는 업무입니다. <strong>학업중단자를 확정하고 학적반영일 기준 학교생활기록부 모든 항목 입력 내용을 확인한 뒤</strong>에 시작합니다. 휴학·자퇴·퇴학·제적은 모두 같은 화면에서 '변동구분'만 달리 선택해 처리합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 학업중단자를 확정하고 학적반영일 기준 학교생활기록부 모든 항목 입력 내용을 확인한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-학업중단관리-휴학/자퇴/퇴학/제적관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-학업중단관리-휴학/자퇴/퇴학/제적관리]</code>에서 '학년도', '기간' 확인 후 '미반영된자료'를 선택하고 <span class="btn">{조회}</span>하여 <span class="btn">{추가}</span> → '휴학/자퇴/퇴학/제적생 상세조회'에서 <span class="btn">{학생찾기}</span>를 클릭하면 나타나는 '고등학교 학생찾기' 창에서 '학년도', '학년' 확인 후 '성명' 입력 후 <span class="btn">{조회}</span> → 해당 자퇴생을 클릭하고 <span class="btn">{확인}</span> → '휴학/자퇴/퇴학/제적생 상세조회'에서 '변동일자', '변동구분', '변동사유', '비고', '학적특기사항' 등을 입력하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학업을 중단한 학생의 변동일자와 사유를 학적에 남겨 그 학생의 학교생활기록부와 출결이 실제 중단 시점에 맞게 정리되도록 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>휴학생·퇴학생·제적생 처리도 같은 방법으로 처리하되, '변동일자', '변동구분' 입력 과정에서 <b>'변동구분'을 '휴학', '퇴학', '제적'으로 선택</b>함.</li><li>'미반영된자료'를 선택하고 <span class="btn">{조회}</span>해야 아직 학적반영하지 않은 대상을 목록에서 볼 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="B" data-when="기록부생성" data-who="학적업무담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE B · 생성·반영">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">변동내용 저장 직후</span></div>
+    <h3>항목별 내용 확인과 학교생활기록부생성</h3>
+    <p class="desc">학업중단자의 변동일자와 변동구분을 저장한 뒤에 하는 일입니다. 목록에서 해당 학생을 다시 열어 우측 항목별 내용을 하나씩 확인해야 하며, <strong>학적변동일자 기준으로 학교생활기록부가 생성되므로 변동일자가 맞는지 먼저 확인합니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 학업중단자의 '변동일자', '변동구분', '변동사유' 등을 저장한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-학업중단관리-휴학/자퇴/퇴학/제적관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>목록에서 자퇴생 클릭 후 '휴학/자퇴/퇴학/제적생 상세조회'에서 우측의 항목별 내용을 확인하고 <span class="btn">{학교생활기록부생성}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학업중단 사실과 그 날짜까지의 출결을 학교생활기록부에 확정해 남기기 위해서입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><code>[학적-학업중단관리-휴학/자퇴/퇴학/제적관리]</code>에서 자퇴 등의 학적변동일자 기준으로 <span class="btn">{학교생활기록부생성}</span> 하면 학교생활기록부 인적･학적사항의 '학적사항'에 '(2025년 ○○월 ○○일 □□고등학교 자퇴)'로 표기됨.</li><li>출결상황의 출결자료도 학적변동일자 기준으로 반영되며, <b>학적변동일자까지 수업일수에 포함됨</b>.</li><li>휴학생･퇴학생･제적생 처리도 같은 방법으로 처리하되, ➒ 과정에서 '변동구분'을 '휴학', '퇴학', '제적'을 선택함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="B" data-when="승인반영" data-who="학적업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE B · 생성·반영">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학교생활기록부생성 이후</span></div>
+    <h3>승인요청과 학적반영</h3>
+    <p class="desc">학교생활기록부생성까지 마친 학업중단자를 학적에 최종 확정하는 마지막 단계입니다. <strong>결재권자의 결재가 완료된 뒤에야 학적반영을 할 수 있습니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. <span class="btn">{학교생활기록부생성}</span>을 마치고 항목별 내용 확인이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-학업중단관리-휴학/자퇴/퇴학/제적관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재가 완료되면 자퇴생 선택 후 <span class="btn">{학적반영}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교장의 결재를 거친 사실만 학적으로 확정해 학업중단 처리의 근거를 남기기 위해서입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>휴학생･퇴학생･제적생도 같은 방법으로 <span class="btn">{승인요청}</span>과 <span class="btn">{학적반영}</span>을 진행함.</li><li><b>결재권자의 결재가 완료되지 않으면 {학적반영}을 할 수 없음</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="D" data-when="사후출력" data-who="학적업무담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE D · 출력·확인">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적반영 이후</span><span class="tag">자퇴·퇴학 등 학적변동자</span></div>
+    <h3>학적변동자 학교생활기록부 조회 및 출력</h3>
+    <p class="desc">자퇴·퇴학 등으로 <strong>학적반영이 끝나 재학생 명부에서 빠진 학생</strong>은 일반 학생부 조회 화면의 재학생 목록에서 검색되지 않습니다. 학업중단 학생의 학교생활기록부를 확인하거나 출력해야 할 때 쓰는 업무입니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학기중. 학적변동자의 {학교생활기록부생성}과 {학적반영}이 끝난 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학적 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학생부-학교생활기록부-학교생활기록부-학생부조회및출력]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘재학아닌학생’을 선택( )하고 ‘성명’을 입력 후 <span class="btn">{조회}</span>하여 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교를 떠난 학생의 학적·출결이 변동일자 기준으로 제대로 기록되었는지 확인하고, 상급학교 진학이나 증명 요청에 쓸 기록을 내주려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>학적변동자(자퇴·퇴학 등)의 학교생활기록부 출력은 <b>‘재학아닌학생’을 선택( )</b>하고 ‘성명’을 입력 후 <span class="btn">{조회}</span>하여 출력할 수 있음.</li><li><span class="btn">{학교생활기록부생성}</span>을 하면 인적·학적사항의 ‘학적사항’에 ‘(2025년 ○○월 ○○일 □□고등학교 자퇴)’로 표기되며, 출결상황의 출결자료도 학적변동일자 기준으로 반영됨(<b>학적변동일자까지 수업일수에 포함됨</b>).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 학적, Section_05 학업중단 관리 (310–315쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

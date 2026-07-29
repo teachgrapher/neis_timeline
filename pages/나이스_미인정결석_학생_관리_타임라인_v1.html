@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<!-- 미인정결석 학생 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>미인정결석 학생 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>미인정결석 학생 관리</b>
+    <span class="sub">업무 6개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">학적 · Section_18 · pp. 565–567</p>
+    <h1>미인정결석 학생 관리
+      <em>업무 6개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학기중</dd></div>
+      <div><dt>업무담당</dt><dd>머리말에 업무담당 표기 없음. 선행처리와 본문 기준으로 학급담임교사가 수행하며, 제출 단계에만 결재권자가 관여함.</dd></div>
+      <div><dt>메뉴경로</dt><dd>[학급담임-학적-미인정결석학생관리]</dd></div>
+      <div><dt>선행조건</dt><dd>학급담임교사가 [학적-출결관리-출결관리-일일출결관리(담임용)]에서 출결관리함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>연속 7일 미인정결석 발생 시</h3>
+            <p class="tl-sub">일일출결관리 마감 후 · 모든 후속 업무의 선행조건</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 결석학생 등록"><span>01</span>결석학생 등록</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>등록 후 관리 기간</h3>
+            <p class="tl-sub">등록 완료 필요 · 학생 상황 변동 시마다 반복</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t2" title="02 관리항목 수정"><span>02</span>관리항목 수정</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>보고 직전 확인</h3>
+            <p class="tl-sub">관리항목 입력 후 · 등록된 학생만 조회 가능</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 관리카드 출력"><span>04</span>관리카드 출력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>보고와 제출</h3>
+            <p class="tl-sub">결재권자 결재 완료 후 제출 가능</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 보고·제출"><span>05</span>보고·제출</button><button type="button" class="tl-btn" data-go="t6" title="06 보고이력조회"><span>06</span>보고이력조회</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>결석 재발 시</h3>
+            <p class="tl-sub">재등교 후 다시 7일 이상 미인정결석한 학생만 해당</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t3" title="03 최초결석일 수정"><span>03</span>최초결석일 수정</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="결석발생시" data-who="학급담임교사">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 대상 등록">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">연속 7일 이상 미인정결석 발생 시</span><span class="tag">학급담임 등록</span></div>
+    <h3>미인정결석학생 등록</h3>
+    <p class="desc">우리 반에 연속 7일 이상 미인정결석한 학생이 있으면 담임이 직접 등록하는 업무입니다. <strong>미인정결석이 연속 7일 미만이라도 아동학대 의심 등으로 '경찰에 수사 의뢰된 학생'은 포함합니다.</strong> 등록 주체가 학급담임교사이므로 대상학생 조회 시 해당 반 학생만 조회됩니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 학급담임교사가 [학적-출결관리-출결관리-일일출결관리(담임용)]에서 출결관리를 마친 뒤 연속 7일 이상 미인정결석이 확인된 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-미인정결석학생관리-미인정결석학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학년', '반' 확인 후 <span class="btn">{등록}</span> → '미인정결석학생 등록' 창에서 <span class="btn">{학생찾기}</span>를 클릭 → '학생찾기' 창에서 '일출결조회'나 '수기입력' 선택 후 <span class="btn">{조회}</span>('수기입력' 선택 시 '성명'에 학생 '성명'을 입력함) → 해당 학생 선택 후 '최초미인정결석일자'를 입력하고 <span class="btn">{확인}</span> → '미인정결석학생 등록' 창에서 '기본정보' 및 '미인정결석 관리항목' 등을 입력하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>장기 미인정결석 학생을 학교가 놓치지 않고 붙잡아 상급 교육기관 보고까지 이어지는 관리 체계에 올려두려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>등록 대상 기준</h4><ul><li><b>3월 입학일부터 연속 7일 이상 미인정결석한 학생</b>을 등록합니다.</li><li>미인정결석이 연속 7일 미만이라도 아동학대 의심 등으로 <b>'경찰에 수사 의뢰된 학생'은 포함</b>합니다.</li><li>미인정결석학생 등록 주체는 학급담임교사이므로 <b>대상학생 조회 시 해당 반 학생만 조회</b>할 수 있습니다.</li></ul></div><div class="memo" style="margin-top:12px"><h4>등록 창 입력 항목</h4><ul><li>'미인정결석학생 등록' 창에서는 '기본정보', '미인정결석 관리항목', '경찰수사의뢰 관리항목', '복귀 관리항목', '월별 관리이력'을 확인 또는 입력합니다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="B" data-when="관리중" data-who="학급담임교사">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE B · 관리항목 유지">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">등록 이후 관리 기간 중</span></div>
+    <h3>미인정결석학생 관리항목 조회 및 수정</h3>
+    <p class="desc">이미 등록한 미인정결석학생의 관리 내용을 확인하거나 고쳐야 할 때 하는 업무입니다. 목록에서 '성명'을 클릭하면 열리는 '미인정결석학생조회' 창에서 <strong>'기본정보', '미인정결석 관리항목', '경찰수사의뢰 관리항목', '복귀 관리항목', '월별 관리이력'</strong>을 조회하거나 수정할 수 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 미인정결석학생 등록을 마친 뒤 학생 상황이 바뀔 때마다.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-미인정결석학생관리-미인정결석학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학년', '반' 확인 후 목록에서 '성명'을 클릭함 → 나타나는 '미인정결석학생조회' 창에서 '기본정보', '미인정결석 관리항목', '경찰수사의뢰 관리항목', '복귀 관리항목', '월별 관리이력'을 조회하거나 수정함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생의 결석 경과와 경찰수사의뢰, 복귀 상황을 최신 상태로 남겨 상급 교육기관 보고 내용이 실제와 어긋나지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'미인정결석학생 등록' 창과 '미인정결석학생조회' 창에서 다루는 항목은 '기본정보', '미인정결석 관리항목', '경찰수사의뢰 관리항목', '복귀 관리항목', '월별 관리이력'으로 같음.</li><li><b>미인정결석학생 등록 주체는 학급담임교사이므로 대상학생 조회 시 해당 반 학생만 조회할 수 있음.</b></li><li>항목명 옆의 △를 클릭할 때마다 △ → ▲ → ▼ 순으로 변경되고 각각 '정렬 없음', '오름차순', '내림차순'을 의미하며, 항목을 기준으로 여러 개 정렬 기준을 부여하는 경우 순서대로 번호가 부여됨(대부분의 조회 메뉴에 적용되는 기능임).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="C" data-when="보고준비" data-who="학급담임교사">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE C · 보고와 이력 확인">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">보고 전 확인 시</span><span class="tag">조회·출력</span></div>
+    <h3>집중관리 대상자 관리카드 조회 및 저장·출력</h3>
+    <p class="desc">미인정결석학생으로 등록된 학생의 관리 내용을 한 장으로 모아 보는 업무입니다. <strong>미인정결석학생관리에 등록된 학생만 조회 대상이 됩니다.</strong> 상급 교육기관 보고 전이나 내부 협의 자료가 필요할 때 사용합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 미인정결석학생 등록을 마친 뒤 보고 자료나 관리 내용 확인이 필요한 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-미인정결석학생관리-미인정결석학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>학생을 선택( ) → <span class="btn">{개인별관리카드조회}</span> 클릭 → 나타나는 ‘집중관리 대상자 관리카드’ 창에서 ‘기본사항’, ‘처리과정’, ‘월별 관리내용’ 확인 → 필요시 저장( ) 또는 출력( )함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>흩어져 입력한 관리 내용을 학생 한 명 단위로 모아, 보고와 협의 자리에서 그 학생의 상황을 근거 있게 설명하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>‘집중관리 대상자 관리카드’ 창에서 ‘기본사항’, ‘처리과정’, ‘월별 관리내용’을 확인할 수 있음.</li><li><b>PDF, 워드, 엑셀, 파워포인트, 한글 문서로 저장( )하거나 출력( )할 수 있음.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>조회 화면 정렬 기능</h4><ul><li>항목명 옆의 △를 클릭할 때마다 △ → ▲ → ▼ 순으로 변경되고 각각 ‘정렬 없음’, ‘오름차순’, ‘내림차순’을 의미함.</li><li>항목을 기준으로 여러 개 정렬 기준을 부여하는 경우 순서대로 번호가 부여됨(<b>대부분의 조회 메뉴에 적용되는 기능임</b>).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="C" data-when="보고시점" data-who="학급담임교사 결재권자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE C · 보고와 이력 확인">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">보고 시점</span><span class="tag opt">필요시 승인요청</span></div>
+    <h3>대상학생보고 및 상급 교육기관 제출</h3>
+    <p class="desc">등록·관리한 미인정결석 학생을 상급 교육기관으로 올리는 업무입니다. <strong>{대상학생보고} 후에도 결재권자의 결재가 완료되어야 {제출}까지 갈 수 있습니다.</strong> 학기중 보고가 필요한 시점에 수행합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 미인정결석학생 등록과 관리항목 입력을 마쳐 보고가 필요한 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사, 결재권자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-미인정결석학생관리-미인정결석학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>해당 학생을 선택( ) → <span class="btn">{대상학생보고}</span> 클릭 → <code>[학급담임-학적-미인정결석학생관리-미인정결석학생관리]</code>에서 조회 → 필요시 <span class="btn">{승인요청}</span>으로 업무승인과정을 거침 → 결재권자의 결재 완료 후 상급 교육기관에 <span class="btn">{제출}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>장기 미인정결석 학생의 상황을 학교 안에만 두지 않고 상급 교육기관이 함께 확인·지원할 수 있게 넘기려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>{대상학생보고} 후 필요시 {승인요청}으로 업무승인과정을 거쳐 결재권자의 결재 완료 후 상급 교육기관에 {제출}함.</b></li><li>{대상학생보고}를 클릭하면 [학급담임-학적-미인정결석학생관리-미인정결석학생관리]에서 조회됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="C" data-when="보고후" data-who="학급담임교사">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE C · 보고와 이력 확인">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">보고 이후</span><span class="tag">조회</span></div>
+    <h3>미인정결석학생 보고이력조회</h3>
+    <p class="desc">보고를 마친 학생의 보고 내역을 확인하는 업무입니다. <strong>보고이력은 대상학생보고를 거친 학생에 대해서만 남습니다.</strong> 같은 학생의 보고가 여러 차례 이어질 때 앞선 보고 내용을 되짚는 데 씁니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 대상학생보고와 제출을 진행한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-미인정결석학생관리-미인정결석학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>해당 학생을 선택( ) → <span class="btn">{보고이력조회}</span> 클릭 → 나타나는 ‘미인정결석학생 보고이력조회’ 창에서 미인정결석 대상 학생의 보고이력을 조회함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>이미 올린 보고와 앞으로 올릴 보고가 어긋나지 않도록 지난 보고 내용을 확인하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>해당 학생을 선택( ) 후 {보고이력조회}를 클릭하면 나타나는 ‘미인정결석학생 보고이력조회’ 창에서 <b>미인정결석 대상 학생의 보고이력</b>을 조회함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="B" data-when="관리중" data-who="학급담임교사">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE B · 관리항목 유지">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">재등교 후 다시 7일 이상 미인정결석이 발생한 때</span><span class="tag opt">결석 재발 학생 한정</span></div>
+    <h3>재발 학생의 최초미인정결석일자 수정</h3>
+    <p class="desc">이미 등록된 학생이 등교를 재개했다가 다시 장기 미인정결석에 들어간 경우에만 해당하는 업무입니다. <strong>동일한 학생이 7일 이상 미인정결석으로 등록된 이후 등교하다가 다시 7일 이상의 미인정결석이 발생하는 경우</strong> 새로 등록하지 않고 '최초미인정결석일자'를 고칩니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 등록된 학생이 재등교한 뒤 다시 7일 이상 미인정결석이 발생한 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학급담임-학적-미인정결석학생관리-미인정결석학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>목록에서 해당 학생의 '성명'을 클릭함 → '미인정결석학생 등록' 창에서 '최초미인정결석일자'를 두 번째 미인정결석 시작일로 수정함 → <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>두 번째 결석의 시작일을 기준으로 관리 기간이 다시 세어지게 해 보고 시점과 관리 이력이 실제 결석 상황과 맞도록 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>동일 학생이 재차 장기 미인정결석하는 경우 별도 등록이 아니라 '최초미인정결석일자'를 두 번째 미인정결석 시작일로 수정함.</b></li><li>3월 입학일부터 연속 7일 이상 미인정결석한 학생을 등록하며, 미인정결석이 연속 7일 미만이라도 아동학대 의심 등으로 '경찰에 수사 의뢰된 학생'은 포함함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 학적, Section_18 미인정결석 학생 관리 (565–567쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

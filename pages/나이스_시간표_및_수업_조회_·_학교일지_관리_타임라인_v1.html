@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<!-- 시간표 및 수업 조회 · 학교일지 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시간표 및 수업 조회 · 학교일지 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>시간표 및 수업 조회 · 학교일지 관리</b>
+    <span class="sub">업무 10개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">교육과정 · Section_08~09 · pp. 196–205</p>
+    <h1>시간표 및 수업 조회 · 학교일지 관리
+      <em>업무 10개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학기중(시간표 및 수업 조회), 연중(학교일지 관리)</dd></div>
+      <div><dt>업무담당</dt><dd>시간표업무담당교사, 학급담임교사, 교과담당교사, 학교일지 업무담당자</dd></div>
+      <div><dt>메뉴경로</dt><dd>[교육과정-시간표관리], [교육과정-학교일지관리]</dd></div>
+      <div><dt>선행조건</dt><dd>[교육과정-시간표관리-전체시간표관리]에 전체시간표가 등록되어 있어야 함. [교육과정-학사일정관리-연간학사일정관리]에 공휴일 정보, 행사 등 관련 내용을 등록함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>학기초 시간표 배부</h3>
+            <p class="tl-sub">전체시간표관리에 전체시간표가 등록된 직후</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 전체시간표 조회"><span>04</span>전체시간표 조회</button><button type="button" class="tl-btn" data-go="t1" title="01 교사별 시간표"><span>01</span>교사별 시간표</button><button type="button" class="tl-btn" data-go="t3" title="03 학생별 시간표"><span>03</span>학생별 시간표</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>학기중 수업 현황 점검</h3>
+            <p class="tl-sub">시간표 운영이 시작된 뒤 수시로 확인</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t2" title="02 기간 수업 조회"><span>02</span>기간 수업 조회</button><button type="button" class="tl-btn" data-go="t5" title="05 강의실 사용현황"><span>05</span>강의실 사용현황</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>시수 결재문서 작성</h3>
+            <p class="tl-sub">시수 현황을 내부결재로 남겨야 할 때만</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t6" title="06 시수누계 조회"><span>06</span>시수누계 조회</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>일과중 학교일지 입력</h3>
+            <p class="tl-sub">연간학사일정 등록 후 · 날짜 조회가 선행</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t7" title="07 일지 전달사항"><span>07</span>일지 전달사항</button><button type="button" class="tl-btn" data-go="t8" title="08 직원상황 반영"><span>08</span>직원상황 반영</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>일출결 마감 후 승인요청</h3>
+            <p class="tl-sub">당일 입력 저장 완료 후 결재문서 생성</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t9" title="09 일지 승인요청"><span>09</span>일지 승인요청</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">06</p>
+            <h3>결재 완료 후 정정</h3>
+            <p class="tl-sub">완결된 일지에서 오류를 발견했을 때만</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t10" title="10 기결 일지 수정"><span>10</span>기결 일지 수정</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="학기중" data-who="시간표업무담당교사 학급담임교사 교과담당교사">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 전체·강의실 시간표 확인">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기중</span></div>
+    <h3>전체시간표 조회(강의실별·반별·변경수업)</h3>
+    <p class="desc">학교 전체의 시간표를 한눈에 확인할 때 쓰는 업무이며, 시간표업무담당교사·학급담임교사·교과담당교사가 모두 열 수 있다. <strong>[교육과정-시간표관리-전체시간표관리]에 전체시간표가 등록되어 있어야</strong> 조회된다. 보려는 관점에 따라 '강의실별조회 또는 반별조회 또는 변경수업조회' 중 하나를 골라 조회한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 전체시간표관리에 전체시간표가 등록된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>시간표업무담당교사, 학급담임교사, 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-시간표관리-전체시간표조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-시간표관리-전체시간표조회]</code>에서 '학년도' 확인 후 '학기', '학년', '일자', '강의실별조회 또는 반별조회 또는 변경수업조회'를 선택하고 <span class="btn">{조회}</span> → 전체시간표를 확인하고 필요시 저장 또는 출력할 수 있음.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>오늘 어느 반이 어느 강의실에서 무슨 수업을 하는지, 변경된 수업이 무엇인지를 학교 전체 기준으로 맞춰 보려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'강의실별조회 또는 반별조회 또는 변경수업조회' 중 무엇을 선택하느냐에 따라 같은 일자의 시간표가 다른 관점으로 나타난다.</li><li>조회된 내용은 필요시 저장 또는 출력할 수 있다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="학기중" data-who="시간표업무담당교사 교과담당교사">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 교사·학생 시간표 확인">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기중</span><span class="tag opt">교사별출력 선택 시 교사찾기</span></div>
+    <h3>교사별 시간표 조회·출력</h3>
+    <p class="desc">전체시간표가 등록된 뒤 교사 개인의 수업 시간표를 확인할 때 쓰는 업무입니다. <strong>[교육과정-시간표관리-기초시간표관리] 또는 [교육과정-시간표관리-시험시간표관리]에 등록된 시간표가 조회되므로 전체시간표의 교사별 시간표와 다를 수 있음.</strong> 출력구분에 따라 전체 교사 또는 특정 교사 한 명만 볼 수 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, [교육과정-시간표관리-전체시간표관리]에 전체시간표가 등록된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>시간표업무담당교사, 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-시간표관리-교사별시간표조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-시간표관리-교사별시간표조회]</code>에서 '학년도' 확인 후 '학기', '출력구분'을 선택하고 <span class="btn">{조회}</span> 함 → 조회된 내용 확인하고 저장 또는 출력할 수 있음.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교사가 자기 수업 시간을 미리 확인하고 결보강·업무 일정을 잡을 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'교사별출력'을 선택하면 <span class="btn">{교사찾기}</span>가 가능하며, 교사별 시간표를 조회하고 출력할 수 있음.</li><li><b>[교육과정-시간표관리-기초시간표관리] 또는 [교육과정-시간표관리-시험시간표관리]에 등록된 시간표가 조회되므로 전체시간표의 교사별 시간표와 다를 수 있음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="A" data-when="학기중" data-who="학급담임교사 시간표업무담당교사">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE A · 교사·학생 시간표 확인">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기중</span><span class="tag opt">전체시간표 또는 수업시간표 선택</span></div>
+    <h3>학생별 시간표 조회·선택출력</h3>
+    <p class="desc">학급 학생에게 개인 시간표를 나눠줄 때 쓰는 업무입니다. <strong>'전체시간표'는 주차 선택 시 해당 주차의 수업변동이 반영되어 조회되고 '수업시간표'는 주차 선택 없이 학생별 선택과목이 반영된 시간표가 조회됨.</strong> 여러 학생을 한 번에 출력할 수도 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, [교육과정-시간표관리-전체시간표관리]에 전체시간표가 등록된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>학급담임교사, 시간표업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-시간표관리-학생별시간표조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-시간표관리-학생별시간표조회]</code>에서 '학년도' 확인 후 '학기', '학년', '반', '주차', '전체시간표 또는 수업시간표'를 선택하고 <span class="btn">{조회}</span> 함 → 학생 번호 또는 성명을 클릭하여 내용을 확인하고 필요시 저장 또는 출력할 수 있음.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>선택과목과 수업변동이 반영된 개인 시간표를 학생이 손에 들고 제 교실을 찾아가게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>'전체시간표'는 주차 선택 시, 해당 주차의 수업변동이 반영되어 조회되고 '수업시간표'는 주차 선택 없이 학생별 선택과목이 반영된 시간표가 조회됨.</b></li><li>여러 학생을 선택하여 <span class="btn">{선택출력}</span> 할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="학기중" data-who="시간표업무담당교사 교과담당교사">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 교사·학생 시간표 확인">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기중</span></div>
+    <h3>교사별 기간 수업 조회</h3>
+    <p class="desc">특정 교사가 일정 기간에 실제로 맡은 수업을 날짜 단위로 확인할 때 쓰는 업무입니다. 시간표 한 주를 보는 것이 아니라 <strong>'일자'로 지정한 기간별 수업</strong>이 조회됩니다. 교사명을 입력해 <span class="btn">{교사찾기}</span>로 대상을 먼저 확정해야 합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, [교육과정-시간표관리-전체시간표관리]에 전체시간표가 등록된 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>시간표업무담당교사, 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-시간표관리-교사별수업조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-시간표관리-교사별수업조회]</code>에서 '학년도' 확인 후 '일자'를 선택하고 '교사'에 교사명을 입력 후 <span class="btn">{교사찾기}</span> 하고 <span class="btn">{조회}</span> 함 → 해당 교사의 기간별 수업을 조회하고 필요시 저장 또는 출력할 수 있음.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교사 한 명의 기간 수업 내역을 근거 자료로 남겨 수업 시수 확인과 업무 협의에 쓰려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'교사검색' 창에서 교사명을 직접 입력하여 <span class="btn">{조회}</span> 하면 해당 교사명이 '교사'란에 바로 반영됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="학기중" data-who="시간표업무담당교사">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 전체·강의실 시간표 확인">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기중</span></div>
+    <h3>강의실별 수업일수·시간표 조회</h3>
+    <p class="desc">특별교실·실습실 등 강의실 사용 현황을 확인해야 하는 학교에서 쓰는 업무이다. 수업일수는 <code>[교육과정-시간표관리-강의실별수업일수조회(시간표)]</code>에서, 요일·교시별 시간표는 <code>[교육과정-시간표관리-강의실별시간표조회]</code>에서 본다. <strong>두 메뉴 모두 '학년도' 확인 후 조건을 선택하고 {조회}하는 절차가 같아 한 업무로 묶었다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 전체시간표가 등록된 뒤 강의실 사용 현황을 확인할 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>시간표업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-시간표관리-강의실별수업일수조회(시간표)]</code>, <code>[교육과정-시간표관리-강의실별시간표조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-시간표관리-강의실별수업일수조회(시간표)]</code>에서 '학년도' 확인 후 '학년', '강의실'을 선택하고 <span class="btn">{조회}</span> → 강의실별 수업일수를 확인하고 필요시 저장 또는 출력 → <code>[교육과정-시간표관리-강의실별시간표조회]</code>에서 '학년도' 확인 후 '학기', '학년', '강의실', '검색일자'를 선택하고 <span class="btn">{조회}</span> → 강의실별 시간표를 확인하고 필요시 저장 또는 출력할 수 있음.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>강의실이 실제로 며칠, 어느 시간에 쓰이는지 파악해 실습실·특별교실 배정이 겹치거나 비지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>어떤 표를 언제 여는가</h4><ul><li>강의실별수업일수조회(시간표) — '학년'과 '강의실'만 선택하며, 해당 강의실이 며칠 수업에 쓰였는지 <b>수업일수</b>를 본다.</li><li>강의실별시간표조회 — '학기', '학년', '강의실', '검색일자'를 선택하며, 그 강의실의 <b>요일·교시별 시간표</b>를 본다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="B" data-when="내부결재시" data-who="시간표업무담당교사">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE B · 전체·강의실 시간표 확인">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">내부결재 문서가 필요할 때</span><span class="tag opt">선택</span></div>
+    <h3>과목별/강의실별 시수누계 조회</h3>
+    <p class="desc">시간표 조회 메뉴가 아니라 편제및과목개설관리 아래에 있는 메뉴이지만, 강의실·과목 시수를 확인하는 업무라 함께 본다. <strong>전체시간표에 반영된 과목별/강의실별 시수현황</strong>이 조회된다. 저장하면 내부결재를 위한 문서로 활용할 수 있다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중, 전체시간표가 등록된 뒤 시수 현황을 결재 문서로 남겨야 할 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>시간표업무담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-과목별/강의실별시수누계조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-과목별/강의실별시수누계조회]</code>에서 전체시간표에 반영된 과목별/강의실별 시수현황을 확인하고 저장함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>편성한 시수가 실제 시간표에 그대로 반영되었는지 근거 자료로 남겨 결재를 받으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>저장한 자료는 <b>내부결재를 위한 문서</b>로 활용할 수 있다.</li><li>조회되는 시수는 <b>전체시간표에 반영된</b> 내용 기준이므로, 시간표를 수정했다면 다시 조회해 확인한다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="C" data-when="일과중" data-who="학교일지업무담당자">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE C · 학교일지 작성">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">일과중</span><span class="tag">연중</span></div>
+    <h3>학교일지 조회 및 지시 및 전달사항 등록</h3>
+    <p class="desc">학교일지는 모든 학교가 날짜별로 관리합니다. 일지를 열면 해당일까지의 수업일수 누계, 반별 출결상황, 학생 이동상황, 행사, 결보강이 함께 조회되므로 먼저 기간을 설정해 날짜를 불러와야 합니다. <strong>'지시 및 전달사항' 창에서 '제목'은 필수 입력 항목입니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, [교육과정-학사일정관리-연간학사일정관리]에 공휴일 정보, 행사 등 관련 내용을 등록한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학교일지 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학교일지관리-학교일지관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-학교일지관리-학교일지관리]</code>에서 '학년도' 확인 후 '기간'을 설정하고 <span class="btn">{조회}</span> → 학교일지를 생성할 날짜를 선택하고 '지시 및 전달사항'에서 '제목'이나 '내용'을 클릭 → 나타나는 '지시 및 전달사항' 창에서 '제목(필수)'과 '내용'을 입력하고 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>그날 학교에서 지시·전달된 사항을 날짜별 공식 기록으로 남겨 두어 나중에 확인하고 근거로 삼을 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>해당 날짜를 선택하면 해당일까지 '수업일수 누계'가 학년별로 나타납니다.</li><li>'수업일수 누계'에 오류가 있는 경우에는 <code>[교육과정-학사일정관리-연간학사일정관리]</code>에서 학사일정을 확인하고 오류를 수정합니다.</li><li>학교일지에 등록된 내용(연수 보고자료 등)을 검색하기 위해서는 <b>'검색조건(생성)'</b>을 적절하게 활용합니다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="C" data-when="일과중" data-who="학교일지업무담당자">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE C · 학교일지 작성">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">일과중</span><span class="tag opt">직접 입력도 가능</span></div>
+    <h3>직원상황 복무자료 반영</h3>
+    <p class="desc">같은 <code>[교육과정-학교일지관리-학교일지관리]</code> 화면의 '직원상황'란을 채우는 작업으로, 지시 및 전달사항 등록과는 입력 대상이 다릅니다. 복무자료를 불러온 뒤 필요하면 수정·추가할 수 있고 직접 입력도 가능합니다. <strong>행선지와 사유 및 용무를 반영하려면 '상세내역포함'을 선택한 뒤 {복무자료가져오기}를 해야 합니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 학교일지 날짜를 조회한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>학교일지 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학교일지관리-학교일지관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'직원상황'에서 <span class="btn">{복무자료가져오기}</span>으로 복무상황을 반영 → 필요시 내용을 수정하거나 추가 → <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>그날 교직원이 어떤 복무 상태였는지를 일지에 남겨 결보강·출장 등 학교 운영 상황을 뒤에서 확인할 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><code>[교육과정-학교일지관리-학교일지관리]</code>에서 '직원상황'란에 교직원의 복무상황을 직접 입력할 수 있습니다.</li><li><code>[교육과정-학교일지관리-학교일지관리]</code>에서 '직원상황'란에 행선지와 사유 및 용무를 반영하기 위해서는 <b>'상세내역포함'을 선택 후 {복무자료가져오기}</b> 합니다.</li><li><span class="btn">{저장}</span> 시 '상태'가 '저장'으로 표시됩니다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="D" data-when="일출결마감후" data-who="학교일지업무담당자">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE D · 학교일지 결재">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">일출결 마감 후</span><span class="tag">업무승인 필요</span></div>
+    <h3>학교일지 생성 및 승인요청</h3>
+    <p class="desc">지시 및 전달사항과 직원상황 입력이 끝난 날짜의 학교일지를 결재문서로 만들어 올리는 업무입니다. 학급별 일출결 마감 여부와 관계 없이 마감되지 않은 반이 있어도 승인요청은 가능하지만, <strong>출결자료의 정확한 관리를 위해 모두 마감되었을 때 {승인요청}</strong>합니다. 상태가 '생성'인 일자는 일괄로 승인요청할 수 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 해당 날짜의 지시 및 전달사항과 직원상황 저장이 끝난 뒤(일출결 마감 후 권장).</dd></dl>
+      <dl><dt>누가?</dt><dd>학교일지 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학교일지관리-학교일지관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{생성}</span> 후 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>날짜별 교직원상황과 지시·전달사항을 결재를 마친 공식 기록으로 남겨 두려고.</dd></dl>
+    </div>
+<div class="memo"><h4>상태 표시 읽는 법</h4><ul><li><span class="btn">{저장}</span> 시 '저장'으로 표시됨.</li><li><span class="btn">{생성}</span> 시 결재자료 생성이 완료되었음을 알리는 확인창이 나타나며, '저장'에서 '생성'으로 변경되고 '제거'에 <span class="btn">{제거}</span>가 나타남.</li><li><span class="btn">{제거}</span> 시 결재자료 제거되었음을 알리는 알림창이 나타나며, '생성'에서 '저장'으로 변경되고 '제거'에 <span class="btn">{제거}</span>가 사라짐.</li><li><span class="btn">{승인요청}</span> 시 '상태'가 '생성'인 일자는 <b>일괄로 승인요청할 수 있고</b> '상시(진행)'으로 변경됨.</li><li>결재권자의 결재가 완료되면 '상신(진행)'이 '완결'로 표시됨.</li><li>'상태'에는 '저장', '생성', '상신(진행)', '완결', '완결(기결취소)'이 상황에 따라 나타남.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>해당 날짜를 선택하면 해당일까지 '수업일수 누계'가 학년별로 나타남.</li><li>'수업일수 누계'에 오류가 있는 경우에는 <code>[교육과정-학사일정관리-연간학사일정관리]</code>에서 학사일정을 확인하고 오류를 수정함.</li><li>학급별 일출결 마감 여부와 관계 없이 마감되지 않은 반이 있어도 <span class="btn">{승인요청}</span>은 가능하나 <b>출결자료의 정확한 관리를 위해 모두 마감되었을 때 승인요청함</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="D" data-when="결재완료후" data-who="학교일지업무담당자">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE D · 학교일지 결재">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">결재 완료 후</span><span class="tag opt">수정이 필요할 때만</span></div>
+    <h3>결재 완료 후 학교일지 수정</h3>
+    <p class="desc">이미 결재가 완료된 학교일지의 내용을 고쳐야 할 때만 하는 업무입니다. <strong>{복무자료가져오기}를 제외하고 내용을 수정하는 경우에는 [상신함]에서 기결문서를 취소해야</strong> 하며, 취소 결재가 끝난 뒤에야 내용을 고칠 수 있습니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>연중, 학교일지 결재가 완결된 이후 내용 오류를 발견한 시점.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교일지 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-학교일지관리-학교일지관리]</code>, <code>[상신함]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[상신함]</code>에서 해당 학교일지 결재문서명을 선택하고 <span class="btn">{기결문서취소}</span>로 업무승인과정을 거쳐 결재권자의 결재 완료 → <span class="btn">{제거}</span>하고 내용을 수정 → 다시 <span class="btn">{생성}</span>하고 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>이미 결재된 기록과 실제 학교 상황이 어긋난 채로 남지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>결재 완료 후 {복무자료가져오기}를 제외하고 내용을 수정하는 경우에는 반드시 {기결문서취소}를 먼저 거쳐야 함.</b></li><li><span class="btn">{제거}</span> 시 '생성'에서 '저장'으로 변경되고 '제거'에 <span class="btn">{제거}</span>가 사라짐.</li><li>'상태'에는 '저장', '생성', '상신(진행)', '완결', '완결(기결취소)'이 상황에 따라 나타남.</li><li>학교일지에 등록된 내용(연수 보고자료 등)을 검색하기 위해서는 '검색조건(생성)'을 적절하게 활용함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 교육과정, Section_08~09 시간표 및 수업 조회 · 학교일지 관리 (196–205쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

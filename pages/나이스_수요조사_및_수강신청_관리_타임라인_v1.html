@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<!-- 수요조사 및 수강신청 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>수요조사 및 수강신청 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(4,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>수요조사 및 수강신청 관리</b>
+    <span class="sub">업무 8개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Part. 교육과정 · Section_02 · pp. 78–86</p>
+    <h1>수요조사 및 수강신청 관리
+      <em>업무 8개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학년초</dd></div>
+      <div><dt>업무담당</dt><dd>교육과정 업무담당자</dd></div>
+      <div><dt>메뉴경로</dt><dd>[교육과정-수요조사및수강신청관리]</dd></div>
+      <div><dt>선행조건</dt><dd>[교육과정-입학생학교교육과정관리-입학생교육과정등록/검증]에서 입학생 교육과정을 등록함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>교사 수요조사 준비</h3>
+            <p class="tl-sub">입학생 교육과정 등록·검증 완료 후 · 교사 희망을 먼저 확인하는 학교만</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 교사조사 개요설정"><span>01</span>교사조사 개요설정</button><button type="button" class="tl-btn" data-go="t2" title="02 교사조사 과목설정"><span>02</span>교사조사 과목설정</button><button type="button" class="tl-btn" data-go="t3" title="03 대상교사·설정완료"><span>03</span>대상교사·설정완료</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>학생 수요조사 설계</h3>
+            <p class="tl-sub">입학생 교육과정 등록·검증 완료 후 · 조사 개시 전</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 학생조사 개요설정"><span>04</span>학생조사 개요설정</button><button type="button" class="tl-btn" data-go="t5" title="05 공동과정 참여범위"><span>05</span>공동과정 참여범위</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>학생 수요조사 개시</h3>
+            <p class="tl-sub">개요설정과 참여범위설정을 마친 직후 · 진행하면 학생 참여 시작</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t6" title="06 대상과목·조사진행"><span>06</span>대상과목·조사진행</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>수강신청 개설</h3>
+            <p class="tl-sub">수요조사 마무리 후 · 신청기간 시작 전까지 완료</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t7" title="07 수강신청 개요설정"><span>07</span>수강신청 개요설정</button><button type="button" class="tl-btn" data-go="t8" title="08 대상과목·신청진행"><span>08</span>대상과목·신청진행</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="수요조사설계" data-who="교육과정업무담당자">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 교사 수요조사">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 입학생 교육과정 등록 후</span><span class="tag opt">교사 대상</span></div>
+    <h3>교사 대상 수요조사 개설과 개요설정</h3>
+    <p class="desc">신학년도 과목개설을 위해 교과담당교사의 개설 희망을 먼저 확인해야 하는 학교에 해당한다. <strong>[교육과정-입학생학교교육과정관리-입학생교육과정등록/검증]에서 입학생 교육과정을 등록한 뒤</strong>에 조사를 만든다. '과목선택유무'를 '자유선택형'과 '교과(군)제시형' 중 무엇으로 정하는지에 따라 이후 절차가 갈리므로 개요설정 단계에서 결정한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 입학생 교육과정 등록/검증을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-수요조사및수강신청관리-수요조사]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'교사'를 선택하고 '조사년도'를 확인 후 <span class="btn">{조회}</span> → <span class="btn">{새로만들기}</span> → '수요조사-조사설정' 창의 <span class="btn">{개요설정}</span>에서 '제목', '내용', '공지기간', '신청기간', '과정선택', '과목선택유무', '첨부파일 업로드' 입력·선택·등록 → <span class="btn">{다음}</span> → <span class="btn">{확인}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>신학년도에 어떤 과목을 개설할 수 있는지 교사의 수요부터 확인해 과목개설의 근거를 만들려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'과목선택유무'에서 '자유선택형'은 교과담당교사가 개설하고자 하는 과목을 자유롭게 선택하여 수요조사에 참여하는 것이고, '교과(군)제시형'은 조사자가 당해학교 또는 공동교육과정으로 개설하고자 하는 교과(군)을 제시하고 해당 교과(군)에 참여하고자 하는 교과담당교사의 수요를 확인하는 것임.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="수요조사대상설정" data-who="교육과정업무담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 교사 수요조사">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">개요설정을 마친 직후</span><span class="tag opt">'교과(군)제시형'만 해당</span></div>
+    <h3>교사 대상 수요조사 과목설정</h3>
+    <p class="desc">'과목선택유무'를 '교과(군)제시형'으로 설정한 학교만 수행한다. <strong>'과목선택유무'가 '자유선택형'인 경우 {과목설정}은 수행하지 않음.</strong> 조사자가 제시할 교과(군)과 과목을 여기서 미리 확정한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 교사 대상 수요조사의 개요설정을 완료한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-수요조사및수강신청관리-수요조사]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'수요조사-조사설정' 창의 <span class="btn">{과목설정}</span>에서 수요조사를 실시할 교과(군)과 과목을 선택하여 추가(▼) → 내용 확인 후 <span class="btn">{다음}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학교가 개설하려는 교과(군) 범위 안에서만 교사 수요가 모이게 해 조사 결과를 과목개설에 바로 쓸 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'과목선택유무'가 '자유선택형'인 경우 <b>{과목설정}은 수행하지 않음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="A" data-when="수요조사개시" data-who="교육과정업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE A · 교사 수요조사">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">과목설정 이후, 조사 시작 전</span></div>
+    <h3>대상교사설정과 설정완료</h3>
+    <p class="desc">교사 대상 수요조사를 실제로 열기 위한 마지막 단계다. <strong>'대상교사설정'에서 설정된 교사만이 [교육과정-수요조사및수강신청관리-교사희망과목조사참여]에서 조사에 참여할 수 있음.</strong> 참여할 교사를 빠뜨리면 그 교사는 조사에 응답할 수 없으므로 명단을 확인하고 저장한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 개요설정(및 교과(군)제시형의 과목설정)을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-수요조사및수강신청관리-수요조사]</code>, <code>[교육과정-수요조사및수강신청관리-교사희망과목조사참여]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'수요조사-조사설정' 창의 <span class="btn">{대상교사설정}</span>에서 수요조사에 참여할 '교사명'을 선택 → <span class="btn">{저장}</span> → <span class="btn">{설정완료}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>조사에 응답해야 할 교사에게 참여 권한을 열어 주어 수요조사가 빠짐없이 걷히게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'대상교사설정'에서 설정된 교사만이 <b>[교육과정-수요조사및수강신청관리-교사희망과목조사참여]</b>에서 조사에 참여할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="수요조사설계" data-who="교육과정업무담당자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 학생 수요조사">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수요조사 설계 시점</span><span class="tag">학생 대상</span></div>
+    <h3>학생 대상 수요조사 개설과 개요설정</h3>
+    <p class="desc">신학년도 과목개설을 위해 학생의 과목 수요를 확인해야 하는 학교가 하는 업무입니다. <strong>[교육과정-입학생학교교육과정관리-입학생교육과정등록/검증]에서 입학생 교육과정을 등록한 뒤</strong>에 진행합니다. 여기서 선택하는 '과정선택'과 '과목선택' 값에 따라 이후 {참여범위설정}과 {대상과목} 설정 여부가 달라집니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 입학생 교육과정 등록/검증을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-수요조사및수강신청관리-수요조사]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학생'을 선택하고 '조사년도', '학기', '계열' 확인 후 <span class="btn">{조회}</span> 하고 <span class="btn">{만들기}</span> 함 → '수요조사-조사설정(학생)' 창의 <span class="btn">{개요설정}</span>에서 '제목', '내용', '과정선택', '과목선택', '공지여부', '공지기간', '신청기간', '최소과목수', '최대과목수', '학년', '학과', '첨부파일 업로드' 입력·선택·등록 후 <span class="btn">{다음}</span> 하고 <span class="btn">{확인}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>신학년도에 실제로 개설할 과목을 정하기 전에 학생이 어떤 과목을 원하는지 먼저 확인하려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>{개요설정}에서 '과정선택'을 '본교교육과정'으로 선택하는 경우 {참여범위설정}은 하지 않으며, '공동교육과정'으로 선택하는 경우 {참여범위설정}에서 수요조사에 참여할 학교와 학년을 설정해야 함.</b></li><li><b>{개요설정}에서 '과목선택'을 '자유선택형'으로 선택하는 경우 {수요조사진행} 하면 {참여범위설정}과 {대상과목} 설정은 하지 않음.</b></li><li>{개요설정}에서 '과목선택'을 '교과(군)제시형'으로 선택하는 경우 {대상과목}을 설정함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="수요조사대상설정" data-who="교육과정업무담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 학생 수요조사">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">개요설정 직후</span><span class="tag opt">공동교육과정 선택 시에만</span></div>
+    <h3>공동교육과정 참여범위설정</h3>
+    <p class="desc"><strong>{개요설정}에서 '과정선택'을 '공동교육과정'으로 선택한 경우에만</strong> 하는 업무입니다. '본교교육과정'으로 선택했다면 이 단계는 건너뜁니다. 어느 학교의 몇 학년까지 조사에 참여할지 여기서 정합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 학생 대상 수요조사 개요설정을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-수요조사및수강신청관리-수요조사]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'수요조사-조사설정(학생)' 창의 <span class="btn">{참여범위설정}</span>에서 수요조사에 참여할 학교와 학년을 설정함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>여러 학교가 함께 여는 과목의 수요를 한 조사로 모으기 위해 조사를 볼 수 있는 학교와 학년의 경계를 정하는 것입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>{개요설정}에서 '과정선택'을 '본교교육과정'으로 선택하는 경우 {참여범위설정}은 하지 않음.</b></li><li><b>{개요설정}에서 '과목선택'을 '자유선택형'으로 선택하는 경우 {수요조사진행} 하면 {참여범위설정}과 {대상과목} 설정은 하지 않음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="B" data-when="수요조사개시" data-who="교육과정업무담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE B · 학생 수요조사">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">조사 개시 직전</span><span class="tag opt">'교과(군)제시형'인 경우</span></div>
+    <h3>대상과목 설정과 수요조사진행</h3>
+    <p class="desc"><strong>'과목선택'을 '교과(군)제시형'으로 선택한 경우에만 {대상과목}을 설정</strong>하고, '자유선택형'이면 바로 {수요조사진행} 합니다. {수요조사진행}을 하면 학생이 조사에 참여할 수 있게 되므로 설정이 끝난 뒤 실행합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 개요설정과 (공동교육과정인 경우) 참여범위설정을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-수요조사및수강신청관리-수요조사]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'수요조사-조사설정(학생)' 창의 <span class="btn">{대상과목}</span>에서 <span class="btn">{과목찾기}</span>를 클릭하면 나타나는 '과목찾기' 창에서 '과목명' 입력하여 <span class="btn">{조회}</span> 하고 수요조사할 과목명을 클릭 후 <span class="btn">{선택}</span> 함 → 목록에서 대상과목을 선택 후 <span class="btn">{저장}</span> 하고 <span class="btn">{수요조사진행}</span> 함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 고를 과목의 범위를 미리 좁혀 제시하고 조사를 열어, 실제 개설 가능한 과목의 수요만 모으려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>{개요설정}에서 '과목선택'을 '자유선택형'으로 선택하는 경우 {수요조사진행} 하면 {참여범위설정}과 {대상과목} 설정은 하지 않음.</b></li><li>{개요설정}에서 '과목선택'을 '교과(군)제시형'으로 선택하는 경우 {대상과목}을 절차에 따라 설정함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>후행처리</h4><ul><li>나이스플러스(NEIS+)를 통한 수강신청 결과를 반영하여 수강생을 편성하고 과목을 개설함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="C" data-when="수강신청설정" data-who="교육과정업무담당자">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE C · 수강신청">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수요조사 마무리 후</span><span class="tag opt">본교교육과정 / 공동교육과정 선택</span></div>
+    <h3>수강신청 개설과 개요설정</h3>
+    <p class="desc">신학년도 과목을 학생이 직접 고르게 하려면 먼저 수강신청을 만들어야 한다. 입학생 교육과정 등록·검증이 끝나 있어야 하며, <strong>'본교교육과정' 또는 '공동교육과정' 중 어느 과정의 수강신청인지를 먼저 선택</strong>한 뒤 개요를 설정한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, [교육과정-입학생학교교육과정관리-입학생교육과정등록/검증]에서 입학생 교육과정을 등록한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-수요조사및수강신청관리-수강신청]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>[교육과정-수요조사및수강신청관리-수강신청]에서 '입학년도'를 확인하고 '본교교육과정' 또는 '공동교육과정'을 선택 후 <span class="btn">{조회}</span>하여 <span class="btn">{만들기}</span> → '수강신청관리' 창의 <span class="btn">{개요설정}</span>에서 '제목', '내용', '공지기간', '공지 여부', '신청인원 공개', '신청기간', '수강정정기간', '신청학년', '첨부파일 업로드' 입력·선택·등록 후 <span class="btn">{다음}</span>하고 <span class="btn">{확인}</span> 후 <span class="btn">{확인}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 언제부터 언제까지 무엇을 신청하고 정정할 수 있는지를 미리 확정해, 수강신청 결과가 그대로 수강생 편성과 과목 개설로 이어지게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'공지기간'과 '신청기간'뿐 아니라 <b>'수강정정기간'</b>까지 함께 설정한다.</li><li>'신청인원 공개' 여부에 따라 학생이 신청 현황을 보면서 선택하게 할 수 있다.</li><li><b>개요설정 후에는 {다음} → {확인} → {확인}을 순서대로 두 번 눌러야</b> 다음 단계로 넘어간다.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="C" data-when="수강신청개시" data-who="교육과정업무담당자">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE C · 수강신청">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">개요설정 직후, 신청기간 시작 전</span></div>
+    <h3>대상과목확인과 수강신청진행</h3>
+    <p class="desc">개요설정을 마친 수강신청에 학생이 고를 과목을 확정하는 단계다. 지정과목과 선택과목 목록을 확인하고 <strong>'선이수과목'을 확인한 뒤 '과목명'을 선택</strong>해야 하며, 마지막에 수강신청진행을 해야 학생이 나이스플러스(NEIS+)에서 신청할 수 있다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 수강신청 개요설정을 마친 뒤 신청기간 시작 전.</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-수요조사및수강신청관리-수강신청]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'수강신청관리' 창의 <span class="btn">{대상과목확인}</span>에서 <span class="btn">{조회}</span> 후 지정과목 및 선택과목의 목록을 확인 → '과목명'을 선택하고 ('선이수과목' 확인) <span class="btn">{다음}</span>하고 <span class="btn">{확인}</span> → <span class="btn">{수강신청진행}</span>하고 <span class="btn">{확인}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 이수 순서에 맞지 않는 과목을 고르는 일을 막고, 개설이 확정된 과목만 신청 화면에 올리려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>{대상과목확인}에서 {조회}를 먼저 해야</b> 지정과목 및 선택과목 목록이 나타난다.</li><li>'과목명'을 선택할 때 <b>'선이수과목'을 확인</b>한다.</li><li><b>{수강신청진행}까지 완료해야</b> 수강신청이 실제로 시작된다.</li><li>후행처리로 나이스플러스(NEIS+)를 통한 수강신청 결과를 반영하여 수강생을 편성하고 과목을 개설함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part. 교육과정, Section_02 수요조사 및 수강신청 관리 (78–86쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>

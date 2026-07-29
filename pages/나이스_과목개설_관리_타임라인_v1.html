@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<!-- 과목개설 관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>과목개설 관리 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>과목개설 관리</b>
+    <span class="sub">업무 21개 · 시간순 타임라인</span>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Part. 교육과정 · Section_05 · pp. 120–150</p>
+    <h1>과목개설 관리
+      <em>업무 21개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>학년초, 학기초</dd></div>
+      <div><dt>업무담당</dt><dd>교육과정 업무담당자</dd></div>
+      <div><dt>메뉴경로</dt><dd>[교육과정-편제및과목개설관리-편제및과목개설관리]</dd></div>
+      <div><dt>선행조건</dt><dd>[교육과정-편제및과목개설관리-편제및과목개설관리]에서 교육과정 편제를 등록함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>학년초 기초 등록</h3>
+            <p class="tl-sub">편제·반정보 등록 직후 · 과목개설 이전에 마쳐야 함</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 선택과목군 등록"><span>01</span>선택과목군 등록</button><button type="button" class="tl-btn" data-go="t2" title="02 강의실 등록·수정"><span>02</span>강의실 등록·수정</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>학기초 과목개설</h3>
+            <p class="tl-sub">편제 등록 완료 후 · 수강생 편성 전까지 수정·삭제 가능</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t3" title="03 일반과목 개설"><span>03</span>일반과목 개설</button><button type="button" class="tl-btn" data-go="t4" title="04 창체 담임 일괄등록"><span>04</span>창체 담임 일괄등록</button><button type="button" class="tl-btn" data-go="t6" title="06 개설과목 삭제"><span>06</span>개설과목 삭제</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>수강생 편성</h3>
+            <p class="tl-sub">과목개설 완료 후 · 성적 처리 전에 마쳐야 함</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t7" title="07 학교지정 일괄편성"><span>07</span>학교지정 일괄편성</button><button type="button" class="tl-btn" data-go="t9" title="09 수강신청 가져오기"><span>09</span>수강신청 가져오기</button><button type="button" class="tl-btn" data-go="t8" title="08 과목별 학생 편성"><span>08</span>과목별 학생 편성</button><button type="button" class="tl-btn" data-go="t11" title="11 학생별 과목 편성"><span>11</span>학생별 과목 편성</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>이동수업 편성</h3>
+            <p class="tl-sub">이동수업 실시 학교만 · 학기 초 또는 지필평가 후</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t13" title="13 이동 과목군 등록"><span>13</span>이동 과목군 등록</button><button type="button" class="tl-btn" data-go="t14" title="14 해당 반 선택"><span>14</span>해당 반 선택</button><button type="button" class="tl-btn" data-go="t15" title="15 운영 차수 등록"><span>15</span>운영 차수 등록</button><button type="button" class="tl-btn" data-go="t16" title="16 이동반 편성"><span>16</span>이동반 편성</button><button type="button" class="tl-btn" data-go="t18" title="18 학생 일괄편성"><span>18</span>학생 일괄편성</button><button type="button" class="tl-btn" data-go="t17" title="17 학생 개별편성"><span>17</span>학생 개별편성</button><button type="button" class="tl-btn" data-go="t19" title="19 N+1 명렬표"><span>19</span>N+1 명렬표</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>학기 중 변동 처리</h3>
+            <p class="tl-sub">전입·병가·휴직 등 사유 발생 시 · 성적 등록 전</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t12" title="12 전입생 과목편성"><span>12</span>전입생 과목편성</button><button type="button" class="tl-btn" data-go="t10" title="10 미편성학생 편성"><span>10</span>미편성학생 편성</button><button type="button" class="tl-btn" data-go="t5" title="05 담당교사 변경"><span>05</span>담당교사 변경</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">06</p>
+            <h3>편성 결과 점검</h3>
+            <p class="tl-sub">과목개설·시간표 운영 후 수시 조회</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t20" title="20 담당과목 일람표"><span>20</span>담당과목 일람표</button><button type="button" class="tl-btn" data-go="t21" title="21 시수 누계 조회"><span>21</span>시수 누계 조회</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="학년초" data-who="교육과정업무담당자">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 개설 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학년초, 편제 등록 직후</span><span class="tag opt">선택과목 2개 이상·교차이수 학교만</span><span class="tag">3세대 이관 학교 확인 필요</span></div>
+    <h3>선택과목군 등록과 편성과목 지정</h3>
+    <p class="desc">동일 학년에 선택과목이 2개 이상이거나 학기별로 교차 이수하는 경우에만 해당한다. <strong>동일한 학점의 과목에 대해서만 선택과목군으로 묶을 수 있다.</strong> 과목군을 먼저 만들고, 그 과목군에 실제 개설할 과목을 붙이는 두 단계를 한 번에 끝낸다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 교육과정 편제를 등록한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-선택과목군편성]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’, ‘계열/학년/학과’ 확인 후 <span class="btn">{조회}</span> → <span class="btn">{행추가}</span> 후 ‘선택과목군 정보’에서 ‘과목군명’, ‘선택과목수’, ‘과목당학점’, ‘무학년제’ 여부를 입력하고 <span class="btn">{저장}</span> → 등록할 ‘선택과목군’을 선택하고 우측 하단의 ‘미편성 과목’에서 등록할 과목을 선택 후 <span class="btn">{추가}</span>하여 ‘편성과목’을 확인하고 <span class="btn">{저장}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 여러 과목 중 골라 듣는 구조를 편제에 그대로 담아, 뒤이은 과목개설과 수강생편성에서 학생별 선택 결과가 어긋나지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>3세대 나이스의 편제표가 이관된 경우 ‘선택과목군’에 기존 선택과목군이 등록되어 있으나 ‘과목당 학점’이 ‘0’으로 설정되어 있으므로, <b>‘과목당 학점’을 입력하고 <span class="btn">{저장}</span> 후 편성과목을 등록해야 함.</b></li><li>[선택과목군 편성]은 동일 학년에 선택과목이 2개 이상이거나, 교차 이수할 경우 사용함. 예시로 2학년은 제2외국어를 일본어Ⅰ, 중국어Ⅰ 중에서 1과목 선택 이수, 1학년은 정보, 한문Ⅰ을 학기별로 교차 이수하는 경우다.</li><li>‘선택과목수’는 개설된 여러 선택과목 중 학생이 실제 수강하는 과목의 개수로, 세계지리·정치와 법·생활과 윤리 중 두 과목 선택이면 선택과목수는 ‘2’로 입력하며, 이 경우 편제 및 시간배당표에 ‘택 2’로 표시됨.</li><li><b>[선택과목군편성]에서는 동일한 학점의 과목에 대해서만 선택과목군으로 묶을 수 있음.</b> 3학점 A과목, 2학점 B과목, 1학점 C과목에서 A과목과 B･C과목을 선택과목군으로 묶을 수 없음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>이동수업이 있는 경우</h4><ul><li>동일 학급 내 학생별로 선택과목이 달라 교실 이동수업을 하는 경우 [선택과목군편성]을 완료 후 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code>에서 <span class="btn">{과목개설}</span>로 해당 강의실을 연결하고, <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>의 <span class="btn">{성적수강생편성}</span> 탭에서 수강학생을 편성함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="학년초" data-who="교육과정업무담당자">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 개설 준비">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">신학년도 편성 전</span><span class="tag opt">특별실 사용 학교는 필수</span></div>
+    <h3>강의실 정보 등록·수정</h3>
+    <p class="desc">신학년도에 편성할 강의실 정보를 등록하거나 기존에 등록된 강의실 정보를 수정하는 업무다. 반(학급) 강의실은 반을 등록하면 자동으로 생성되므로, 음악실·과학실 같은 특별실을 쓰는 학교가 손댈 일이 많다. <strong>‘사용여부’가 ‘미사용’으로 지정된 강의실은 사용할 수 없다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초, 신학년도 반정보를 등록한 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-강의실관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’ 확인 후 ‘학년’을 선택하고 <span class="btn">{조회}</span> → <span class="btn">{행추가}</span>하여 ‘강의실정보내역’에서 ‘학년도’, ‘주야과정구분’ 확인 후 ‘강의실명’, ‘사용여부’, ‘정렬순서’, ‘정원’, ‘비고’를 입력 또는 선택하고 <span class="btn">{저장}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>과목개설 때 교사와 함께 붙일 수업 장소를 미리 확보해, 이동수업과 시간표 작성에서 장소가 겹치거나 비는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><code>[학교정보-학교정보-기준/반정보관리]</code>에서 반을 등록하면 해당 반 강의실이 자동으로 생성됨.</li><li>강의실 현황은 ‘학년’ 단위로 조회할 수 있음. 이때 반(학급)은 해당 학년의 반만 조회되고, [강의실관리]에서 등록한 특별실(예: 음악실, 과학실 등)은 학년과 상관없이 모든 강의실이 조회됨.</li><li><b>‘강의실 정보내역’의 ‘강의실코드’는 자동으로 생성되어 수정할 수 없으며, ‘사용여부’가 ‘미사용’으로 지정된 강의실은 사용할 수 없음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="B" data-when="과목개설" data-who="교육과정업무담당자">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE B · 과목개설">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기초, 편제 등록 후</span><span class="tag">수강생편성 선행</span></div>
+    <h3>일반과목 과목개설(과목·교사·강의실 연결)</h3>
+    <p class="desc">모든 학교가 매 학기초에 하는 기본 업무입니다. 교육과정 편제가 등록된 뒤에 편제상의 과목을 실제 교과담당교사와 강의실에 연결합니다. <strong>이후 수강생 편성 등의 업무가 수행되지 않은 경우에만 개설된 과목을 삭제할 수 있습니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초·학기초, 교육과정 편제 등록이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’ 확인 후 ‘계열/학년/학과’를 선택하고 <span class="btn">{조회}</span>함 → <span class="btn">{과목개설}</span>을 클릭하면 나타나는 ‘과목개설’ 창에서 ‘편제명･과목(학점)’, ‘교사명’, ‘강의실’을 각각 선택한 후 <span class="btn">{추가}</span>하여 아래의 ‘과목정보’, ‘교사정보’, ‘강의실 정보’로 이동시킨 후 <span class="btn">{저장}</span>하고 목록에서 확인함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생 성적과 출결이 붙을 자리를 만들기 위해 과목·교사·강의실을 하나로 묶어 두려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>이후 수강생 편성 등의 업무가 수행되지 않은 경우</b> 개설된 과목을 선택하여 <span class="btn">{삭제}</span> 가능하며, 교사명을 클릭하면 나타나는 ‘담당교사 변경’ 창에서 해당 교과목의 교과담당교사를 변경할 수 있음.</li><li>‘시간표’에서 과목별로 <span class="btn">{조회}</span> 시 개설된 교과의 전체시간표 등록 현황을 조회할 수 있음.</li><li><span class="btn">{엑셀내려받기}</span>로 개설된 교과의 ‘개설과목명(학점)’, ‘계열/학년/학과’, ‘강의실’, ‘교사명’ 자료를 엑셀･한셀･CSV 파일로 내려받을 수 있음.</li><li><span class="btn">{자료권한재등록}</span>은 인사발령, 사용자 삭제, 교무자료권한승인관리에서 삭제된 교과담당교사의 권한이 조회되며, <span class="btn">{자료권한재등록}</span>으로 교과담당교사 권한을 부여할 수 있음.</li><li>개설된 교과목에 교과담당교사와 강의실이 편성되면 <code>[성적-지필/수행선행작업-OMR용코드관리]</code>의 <span class="btn">{과목코드관리}</span> 탭에서 과목코드를 부여할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="과목개설" data-who="교육과정업무담당자">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 과목개설">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기초, 담임편성 후</span><span class="tag opt">담임편성된 학급 한정</span></div>
+    <h3>창의적 체험활동 학급담임교사 일괄등록</h3>
+    <p class="desc">학급담임교사가 창의적 체험활동을 담당하는 경우에 씁니다. 담임편성이 되어 있는 학급에 대해 자율･자치활동, 동아리활동, 진로활동을 한 번에 등록합니다. <strong>비담임교사에게 자율활동･진로활동 등의 창의적 체험활동 영역을 먼저 등록한 경우는 일괄등록이 불가합니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초·학기초, 담임편성이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’ 확인 후 ‘계열/학년/학과’를 선택하고 <span class="btn">{조회}</span>함 → <span class="btn">{담임일괄등록}</span>하여 ‘담임 일괄등록’ 창에서 학급담임교사가 담당하는 창의적 체험활동(자율･자치활동, 동아리활동, 진로활동)을 선택하고 <span class="btn">{저장}</span> 후 <span class="btn">{닫기}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학급마다 담임을 한 건씩 붙이는 반복을 없애고, 담임이 곧바로 창의적 체험활동 누가기록을 쓸 수 있게 하려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{담임일괄등록}</span>하면 담임편성이 되어있는 학급에 대해서 학급담임교사에게 배정할 과목(2015 개정 교육과정을 적용받는 2026학년도 3학년의 경우 자율활동, 동아리활동, 봉사활동, 진로활동)을 일괄 등록할 수 있음.</li><li><b>비담임교사에게 자율활동･진로활동 등의 창의적 체험활동 영역을 먼저 등록한 경우는 일괄등록 불가.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>누가기록 작성 메뉴</h4><ul><li>자율 활동 담당교사 누가기록 작성 메뉴 <code>[학생생활-창의적체험활동-자율･자치활동(자율활동)누가기록]</code>.</li><li>진로활동 담당교사 누가기록 작성 메뉴 <code>[학생생활-창의적체험활동-진로활동누가기록]</code>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="B" data-when="과목개설" data-who="교육과정업무담당자">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE B · 과목개설">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수강생 편성 전</span><span class="tag opt">잘못 개설한 경우</span></div>
+    <h3>개설과목 삭제</h3>
+    <p class="desc">과목을 잘못 개설했거나 개설이 필요 없어진 경우에만 씁니다. 개설 목록에서 해당 과목을 골라 지웁니다. <strong>이후 수강생 편성 등의 업무가 수행되지 않은 경우에만 삭제가 가능합니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 해당 과목에 수강생 편성 등의 후속 업무가 수행되기 전</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’, ‘계열/학년/학과’ 선택 후 <span class="btn">{조회}</span>함 → 삭제할 개설과목을 선택한 후 <span class="btn">{삭제}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>운영하지 않는 과목이 남아 수강생 편성과 시간표, 성적처리에 끼어드는 것을 막으려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>이후 수강생 편성 등의 업무가 수행되지 않은 경우</b> 개설된 과목을 선택하여 <span class="btn">{삭제}</span> 가능함.</li><li>개설과목을 다시 만들 때는 <span class="btn">{과목개설}</span>에서 ‘편제명･과목(학점)’, ‘교사명’, ‘강의실’을 다시 연결해야 함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="C" data-when="수강편성" data-who="교육과정업무담당자">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE C · 수강생 편성">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">과목개설 직후</span><span class="tag opt">권장 경로</span></div>
+    <h3>학교지정 과목 수강생 일괄 편성(선택등록)</h3>
+    <p class="desc">이동수업 없이 원적반 강의실 개설과목 기준으로 수강생을 편성하는 창의적체험활동이나 1학년 공통과목에 효과적인 방식이다. <strong>성적 처리된 과목이 있는 경우에는 일괄등록을 할 수 없다.</strong> 공통과목 등의 학교 지정과목과 창의적체험활동을 먼저 편성한 뒤 선택교과목으로 넘어가면 편성이 효율적이다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 학교지정 과목과 창의적체험활동의 과목개설을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 '학년도', '학기', '학년' 선택 후 <span class="btn">{조회}</span> → 해당 학년에 개설된 학교지정 과목을 선택하고 <span class="btn">{선택등록}</span>하여 일괄로 수강학생을 편성함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교과 성적처리 산출에 쓰이는 수강학생 자료를 손이 가장 적게 가는 순서로 먼저 확보하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>이동수업 없이 원적반 강의실 개설과목 기준으로 수강생 편성하는 창의적체험활동이나 1학년 공통과목의 수강생편성에 효과적임.</li><li>해당 학년에 개설된 학교 지정과목을 선택하여 일괄로 수강 학생을 편성함. <b>성적 처리된 과목이 있는 경우에는 일괄등록을 할 수 없음.</b></li><li>공통과목 등의 학교 지정과목, 창의적체험활동의 과목개설을 먼저 시행하여 수강생을 편성하고, 이후 선택교과목의 과목개설 및 수강생편성을 진행하면 효율적인 편성이 가능함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="C" data-when="수강편성" data-who="교육과정업무담당자">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE C · 수강생 편성">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수강신청 결과가 나이스에 등록된 뒤</span><span class="tag opt">나이스 수강신청 운영 학교 한정</span></div>
+    <h3>수강신청 학생 가져오기</h3>
+    <p class="desc">나이스에서 수강신청을 진행하고 학생이 나이스플러스로 신청한 학교에만 해당하는 업무다. <strong>학생이 나이스플러스를 통해 수강신청한 결과가 나이스에 등록되어 있는 경우에만 <span class="btn">{가져오기}</span>를 사용할 수 있다.</strong> 신청 결과가 없으면 과목별 선택 편성으로 직접 편성한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 나이스 수강신청과 나이스플러스 학생 신청이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 '학년도' 확인 후 '학기', '계열/학년/학과'를 선택하고 <span class="btn">{조회}</span> → 수강학생을 편성할 과목을 클릭 후 <span class="btn">{가져오기}</span>를 클릭하면 나타나는 '성적 편성학생 가져오기' 창에서 '수강신청'을 선택함 → '계열/학년/학과', '반'을 선택 후 <span class="btn">{조회}</span>하고 수강 신청한 학생을 체크하여 <span class="btn">{선택}</span>하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 직접 신청한 결과를 그대로 옮겨 수강 명단을 다시 손으로 옮겨 적다 생기는 착오를 없애려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>나이스에서 수강신청을 진행한 후 학생이 나이스플러스를 통해 수강신청한 결과가 나이스에 등록되어 있는 경우에만 <span class="btn">{가져오기}</span>를 사용할 수 있음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="C" data-when="수강편성" data-who="교육과정업무담당자">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE C · 수강생 편성">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학교지정 과목 편성 이후</span><span class="tag opt">선택교과목·이동수업 학교</span></div>
+    <h3>과목별 수강학생 선택 편성</h3>
+    <p class="desc">학교지정 과목을 일괄로 편성한 뒤 남는 선택교과목처럼 과목마다 수강생이 다른 경우에 쓰는 방식이다. <strong>동일한 과목에는 수강학생을 이중으로 편성할 수 없으며, 능력단위는 실무과목에 편성된 학생만 편성할 수 있다.</strong> 위탁기관 성적 송부 후 복교하는 학생처럼 출결만 필요한 경우에는 <span class="btn">{출결수강생편성}</span> 탭을 쓴다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초, 선택교과목의 과목개설이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 '학년도', '학기', '학년' 확인 및 선택 후 <span class="btn">{조회}</span> → 수강학생을 편성할 과목을 선택한 후 우측 하단의 '미편성학생'에서 편성할 학생을 <span class="btn">{조회}</span>하고 편성할 학생을 선택 후 '편성학생'에 <span class="btn">{추가}</span>하여 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생별로 수강 과목이 갈리는 선택과목까지 성적·출결 처리 대상 명단을 빠짐없이 맞추려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>위탁기관 등에서 학기말 성적을 송부하고 재적교 종업일 이전에 복교하는 경우 교과목 시간 출결관리를 위해 <span class="btn">{출결수강생편성}</span> 탭에서 과목별 수강생을 편성함.</li><li><b>동일한 과목에는 수강학생을 이중으로 편성할 수 없으며, 능력단위는 실무과목에 편성된 학생만 편성할 수 있음.</b></li><li>타학년 또는 타교생을 수강학생으로 편성할 수 있음(공동교육과정 거점교(거점센터)의 경우 활용 가능).</li></ul></div><div class="memo" style="margin-top:12px"><h4>전입생 출결관리 예외</h4><ul><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년의 경우 전출교와 전입교 모두 2차 지필평가(기말고사)가 완료된 상태에서 전입교로 전입한 학생의 출결관리를 위해 <code>[학적-전입관리-전입관리-학적반영]</code>의 목록에서 해당 전입생 '성명'을 클릭 후 <span class="btn">{수강과목편성}</span>을 클릭하면 나타나는 '수강과목편성' 창에서 편성된 과목 목록의 '출결 수강생편성'에만 선택하고 <span class="btn">{저장}</span>함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년의 경우 전출교와 전입교 모두 학기말 성적 산출이 완료된 상태에서 전입교로 전입한 학생의 출결관리를 위해 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>의 <span class="btn">{출결수강생편성}</span> 탭에서만 수강생을 편성함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t11" data-num="11" data-stage="C" data-when="수강편성" data-who="교육과정업무담당자">
+  <div class="gutter"><b>11</b><span class="gstage" title="원문 STAGE C · 수강생 편성">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">과목별 편성 후 개별 보정 시점</span><span class="tag opt">2015 개정 교육과정 적용 2026학년도 3학년 전입생 가능 경로</span></div>
+    <h3>학생별 수강과목 편성</h3>
+    <p class="desc">과목 단위가 아니라 학생 한 명을 기준으로 수강과목을 붙이거나 빼야 할 때 쓰는 업무다. <strong>선택과목 편성에 유의한다.</strong> 2015 개정 교육과정을 적용받는 2026학년도 3학년 전입생의 수강과목 편성은 이 메뉴에서도 수행할 수 있다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기초부터 학기 중, 과목개설과 과목별 수강생 편성이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-학생별수강과목편성]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-학생별수강과목편성]</code>에서 '학년도', '학기', '계열/학년/학과', '반' 확인 및 선택 후 <span class="btn">{조회}</span> → 학생을 선택한 후 '미편성과목'에서 편성할 '과목'을 선택하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생 한 명의 이수 과목이 실제 시간표와 어긋난 채로 성적·출결이 처리되는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>선택과목 편성에 유의함.</b></li><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년 전입생의 수강과목 편성은 <code>[학적-전입관리-전입관리-학적반영]</code>/<code>[종합자료검색]</code>의 <span class="btn">{수강과목편성}</span>으로 수강과목을 편성함(과목 출석률 계산을 위해 과목 출결과 매칭해야 함).</li></ul></div><div class="memo" style="margin-top:12px"><h4>2015 개정 교육과정 적용 2026학년도 3학년 전입생 편성 메뉴</h4><ul><li><code>[학적-전입관리-전입관리-학적반영]</code>의 <span class="btn">{수강과목편성}</span></li><li><code>[교육과정-편제및과목개설관리-학생별수강과목편성]</code></li><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>의 <span class="btn">{성적수강생편성}</span> 탭 또는 <span class="btn">{출결수강생편성}</span> 탭</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t13" data-num="13" data-stage="D" data-when="학기중" data-who="교육과정업무담당자">
+  <div class="gutter"><b>13</b><span class="gstage" title="원문 STAGE D · 이동수업(N+1)">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기 초 또는 학기 중(지필평가 후)</span><span class="tag opt">이동수업 실시 학교 한정</span></div>
+    <h3>이동수업 과목군 등록과 적용과목 편성</h3>
+    <p class="desc">개설과목 중 차수를 등록하여 수강생을 N+1로 관리해야 하는 이동수업을 실시할 경우에만 사용합니다. 예를 들어 개설과목 '수학'에 대하여 2개의 학급 학생들을 2+1개의 이동반으로 나누어 차수를 관리하며 이동수업을 하는 경우에 씁니다. <strong>이동수업은 일반과목으로 개설된 과목을 대상으로 하므로</strong> 일반과목 과목개설이 끝난 뒤에 시작합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 초, 일반과목 과목개설이 끝난 뒤. 학기 중에 개설과목별 수강학생이 재 편성될 경우에도 사용함.</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code>에서 '학년도', '학기', '계열/학년/학과' 확인 및 선택 후 <span class="btn">{조회}</span>함 → <span class="btn">{행추가}</span>하여 '과목군명'을 입력 후 <span class="btn">{저장}</span>함 → 이동수업 할 '과목군명'을 선택하고 <span class="btn">{1. 과목선택}</span>의 '미적용과목'에서 해당 과목을 선택하여 '적용과목'에 추가 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학기 중 수강학생이 다시 나뉘어도 일반과목 편성을 건드리지 않고 이동수업 단위로 학생을 따로 관리하기 위해서입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>적용과목이 노란색으로 표시된 과목은 해당반 편성이 완료되어 미적용과목으로 이동시킬 수 없음.</b></li><li>학점을 수정하여 과목 편성 할 경우 시간표에서 일반과목과 수준별 이동수업으로 동시에 사용할 수 있음.</li><li>학기 중에 개설과목별 수강학생이 재 편성될 경우 과목별 수강학생 편성을 변경할 수 없으므로 <code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code>를 이용함.</li><li>'과목군명'을 수정하려면 수정할 과목군을 먼저 선택하고 '과목군명' 입력란에서 수정하여 <span class="btn">{저장}</span>함.</li><li>특정 과목 5학점 중 2학점만 수준별 이동수업을 하고 3학점을 일반수업을 하는 경우 <code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code>의 '미적용과목'에서 '학점'을 <b>2학점으로 수정 편성</b>함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t14" data-num="14" data-stage="D" data-when="학기중" data-who="교육과정업무담당자">
+  <div class="gutter"><b>14</b><span class="gstage" title="원문 STAGE D · 이동수업(N+1)">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">과목군·적용과목 편성 직후</span><span class="tag opt">이동수업 실시 학교 한정</span></div>
+    <h3>이동수업 해당 반 선택</h3>
+    <p class="desc">등록한 과목군명을 사용하여 이동수업으로 운영할 반을 등록하는 단계입니다. 이동수업에 참여하는 원적 학급을 지정하는 작업이므로 과목군과 적용과목 편성을 마친 뒤에 합니다. <strong>'적용반' 목록에서 회색 표시된 반은 이미 과목 편성이 완료된 반으로 '미적용반'에 편성할 수 없습니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 초 또는 학기 중, 이동수업 과목군과 적용과목 편성을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code>에서 '학년도', '학기', '계열/학년/학과' 확인 및 선택 후 <span class="btn">{조회}</span>함 → '과목군명'을 선택하고 <span class="btn">{2. 해당반선택}</span> 클릭 후 '미적용반'에서 이동수업을 적용할 해당 반을 선택하여 '적용반'으로 추가 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>어느 학급 학생들을 섞어 이동반으로 나눌지 범위를 먼저 정해 두어야 이후 이동반 편성과 학생 편성이 그 안에서만 이뤄지도록 하기 위해서입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{해당반 선택}</span>의 '적용반'은 여러 반을 등록할 수 있고, <b>'적용반' 목록에서 회색 표시된 반은 이미 과목 편성이 완료된 반으로 '미적용반'에 편성할 수 없음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t15" data-num="15" data-stage="D" data-when="학기중" data-who="교육과정업무담당자">
+  <div class="gutter"><b>15</b><span class="gstage" title="원문 STAGE D · 이동수업(N+1)">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">해당 반 선택 후, 이동수업 운영 시작 전</span><span class="tag opt">이동수업 실시 학교 한정</span></div>
+    <h3>이동수업 운영 차수 등록</h3>
+    <p class="desc">이동수업을 운영할 기간을 차수로 등록하는 단계입니다. 이동수업을 하는 경우에만 사용하며, <strong>학기 초뿐만 아니라 학기 중 여러 번(지필평가 후) 이동수업 반을 차수를 다르게 편성할 수 있습니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 초 또는 학기 중(지필평가 후), 해당 반 선택을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code>에서 '학년도', '학기', '계열/학년/학과' 확인 및 선택 후 <span class="btn">{조회}</span>함 → '과목군명' 선택 후 <span class="btn">{3. 차수등록}</span>을 클릭하여 <span class="btn">{행추가}</span>함 → 이동수업을 운영할 기간의 '시작일'과 '종료일'을 입력하여 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>지필평가 뒤 반 편성을 다시 짤 때 이전 편성을 지우지 않고 기간별로 나란히 남겨 두기 위해서입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>이동수업을 하는 경우에만 사용하며, <b>학기 초 뿐만 아니라 학기 중 여러 번(지필평가 후) 이동수업 반을 차수를 다르게 편성할 수 있음.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t16" data-num="16" data-stage="D" data-when="학기중" data-who="교육과정업무담당자">
+  <div class="gutter"><b>16</b><span class="gstage" title="원문 STAGE D · 이동수업(N+1)">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">차수 등록 직후</span><span class="tag opt">이동수업 실시 학교 한정</span></div>
+    <h3>이동반 편성(편성반명·강의실·담당교사)</h3>
+    <p class="desc">학생별로 이동하여 수업이 실시되는 반을 편성하는 단계입니다. 등록한 차수 안에서 이동반의 이름과 강의실, 담당교사를 지정합니다. <strong>'편성강의실'과 '담당교사'는 직접 입력하지 않고 {찾기}를 이용하여 선택합니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 초 또는 학기 중, 차수 등록을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code>에서 '학년도', '학기', '계열/학년/학과' 선택 후 <span class="btn">{조회}</span>함 → '과목군명' 선택 후 <span class="btn">{4. 이동반편성}</span>을 클릭하여 편성할 '차수'를 선택함 → <span class="btn">{행추가}</span>하여 '편성반명'을 입력하고 '편성강의실', '담당교사'는 <span class="btn">{찾기}</span>를 이용하여 선택한 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 실제로 찾아가는 교실과 만나는 교사를 확정해, 이동한 교실에서도 교과시간별 출결과 수업 관리가 이뤄지게 하려는 것입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{이동반 편성}</span>은 학생별로 이동하여 수업이 실시되는 반을 편성함.</li><li><b>이동수업 과목의 성적처리는 일반과목으로 편성된 반과 학생을 기준으로 산출함.</b></li><li>이동수업(N+1) 편성 후 교과담당교사의 <code>[학적-출결관리-출결관리-교과시간별출결등록]</code>에서 편성된 수강 학생들이 조회되며 출결 처리가 가능함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t18" data-num="18" data-stage="D" data-when="학기중" data-who="교육과정업무담당자">
+  <div class="gutter"><b>18</b><span class="gstage" title="원문 STAGE D · 이동수업(N+1)">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">편성기준고사 성적 산출 후</span><span class="tag opt">권장 경로</span></div>
+    <h3>이동수업 수강학생 일괄 편성(편성기준고사 활용)</h3>
+    <p class="desc">수준별 이동수업처럼 성적 기준으로 학생을 나눌 때 쓰는 방식입니다. 설정된 '편성기준고사'에 의해 자동으로 이동 수업반이 편성되므로 별도의 수강학생 편성이 필요 없습니다. <strong>'편성비율'이나 '편성기준점수'의 구간은 '초과'와 '이하'이므로 경계값이 일치되도록 입력해야 누락되지 않고 편성됩니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 초 또는 학기 중(지필평가 후), 편성기준고사의 성적이 산출된 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code>에서 '학년도', '학기', '계열/학년/학과' 선택 후 <span class="btn">{조회}</span>함 → '과목군명' 선택 후 <span class="btn">{5. 수강학생편성}</span>을 클릭하여 수강학생을 편성할 '차수'를 선택함 → '편성반' 선택 후 <span class="btn">{일괄편성}</span>을 클릭하여 '이동수업 학생 일괄 편성' 창에서 '편성기준고사', '편성기준과목', '편성기준' 설정 후 '편성비율' 또는 '편성기준점수'를 입력하고 <span class="btn">{작업실행}</span>한 후 <span class="btn">{닫기}</span>하고 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>성적 자료를 근거로 수준별 반을 한 번에 갈라, 손으로 명단을 옮기다 생기는 누락과 편성 오류를 막으려는 것입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>이동수업 학생을 일괄 편성할 경우 <b>'편성비율'이나 '편성기준점수'의 구간은 '초과'와 '이하'이므로 경계값이 일치되도록 입력해야 누락되지 않고 편성됨.</b></li><li>'편성기준점수'로 일괄 편성할 때는 <b>기준점수를 입력해야</b> 성적순으로 수강학생이 편성됨.</li><li><b>본교에서 편성기준고사에 응시하지 않은 학생(전입생 등)은 누락되므로 수작업으로 편성함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t17" data-num="17" data-stage="D" data-when="학기중" data-who="교육과정업무담당자">
+  <div class="gutter"><b>17</b><span class="gstage" title="원문 STAGE D · 이동수업(N+1)">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">이동반 편성 직후</span><span class="tag opt">일괄 편성으로 대체 가능</span></div>
+    <h3>이동수업 수강학생 개별 편성</h3>
+    <p class="desc">편성된 이동반에 학생을 한 명씩 골라 넣는 방식입니다. 이동수업 학생 편성은 개별편성 또는 일괄편성이 가능하므로, 성적 기준으로 나누기 어려운 경우나 <strong>본교에서 편성기준고사에 응시하지 않은 학생(전입생 등)</strong>을 채워 넣을 때 이 방식을 씁니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 초 또는 학기 중, 차수와 이동반 편성을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code>에서 '학년도', '학기', '계열/학년/학과' 선택 후 <span class="btn">{조회}</span>함 → '과목군명' 선택 후 <span class="btn">{5. 수강학생편성}</span>을 클릭하여 수강학생을 편성할 '차수'를 선택함 → '편성반'을 선택하고 우측 하단의 '미편성학생'에서 편성할 학생을 선택하여 '편성학생'에 <span class="btn">{추가}</span> 후 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>일괄 편성에서 빠진 학생이 남으면 그 학생의 이동수업 출결 처리가 되지 않으므로 빠짐없이 반을 배정하려는 것입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{수강학생편성}</span>은 이동수업 학생에 대하여 개별편성 또는 일괄편성이 가능함.</li><li><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code>의 <span class="btn">{일괄편성}</span>에서 설정된 '편성기준고사'에 의해 자동으로 이동 수업반이 편성되므로 별도의 수강학생 편성이 필요 없음. 단, <b>본교에서 편성기준고사에 응시하지 않은 학생(전입생 등)은 누락되므로 수작업으로 편성함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t19" data-num="19" data-stage="D" data-when="학기중" data-who="교육과정업무담당자">
+  <div class="gutter"><b>19</b><span class="gstage" title="원문 STAGE D · 이동수업(N+1)">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수강학생 편성 완료 후</span><span class="tag opt">해당반 기준·편성반 기준 선택</span></div>
+    <h3>이동수업(N+1) 명렬표 출력</h3>
+    <p class="desc">이동수업 수강학생 편성을 마친 뒤 반별 명단을 종이로 뽑아 확인하고 수업에 활용하는 단계입니다. <strong>이동수업(N+1) 과목의 명렬표는 '해당반' 기준과 '편성반' 기준으로 출력 가능합니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 초 또는 학기 중, 차수별 수강학생 편성을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code>에서 '학년도', '학기', '계열/학년/학과' 선택 후 <span class="btn">{조회}</span>함 → '과목군명' 선택 후 <span class="btn">{5. 수강학생편성}</span>을 클릭하여 수강학생을 출력할 '차수'를 선택함 → '편성반' 선택 후 <span class="btn">{조회 도구}</span> 선택 후 '해당반 전체조회' 또는 '편성반 전체조회'를 선택하여 '이동수업 명렬표' 창에서 명렬표를 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>이동수업 담당교사와 담임이 같은 명단을 보고 학생의 이동 여부를 확인해 출결과 수업 누락을 막게 하려는 것입니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>이동수업(N+1) 과목의 명렬표는 <b>'해당반' 기준과 '편성반' 기준으로 출력 가능함.</b></li><li>이동수업(N+1) 편성 후 교과담당교사의 <code>[학적-출결관리-출결관리-교과시간별출결등록]</code>에서 편성된 수강 학생들이 조회되며 출결 처리가 가능함.</li><li><span class="btn">{조회 도구}</span>의 '과목개설 현황'에서 이동수업으로 편성된 과목을 확인할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t12" data-num="12" data-stage="C" data-when="학기중" data-who="교육과정업무담당자">
+  <div class="gutter"><b>12</b><span class="gstage" title="원문 STAGE C · 수강생 편성">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">전입생 학적 반영 직후</span><span class="tag opt">2022 개정 교육과정 적용 2026학년도 1·2학년 한정</span><span class="tag">이 경로로만 편성</span></div>
+    <h3>전입생 수강과목 편성(2022 개정 교육과정 적용 2026학년도 1·2학년)</h3>
+    <p class="desc">2022 개정 교육과정을 적용받는 2026학년도 1･2학년 전입생에게만 해당하는 업무다. <strong>과목 출석률 계산을 위해 과목 출결과 매칭해야 하므로 <code>[학적-전입관리-전입관리-학적반영]</code>/<code>[종합자료검색]</code>의 <span class="btn">{수강과목편성}</span>을 통해서만 수강과목을 편성해야 한다.</strong> 수강과목이 편성되지 않으면 출결 처리 및 성적처리를 할 수 없다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 중, 전입생 학적 반영을 마친 직후</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[학적-전입관리-전입관리-학적반영]</code>, <code>[종합자료검색]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-전입관리-전입관리-학적반영]</code>에서 '학년도', '계열', '학년', '기간' 확인 및 선택하고 <span class="btn">{조회}</span> 후 수강과목을 편성할 전입생 '성명'을 클릭함 → <span class="btn">{수강과목편성}</span>함 → '고등학교 2026학년 1학기 개설과목 목록'에서 '타반 강의실' 포함 여부를 선택하고 개설과목 목록에서 과목을 선택함 → '편성된 과목 목록'으로 추가 후 '전입이전 출결산출 포함 과목'을 선택하고 <span class="btn">{저장}</span> 후 <span class="btn">{닫기}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>전출교에서 온 과목 출결을 전입교 과목에 정확히 이어 붙여 전입생의 학점 이수가 인정되게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>수강과목이 편성되지 않으면 출결 처리 및 성적처리를 할 수 없으므로 전입생 학적 반영한 후에는 수강과목을 반드시 편성해야 함.</b></li><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년 전입생의 수강과목 편성은 과목 출석률 계산을 위해 과목 출결과 매칭해야 하므로 <code>[학적-전입관리-전입관리-학적반영]</code>/<code>[종합자료검색]</code>의 <span class="btn">{수강과목편성}</span>을 통해서만 수강과목을 편성해야 함. 전출교에서 전송한 과목 출결과 매칭해야 함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>출결산출 포함 과목 매칭 규칙</h4><ul><li>학점 이수는 과목과 창의적 체험활동 모두 해당이 되므로 <b>전입 이전 출결산출 과목에 창의적체험활동도 반드시 매칭하여야 함.</b></li><li><b>전출교에서 전송된 과목 하나당 전입교 과목은 한 번만 매칭할 수 있음.</b></li><li>매칭할 과목이 없는 경우 전입 이전 출결산출 포함 과목에 '비매칭과목 출결산출'로 지정함.</li><li>해외 귀국학생, 복학, 편입학, 재입학, 재취학, 학기중 중도 입학의 경우 전입 이전 출결산출 포함 과목에 '해외귀국/복학/학기중 신입학 인정출결산출'로 지정함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 전입생의 수강과목 편성은 <code>[학적-전입관리-전입관리-학적반영]</code>의 <span class="btn">{수강과목편성}</span>, <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>, <code>[교육과정-편제및과목개설관리-학생별수강과목편성]</code>에서 수행함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="C" data-when="수강편성" data-who="교육과정업무담당자">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE C · 수강생 편성">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학적변동(전입) 발생 후</span></div>
+    <h3>미편성학생 일괄 편성</h3>
+    <p class="desc">학적변동(전입)으로 수강 편성에서 빠진 학생이 생겼을 때 쓰는 업무다. 수강학생이 미편성된 경우 <code>[성적-지필평가]</code>, <code>[수행평가]</code>에서 수강학생이 조회되지 않는다. <strong><code>[성적-지필평가]</code>/<code>[수행평가]</code>에 성적이 등록되어 있으면 <span class="btn">{일괄등록}</span>, <span class="btn">{미편성학생일괄등록}</span>, <span class="btn">{일괄삭제}</span>를 할 수 없다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 중, 학적변동(전입) 처리 후 성적 등록 전</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 '학년도', '학기', '계열/학년/학과' 확인 및 선택 후 <span class="btn">{조회}</span> → <span class="btn">{미편성학생일괄등록}</span>하여 <span class="btn">{확인}</span>하면 학적변동(전입)으로 인하여 미편성된 학생을 해당 학년에 개설된 모든 과목에 대하여 수강 편성함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>편성에서 누락된 학생이 지필·수행평가 화면에 아예 나타나지 않아 성적이 비는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>수강학생이 미편성된 경우 <code>[성적-지필평가]</code>, <code>[수행평가]</code>에서 수강학생이 조회되지 않음.</li><li><b><code>[성적-지필평가]</code>/<code>[수행평가]</code>에 성적이 등록되어 있으면 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 <span class="btn">{일괄등록}</span>, <span class="btn">{미편성학생일괄등록}</span>, <span class="btn">{일괄삭제}</span>를 할 수 없음.</b></li><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 동일한 과목에는 수강학생을 이중으로 편성할 수 없으며, 능력단위는 실무과목에 편성된 학생만 편성할 수 있음.</li><li>타학년 또는 타교생을 수강학생으로 편성할 수 있음(공동교육과정 거점교(거점센터)의 경우 활용 가능).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="학기중" data-who="교육과정업무담당자">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 과목개설">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">교과담당교사의 병가·휴직 등 발생 시</span><span class="tag">결재 필요</span></div>
+    <h3>개설과목 교과담당교사 변경과 권한 승인요청</h3>
+    <p class="desc">학기 중 교과담당교사의 병가, 휴직 등으로 개설과목의 담당교사를 바꿀 때 활용합니다. 변경만으로 끝나지 않고 자료권한 변경 절차가 함께 따라옵니다. <strong>편성된 교과담당교사 변경 시 ‘자료권한 변경사유(공통)’ 창이 나타나며, 승인요청으로 결재권자의 결재를 완료해야 합니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 중, 교과담당교사의 병가·휴직 등 담당 변경 사유가 생겼을 때</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code>, <code>[기본메뉴-권한관리-교무업무권한관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’, ‘계열/학년/학과’ 선택 후 <span class="btn">{조회}</span>함 → 변경하고자 할 ‘교사명’ 클릭 후 ‘담당교사 변경’ 창에서 변경할 ‘교사명’을 <span class="btn">{조회}</span> 후 선택하여 <span class="btn">{저장}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>새 담당교사가 그 과목의 성적과 출결 자료에 접근할 수 있게 해서 수업 공백 없이 업무를 이어받게 하려고 합니다.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>편성된 교과담당교사 변경 시 ‘자료권한 변경사유(공통)’ 창이 나타나며, ‘변경사유구분’과 ‘변경사유’를 입력 후 <span class="btn">{저장}</span>하고 <code>[기본메뉴-권한관리-교무업무권한관리]</code>의 <span class="btn">{교과목}</span> 탭에서 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 <b>결재권자의 결재를 완료함</b>.</li><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code>에서 교사명을 클릭하면 나타나는 ‘담당교사 변경’ 창에서 해당 교과목의 교과담당교사를 변경할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t20" data-num="20" data-stage="E" data-when="수시조회" data-who="교육과정업무담당자">
+  <div class="gutter"><b>20</b><span class="gstage" title="원문 STAGE E · 현황 조회">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">과목개설 완료 후 수시</span><span class="tag">절차 동일·대상만 다름</span></div>
+    <h3>교사별 담당과목·강의실별 과목담당교사 일람표 조회</h3>
+    <p class="desc">과목개설과 담당교사·강의실 연결이 끝난 뒤 편성 결과를 사람 기준과 강의실 기준으로 확인하는 업무입니다. 두 메뉴 모두 조건을 선택해 <span class="btn">{조회}</span>하는 절차가 같으므로 한 카드로 묶었습니다. <strong>'학년도'는 교무학년도를 포함하여 5개 학년도를 선택할 수 있어 지난 학년도 편성 내역도 그대로 확인할 수 있습니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학년초·학기초의 과목개설과 담당교사·강의실 편성이 끝난 뒤 수시로 확인함.</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-교사별담당과목조회]</code>, <code>[교육과정-편제및과목개설관리-강의실별과목담당교사일람표조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>교사별 담당과목은 <code>[교육과정-편제및과목개설관리-교사별담당과목조회]</code>에서 '학년도', '학기' 확인 후 '교사명'을 입력하여 <span class="btn">{교사찾기}</span> 한 후 <span class="btn">{조회}</span>함 → 강의실별 일람표는 <code>[교육과정-편제및과목개설관리-강의실별과목담당교사일람표조회]</code>에서 '학년도', '학기', '계열/학년/학과', '강의실' 확인 및 선택 후 <span class="btn">{조회}</span>하여 출력할 수 있음.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교사와 강의실 양쪽에서 편성 결과를 맞대어 보아 담당 누락이나 중복 배정을 시간표 작성 전에 잡아내려고.</dd></dl>
+    </div>
+<div class="memo"><h4>어떤 표를 언제 여는가</h4><ul><li>교사별담당과목조회 — 특정 교사가 이번 학기에 어떤 과목을 맡았는지 확인할 때 엶. <b>'교사명'을 공란으로 두고 <span class="btn">{조회}</span>하면 전체 교과담당교사의 담당과목을 확인할 수 있음.</b></li><li>강의실별과목담당교사일람표조회 — 특정 강의실에 어떤 과목과 담당교사가 붙어 있는지 확인할 때 엶. '학기'는 '1학기', '2학기'를 선택할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>두 메뉴 모두 '학년도'는 교무학년도를 포함하여 5개 학년도를 선택할 수 있음.</li><li>강의실별과목담당교사일람표조회는 <span class="btn">{조회}</span> 후 출력할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t21" data-num="21" data-stage="E" data-when="수시조회" data-who="교육과정업무담당자">
+  <div class="gutter"><b>21</b><span class="gstage" title="원문 STAGE E · 현황 조회">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수업 진행 중 수시</span><span class="tag">절차 동일·대상만 다름</span><span class="tag opt">'계열' 조건은 학과 설치교만</span></div>
+    <h3>시수배정 현황·교사별 시수 누계·과목별·강의실별 시수 누계 조회</h3>
+    <p class="desc">시간표에 따라 실제 배정된 시수를 학교 전체, 교사별, 과목·강의실별로 확인하는 업무입니다. 세 메뉴 모두 조건을 선택해 <span class="btn">{조회}</span>하고 출력하는 절차가 같으므로 한 카드로 묶었습니다. <strong>'학년도'는 교무학년도를 포함하여 5개 학년도를 선택할 수 있습니다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기 중 시간표 운영 기간에 기준일자를 정해 수시로 확인함.</dd></dl>
+      <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-시수배정현황조회]</code>, <code>[교육과정-편제및과목개설관리-교사별시수누계조회]</code>, <code>[교육과정-편제및과목개설관리-과목별/강의실별시수누계조회]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>시수배정 현황은 <code>[교육과정-편제및과목개설관리-시수배정현황조회]</code>에서 '학년도', '학기' 확인 후 <span class="btn">{조회}</span>하여 출력할 수 있음 → 교사별 시수 누계는 <code>[교육과정-편제및과목개설관리-교사별시수누계조회]</code>에서 '학년도', '기간별(기준일자)', '월별', '날짜별', '창의적체험활동' 여부, '기준일자' 확인 및 선택 후 <span class="btn">{조회}</span>하고 출력함 → 과목별·강의실별 시수 누계는 <code>[교육과정-편제및과목개설관리-과목별/강의실별시수누계조회]</code>에서 '학년도', '학년', '학기' 확인 후 조회 조건(강의실별/반별/개설강좌별)을 선택하고 '기준일자', '기간별/날짜별'을 선택하여 <span class="btn">{조회}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>계획된 시수와 실제 진행된 시수의 차이를 기준일자별로 확인해 교육과정 운영 시수를 제때 조정하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>어떤 표를 언제 여는가</h4><ul><li>시수배정현황조회 — 학년도·학기 단위로 과목별 시수 배정이 편제대로 되었는지 볼 때 엶. <b>{시간표과목배정현황}으로 월별 전체 시간표 과목 배정현황을 확인할 수 있음.</b></li><li>교사별시수누계조회 — 교사 개인의 수업 시수를 기간별·월별·날짜별로 집계할 때 엶. '창의적체험활동' 포함 여부를 선택함.</li><li>과목별/강의실별시수누계조회 — 강의실별/반별/개설강좌별로 시수 누계를 볼 때 엶.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>세 메뉴 모두 '학년도'는 설정된 교무학년도를 포함하여 5개 학년도를 선택할 수 있음.</li><li>'학기'는 '1학기', '2학기'를 선택할 수 있음.</li><li>학과가 설치된 특수목적고등학교, 특성화고등학교, 직업계열 학과가 설치된 일반고등학교에서는 시수배정현황조회의 조회 조건에 '계열'이 나타남.</li><li><b>과목별/강의실별시수누계조회의 '67/5/67'은 '기간계/누계/계획'을 의미하며, '기간계'는 조회 기간 시수 합계를, '누계'는 조회 학기 시작일부터 조회일까지 시수 합계를, '계획'은 전체시간표 기준으로 조회 학기 전체 시수 합계를 나타냄.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part. 교육과정, Section_05 과목개설 관리 (120–150쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+</body>
+</html>
