@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 학교업무분장 권한관리 업무를 시간순 타임라인에 배치하고, 각 카드에서 원본 PDF의 해당 쪽을 바로 열어보는 단일 페이지 -->
+<!-- 학교업무분장 권한관리 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -234,26 +234,29 @@ footer a{color:var(--ink)}
 .srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
 .srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
 
-/* ── 원문 PDF 모달 ── */
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
 .pdfmodal[hidden]{display:none}
-.pdfmodal{position:fixed;inset:0;z-index:200;background:rgba(21,25,26,.55);
-  display:flex;align-items:center;justify-content:center;padding:24px}
-.pdfbox{background:var(--sheet);border:1.5px solid var(--ink);box-shadow:0 18px 48px var(--shadow);
-  width:min(1000px,100%);height:min(88vh,100%);display:flex;flex-direction:column}
-.pdfbar{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
-.pdfbar b{font-size:14px;font-weight:700}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
 .pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pdfbar .spacer{margin-left:auto}
 .pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
   border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
 .pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
-.pdfframe{flex:1;width:100%;border:0;background:var(--paper)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
 .pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
   font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
-@media print{.pdfmodal{display:none!important}}
-@media (max-width:720px){
-  .pdfmodal{padding:0}
-  .pdfbox{height:100%;border:0}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
   .pdfbar .pdfsub{display:none}
 }
 </style>
@@ -935,11 +938,11 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
 })();
 </script>
 
-<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="true" aria-label="원문 PDF 보기">
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
   <div class="pdfbox">
     <div class="pdfbar">
       <b id="pdftitle">원문</b>
-      <span class="pdfsub">2026년 상반기 나이스 교무업무 사용자 설명서(고등학교용) · Part Ⅰ</span>
+      <span class="pdfsub">2026년 상반기 나이스 교무업무 사용자 설명서(고등학교용) · Part 1 학교업무분장</span>
       <span class="spacer"></span>
       <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
       <button type="button" id="pdfclose">닫기 (Esc)</button>
@@ -951,7 +954,7 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
 
 
 <script>
-// 카드의 원문 쪽 칩을 누르면 원본 PDF의 해당 쪽을 모달로 여는 스크립트
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
 (function(){
   var PDF = 'part1.pdf';
   var modal = document.getElementById('pdfmodal');
@@ -962,32 +965,32 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
 
   function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
 
-  function open(page, text){
+  function open(page, text, card){
     lastFocus = document.activeElement;
     titleEl.textContent = text;
     newTab.href = url(page);
     frame.src = 'about:blank';
     modal.hidden = false;
-    document.body.style.overflow = 'hidden';
+    document.body.classList.add('pdfopen');
     setTimeout(function(){ frame.src = url(page); }, 0);
-    document.getElementById('pdfclose').focus();
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
   }
 
   function close(){
     modal.hidden = true;
     frame.src = 'about:blank';
-    document.body.style.overflow = '';
+    document.body.classList.remove('pdfopen');
     if(lastFocus) lastFocus.focus();
   }
 
   document.querySelectorAll('.srcbtn').forEach(function(b){
     b.addEventListener('click', function(){
-      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '));
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
     });
   });
 
   document.getElementById('pdfclose').addEventListener('click', close);
-  modal.addEventListener('click', function(e){ if(e.target === modal) close(); });
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape' && !modal.hidden) close();
   });
