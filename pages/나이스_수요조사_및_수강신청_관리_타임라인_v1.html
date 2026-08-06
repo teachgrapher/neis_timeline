@@ -609,28 +609,38 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
 (function(){
   var PDF = 'part2_2.pdf';
   var modal = document.getElementById('pdfmodal');
-  var frame = document.getElementById('pdfframe');
   var titleEl = document.getElementById('pdftitle');
   var newTab = document.getElementById('pdfnew');
   var lastFocus = null;
 
   function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
 
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
   function open(page, text, card){
     lastFocus = document.activeElement;
     titleEl.textContent = text;
     newTab.href = url(page);
-    frame.src = 'about:blank';
     modal.hidden = false;
     document.body.classList.add('pdfopen');
-    setTimeout(function(){ frame.src = url(page); }, 0);
+    swapFrame(url(page));
     // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
     if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
   }
 
   function close(){
     modal.hidden = true;
-    frame.src = 'about:blank';
+    swapFrame(null);
     document.body.classList.remove('pdfopen');
     if(lastFocus) lastFocus.focus();
   }
