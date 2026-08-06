@@ -218,6 +218,47 @@ footer a{color:var(--ink)}
   .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
   .task{break-inside:avoid;box-shadow:none}
 }
+
+/* ── 원문 출처 칩 ── */
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.srcbtn{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);
+  border-radius:999px;cursor:pointer;line-height:1.5;
+}
+.srcbtn::before{content:"▤ ";color:var(--mark)}
+.srcbtn:hover{background:var(--ink);color:#fff}
+.srcbtn:hover::before{color:#fff}
+.srcbtn.sub{border-color:var(--rule);color:var(--ink-soft);font-weight:500}
+.srcbtn.sub::before{content:""}
+.srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
+.srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
+.pdfmodal[hidden]{display:none}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
+.pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .spacer{margin-left:auto}
+.pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
+.pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
+  font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
+  .pdfbar .pdfsub{display:none}
+}
 </style>
 </head>
 <body>
@@ -321,6 +362,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">연중 수시</span><span class="tag">수상자 등록 선행</span></div>
     <h3>상장양식 등록 및 수정·삭제</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="2" title="원문 p.686 열기">원문 p.686</button></p>
     <p class="desc">교내상을 시상하는 모든 학교가 해당하며, 수상자를 등록하기 전에 상장 종류와 상장 문구를 먼저 만들어 두는 업무입니다. <strong>‘상장명’은 연간 시상 계획의 수상명과 일치하게 입력</strong>해야 이후 수상 등록과 학교생활기록부 수상경력이 어긋나지 않습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중. 수상자를 등록하기 전에 상장양식을 먼저 등록해 두고, 필요에 따라 연중 수정함.</dd></dl>
@@ -337,6 +379,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">수상 등록 전</span><span class="tag opt">직접입력 / 자동채번 선택</span></div>
     <h3>상장번호 입력형식과 시작번호 설정</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="5" title="원문 p.689 열기">원문 p.689</button></p>
     <p class="desc">교내상 수상을 등록하기 전에 상장번호를 어떤 방식으로 매길지 먼저 정해 두는 업무입니다. <strong>'상장번호 입력형식 선택'을 '직접입력'으로 두면 수상 등록 시 상장번호를 직접 입력할 수 있고, '자동채번'으로 두면 '상장 시작번호'부터 순서대로 번호가 붙습니다.</strong> 잘못 등록한 수상을 삭제한 뒤 그 번호를 다시 쓰려는 경우에도 이 설정을 먼저 확인합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중, 수상내용을 등록하기 전에 먼저 설정함.</dd></dl>
@@ -353,6 +396,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">상장 인쇄 전</span><span class="tag opt">학교 로고 등 필요 시</span></div>
     <h3>상장양식 출력 속성·배경이미지 편집</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.687 열기">원문 p.687</button></p>
     <p class="desc">등록한 상장양식을 실제로 뽑기 전에 글꼴과 배경을 학교 실정에 맞추는 업무이며, 기본 양식대로 출력해도 되는 학교는 건너뛸 수 있습니다. <strong>학교직인을 넣는 것은 불가능하므로</strong> 기본 제공 기능 이외는 상장양식 파일을 내려받아 편집해야 합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중. 상장양식을 등록한 뒤, 상장을 인쇄하기 전에 함.</dd></dl>
@@ -369,6 +413,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">상장 출력 전</span></div>
     <h3>수상대장 정렬 방식 설정</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="6" title="원문 p.690 열기">원문 p.690</button></p>
     <p class="desc">수상대장에 등록된 목록을 원하는 기준으로 줄 세워 보는 업무입니다. 조회 결과 화면에서 <strong>설정에서 '필터'를 클릭하면 각 항목에 삼각형이 나타나며, 그 항목을 기준으로 정렬할 수 있습니다.</strong> 상장을 인쇄하기 전에 목록 순서를 확인할 때 사용합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중, 수상내용이 등록되어 조회되는 상태에서 상장 인쇄 전에 함.</dd></dl>
@@ -385,6 +430,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">시상 직전</span><span class="tag">기본 경로</span></div>
     <h3>수상대장관리 탭에서 상장 인쇄</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="8" title="원문 p.692 열기">원문 p.692</button></p>
     <p class="desc">등록된 상장양식과 수상자 정보로 실제 상장을 뽑는 단계입니다. 상장양식 등록과 상장번호 설정이 끝나 수상대장에 수상 내용이 들어와 있어야 하며, <strong>출력할 '수상명'을 입력해 조회한 뒤 목록을 선택해야 해당 수상자만 인쇄됩니다.</strong> 외국인 학생의 영어이름처럼 이름이 끝까지 나오지 않으면 파일로 내려받아 편집합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중, 상장양식 등록과 수상 내용 등록이 끝난 시상 직전</dd></dl>
@@ -401,6 +447,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">시상 직전</span><span class="tag opt">참가 부문·단체상 있는 경우</span></div>
     <h3>상장출력 탭에서 양식 선택 및 단체상장 출력</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="8" title="원문 p.692–693 열기">원문 p.692–693</button></p>
     <p class="desc">참가 부문이 있는 대회이거나 단체 수상이 있는 학교만 해당합니다. <strong>참가 부문이 있는 대회는 수상명의 ( ) 안에 참가 부문을 입력해 두어야</strong> 상장출력 조건에서 그에 맞는 상장양식을 고를 수 있습니다. 단체건은 단체상장과 개인별단체상장을 함께 뽑을 수 있습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중, 수상명에 참가 부문까지 입력된 상태의 시상 직전</dd></dl>
@@ -417,6 +464,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">수상 담당자 부재 시 정정 발생 시점</span><span class="tag opt">결재 완료된 수상문서에 한정</span></div>
     <h3>결재문서 삭제 후 수상내용 수정</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="5" title="원문 p.689–690 열기">원문 p.689–690</button></p>
     <p class="desc">수상내용을 잘못 등록해 고쳐야 하는데 <strong>수상 담당자가 현재 본교에 재직 중이 아닌 경우</strong>에 해당하는 업무입니다. 학교업무분장관리자가 해당 수상문서의 결재문서를 먼저 삭제해야 수상업무담당교사가 수상내용을 수정할 수 있습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중, 수상내용 정정 사유가 발생한 뒤</dd></dl>
@@ -503,6 +551,75 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
   if(!keep.length) return;
   document.querySelectorAll('a.home,a.hub').forEach(function(a){
     a.href = '../index.html#' + keep.join('&');
+  });
+})();
+</script>
+
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <b id="pdftitle">원문</b>
+      <span class="pdfsub"></span>
+      <span class="spacer"></span>
+      <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
+      <button type="button" id="pdfclose">닫기 (Esc)</button>
+    </div>
+    <iframe class="pdfframe" id="pdfframe" title="원문 PDF"></iframe>
+    <p class="pdfnote">화면이 비어 있으면 <b>새 탭에서 열기</b>를 누르세요. 원본 PDF(part5_4.pdf)가 이 HTML 파일과 같은 폴더에 있어야 합니다.</p>
+  </div>
+</div>
+
+
+<script>
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
+(function(){
+  var PDF = 'part5_4.pdf';
+  var modal = document.getElementById('pdfmodal');
+  var titleEl = document.getElementById('pdftitle');
+  var newTab = document.getElementById('pdfnew');
+  var lastFocus = null;
+
+  function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
+
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
+  function open(page, text, card){
+    lastFocus = document.activeElement;
+    titleEl.textContent = text;
+    newTab.href = url(page);
+    modal.hidden = false;
+    document.body.classList.add('pdfopen');
+    swapFrame(url(page));
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
+  }
+
+  function close(){
+    modal.hidden = true;
+    swapFrame(null);
+    document.body.classList.remove('pdfopen');
+    if(lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.srcbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
+    });
+  });
+
+  document.getElementById('pdfclose').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !modal.hidden) close();
   });
 })();
 </script>
