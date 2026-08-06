@@ -218,6 +218,47 @@ footer a{color:var(--ink)}
   .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
   .task{break-inside:avoid;box-shadow:none}
 }
+
+/* ── 원문 출처 칩 ── */
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.srcbtn{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);
+  border-radius:999px;cursor:pointer;line-height:1.5;
+}
+.srcbtn::before{content:"▤ ";color:var(--mark)}
+.srcbtn:hover{background:var(--ink);color:#fff}
+.srcbtn:hover::before{color:#fff}
+.srcbtn.sub{border-color:var(--rule);color:var(--ink-soft);font-weight:500}
+.srcbtn.sub::before{content:""}
+.srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
+.srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
+.pdfmodal[hidden]{display:none}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
+.pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .spacer{margin-left:auto}
+.pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
+.pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
+  font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
+  .pdfbar .pdfsub{display:none}
+}
 </style>
 </head>
 <body>
@@ -330,6 +371,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기초, 고사 전</span><span class="tag opt">기존 프로그램으로 대체 가능</span></div>
     <h3>OMR 카드 리딩 프로그램 설치와 환경설정</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="2" title="원문 p.732–734 열기">원문 p.732–734</button></p>
     <p class="desc">나이스의 OMR 카드 리딩 프로그램을 쓰거나 기존에 사용하던 OMR 카드 리딩 프로그램을 그대로 쓸 수 있습니다. <strong>스캔 방식의 OCR 카드 리더기에는 적용되지 않으므로 스캔 방식의 카드 리더기를 사용하는 학교는 기존과 동일하게 파일업로드 방식을 사용</strong>합니다. 설치와 실행·환경설정은 한 번에 끝내는 한 덩어리 작업입니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초, 지필·수행평가 답안카드 리딩 전</dd></dl>
@@ -346,6 +388,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기초, 고사 전</span></div>
     <h3>OMR용 학과 코드 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="5" title="원문 p.735 열기">원문 p.735</button></p>
     <p class="desc">성적처리를 위해 학교에 개설된 과정별·계열별 학과코드를 등록하는 업무입니다. <strong>일반학과와 직업계열 학과가 함께 설치된 일반고등학교에서는 일반학과와 직업계열 학과가 함께 나타납니다.</strong> 학과가 설치된 특성화고등학교 등은 학과코드 순서를 조정할 수 있습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초, OMR 답안카드 제작과 성적파일 이관 전</dd></dl>
@@ -362,6 +405,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기초, 과목 개설 완료 후</span></div>
     <h3>OMR용 카드과목코드 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="6" title="원문 p.736 열기">원문 p.736</button></p>
     <p class="desc">학교에 개설된 과목의 성적처리를 위해 과목코드를 등록하는 업무입니다. <strong>[교육과정-편제및과목개설관리-편제및과목개설관리]에서 과목 개설이 완료되어야만 {과목코드관리} 탭에 해당 과목명이 나타납니다.</strong> '카드과목코드'는 학년별로 관리합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초, [교육과정-편제및과목개설관리-편제및과목개설관리]에서 과목 개설이 완료된 뒤</dd></dl>
@@ -378,6 +422,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기초, 과목 개설 후</span><span class="tag opt">특성화고·마이스터고 한정</span></div>
     <h3>도제학교 그룹 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="1" title="원문 p.731–732 열기">원문 p.731–732</button></p>
     <p class="desc">직업계고에서 학점(단위수)과 과목명이 같은 과목을 도제그룹과 일반그룹으로 나누어 성적을 산출할 때 쓰는 업무입니다. <strong>[도제학교그룹관리] 메뉴는 특성화고등학교(마이스터고등학교 포함)에서만 표시</strong>되므로 그 밖의 학교는 이 카드를 건너뜁니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초, [교육과정-편제및과목개설관리]에서 과목 개설과 수강생 편성이 끝난 뒤</dd></dl>
@@ -394,6 +439,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기초, 과목 개설 후</span><span class="tag opt">국가교육과정 성취기준이 있는 과목</span></div>
     <h3>평가준거 성취기준 관리(국가교육과정 성취기준이 있는 과목)</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="7" title="원문 p.737–738 열기">원문 p.737–738</button></p>
     <p class="desc">교육과정에 편제된 교과목 중 국가교육과정 성취기준이 제공되는 과목이면 국가교육과정 정보센터 자료를 그대로 가져와 등록할 수 있다. <strong>2022 개정 교육과정의 전문교과 중 국가교육과정 성취기준이 있는 교과는 가져오기 기능을 제공함.</strong> 교과담당교사가 담당과목에 대해 성취기준을 등록하거나 수정 및 삭제할 수 있다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초, [교육과정-편제및과목개설관리]에서 과목 개설과 수강생 편성이 끝난 뒤</dd></dl>
@@ -410,6 +456,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기초, 과목 개설 후</span><span class="tag opt">국가교육과정 성취기준이 없는 과목</span></div>
     <h3>평가준거 성취기준 관리(국가교육과정 성취기준이 없는 과목)</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="9" title="원문 p.739–740 열기">원문 p.739–740</button></p>
     <p class="desc">담당과목에 국가교육과정 성취기준이 제공되지 않으면 가져오기를 쓸 수 없다. <strong>국가교육과정 성취기준이 없는 전문교과는 엑셀 또는 한셀로 작성하여 업로드하거나 직접 입력하여 등록함.</strong> 절차가 가져오기와 전혀 달라 별도 업무로 처리한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초, [교육과정-편제및과목개설관리]에서 과목 개설과 수강생 편성이 끝난 뒤</dd></dl>
@@ -426,6 +473,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">성취기준 등록을 마친 뒤, 평가계획 수립 시</span><span class="tag opt">재구조화하는 경우</span></div>
     <h3>성취수준(평가기준) 수정과 관리</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="11" title="원문 p.741 열기">원문 p.741</button></p>
     <p class="desc">성취기준 등록이 끝난 뒤 과목별로 평가기준을 학교 실정에 맞게 재구조화할 때 쓰는 업무다. 과목별로 재구조화한 평가기준을 수정하거나 삭제 및 출력할 수 있다. <strong>2015 개정 교육과정이 적용되는 2026학년도 3학년의 '보통교과'와 '전문교과Ⅰ'의 평가기준은 '상, 중, 하'로 작성함.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초, 담당과목의 성취기준 등록이 끝난 뒤</dd></dl>
@@ -442,6 +490,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기초, 지필평가 시행 전</span><span class="tag">학교 단위 적용</span></div>
     <h3>지필평가 고사명 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="12" title="원문 p.742 열기">원문 p.742</button></p>
     <p class="desc">지필평가를 실시하는 학교가 학기마다 가장 먼저 하는 작업이다. 여기서 등록한 고사는 <strong>학교 단위로 적용되어 모든 계열/학년/학과에 동일하게 나타난다</strong>. 고사명이 없으면 과목 등록도 답안 파일 이관도 시작할 수 없다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초, 지필평가 시행 전. 과목 개설과 수강생 편성이 끝난 뒤.</dd></dl>
@@ -458,6 +507,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">평가계획 수립 시기</span><span class="tag opt">권장 경로</span></div>
     <h3>지필·수행 반영비율과 만점 한 화면에서 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="18" title="원문 p.748 열기">원문 p.748</button></p>
     <p class="desc">지필평가 과목은 <code>[지필평가과목관리]</code>에서, 수행평가 영역은 <code>[수행평가영역관리]</code>에서 등록할 수도 있으나 이 메뉴에서 지필･수행을 모두 등록하는 것이 효율적이다. <strong>과목의 '반영비율'의 합계는 반드시 100%가 되도록 한다</strong>. 교과담당교사가 담당과목에 대해 직접 관리한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>평가계획 수립 시기, 지필평가 고사명 등록을 마친 뒤.</dd></dl>
@@ -474,6 +524,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">고사명 등록 직후, 평가계획 수립 시기</span><span class="tag opt">반영비율/만점관리로 대체 가능</span></div>
     <h3>지필평가 과목 등록과 타학과 복사</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="13" title="원문 p.743–745 열기">원문 p.743–745</button></p>
     <p class="desc">고사명 등록이 끝난 뒤 그 고사에서 평가할 과목을 붙이는 작업이다. <strong><code>[성적-지필/수행선행작업-반영비율/만점관리]</code>에서도 등록할 수 있으므로</strong> 지필과 수행을 함께 등록하려면 11번 업무로 가면 된다. 학과가 여러 개인 학교는 한 학과만 등록한 뒤 복사해 쓴다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>평가계획 수립 시기, 지필평가 고사명 등록을 마친 뒤.</dd></dl>
@@ -490,6 +541,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">평가계획 수립 시기</span><span class="tag opt">반영비율/만점관리로 대체 가능</span></div>
     <h3>수행평가 영역 등록과 계열/학과 일괄적용</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="16" title="원문 p.746–747 열기">원문 p.746–747</button></p>
     <p class="desc">수행평가를 실시하는 과목이면 모두 해당하며, 교과담당교사가 담당과목의 영역을 직접 등록한다. <strong>여러 계열/학과를 통합하여 성적을 산출해야 하는 경우 '영역명'과 '영역번호'를 같게 설정해야 한다</strong>. 성취기준 입력은 선택사항이다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>평가계획 수립 시기, 과목 개설과 수강생 편성이 끝난 뒤.</dd></dl>
@@ -506,6 +558,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">고사 직후</span><span class="tag opt">OMR 카드 리딩 방식</span></div>
     <h3>성적파일 업로드와 이관</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="19" title="원문 p.749–750 열기">원문 p.749–750</button></p>
     <p class="desc">OMR 카드 리더기로 리딩한 정답/배점 파일과 학생답안 파일을 나이스로 반입하는 업무입니다. 나이스 OMR 카드 리딩 프로그램을 쓰지 않고 카드 리더기 제조사 프로그램이나 스캔 방식 리더기를 쓰는 학교도 이 메뉴에서 등록합니다. <strong>지필평가는 정답/배점, 학생답안 파일을 업로드할 수 있으나 학생점수 파일은 업로드할 수 없음(수행평가는 학생점수 파일도 업로드 가능함).</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>고사 시행 후 OMR 카드 리딩을 마친 뒤, 지필평가 과목과 수행평가 영역 등록이 끝난 뒤</dd></dl>
@@ -522,6 +575,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">파일 이관 실패 시</span><span class="tag opt">이관 실패한 경우만</span></div>
     <h3>이관 실패 파일 수정과 재이관</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="21" title="원문 p.751–752 열기">원문 p.751–752</button></p>
     <p class="desc">성적파일 올리기에서 이관이 실패했을 때만 하는 업무입니다. 학과코드·과목코드 불일치나 학생번호 오류 같은 사유를 이 메뉴에서 확인해 고칩니다. <strong>{카드일괄수정} 또는 {카드수정}을 이용하면 OMR 시트(카드)를 재리딩하지 않고 수정된 성적파일로 이관할 수 있음.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>성적파일 업로드/이관을 실행한 뒤 이관에 실패한 파일이 확인된 시점</dd></dl>
@@ -608,6 +662,75 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
   if(!keep.length) return;
   document.querySelectorAll('a.home,a.hub').forEach(function(a){
     a.href = '../index.html#' + keep.join('&');
+  });
+})();
+</script>
+
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <b id="pdftitle">원문</b>
+      <span class="pdfsub"></span>
+      <span class="spacer"></span>
+      <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
+      <button type="button" id="pdfclose">닫기 (Esc)</button>
+    </div>
+    <iframe class="pdfframe" id="pdfframe" title="원문 PDF"></iframe>
+    <p class="pdfnote">화면이 비어 있으면 <b>새 탭에서 열기</b>를 누르세요. 원본 PDF(part6_1.pdf)가 이 HTML 파일과 같은 폴더에 있어야 합니다.</p>
+  </div>
+</div>
+
+
+<script>
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
+(function(){
+  var PDF = 'part6_1.pdf';
+  var modal = document.getElementById('pdfmodal');
+  var titleEl = document.getElementById('pdftitle');
+  var newTab = document.getElementById('pdfnew');
+  var lastFocus = null;
+
+  function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
+
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
+  function open(page, text, card){
+    lastFocus = document.activeElement;
+    titleEl.textContent = text;
+    newTab.href = url(page);
+    modal.hidden = false;
+    document.body.classList.add('pdfopen');
+    swapFrame(url(page));
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
+  }
+
+  function close(){
+    modal.hidden = true;
+    swapFrame(null);
+    document.body.classList.remove('pdfopen');
+    if(lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.srcbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
+    });
+  });
+
+  document.getElementById('pdfclose').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !modal.hidden) close();
   });
 })();
 </script>
