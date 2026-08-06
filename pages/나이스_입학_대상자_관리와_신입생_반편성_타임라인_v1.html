@@ -218,6 +218,47 @@ footer a{color:var(--ink)}
   .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
   .task{break-inside:avoid;box-shadow:none}
 }
+
+/* ── 원문 출처 칩 ── */
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.srcbtn{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);
+  border-radius:999px;cursor:pointer;line-height:1.5;
+}
+.srcbtn::before{content:"▤ ";color:var(--mark)}
+.srcbtn:hover{background:var(--ink);color:#fff}
+.srcbtn:hover::before{color:#fff}
+.srcbtn.sub{border-color:var(--rule);color:var(--ink-soft);font-weight:500}
+.srcbtn.sub::before{content:""}
+.srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
+.srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
+.pdfmodal[hidden]{display:none}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
+.pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .spacer{margin-left:auto}
+.pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
+.pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
+  font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
+  .pdfbar .pdfsub{display:none}
+}
 </style>
 </head>
 <body>
@@ -330,6 +371,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년말, 시·도교육청 배정 직후</span><span class="tag opt">평준화지역 교육감 전형 한정</span></div>
     <h3>교육청 배정자료 확인 및 출신 중학교 전송 요청</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.1001–1002 열기">원문 p.1001–1002</button></p>
     <p class="desc">평준화지역 학교에 해당하는 업무이며, 교육감 전형 입학 대상자는 도교육청에서 입학 대상 학생을 일괄 배정함. 시·도교육청이 등록한 입학생 배정자료를 확인한 뒤 출신 중학교로 기본 신상정보(사진 제외), 진로정보, 건강기록부 등의 자료를 요청함. <strong>'본교확인'을 '대상'으로 저장해야 중학교 자료를 가져와 반영함.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 신입생 배정자료 및 신입생 명단을 확인한 뒤</dd></dl>
@@ -346,6 +388,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">합격사정 완료 후</span><span class="tag opt">학교장 전형 학교 한정</span></div>
     <h3>입학 대상자 파일 생성(고교입학시스템 활용)</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="8" title="원문 p.1006 열기">원문 p.1006</button></p>
     <p class="desc">학교장 전형으로 시행하는 학교에서만 하는 업무입니다. 교육감 전형과 달리 시·도교육청이 배정자료를 보내주지 않으므로, <strong>입학 대상자를 고등학교에서 나이스 시스템에 직접 등록해야 합니다.</strong> 등록 방법은 파일로 만들어 일괄 등록하거나 개별 등록하는 두 가지가 있고, 이 카드는 일괄 등록에 쓸 파일을 먼저 내리는 단계입니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 고교입학시스템에서 합격사정이 끝난 뒤</dd></dl>
@@ -362,6 +405,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">합격자 파일을 내린 직후</span><span class="tag opt">학교장 전형 학교 한정</span><span class="tag">개별추가로 대체 가능</span></div>
     <h3>입학 대상자 파일로 일괄 추가</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="9" title="원문 p.1007–1008 열기">원문 p.1007–1008</button></p>
     <p class="desc">학교장 전형으로 시행하는 학교에서 사용하는 방법입니다. 입학대상자 명단 파일을 이용하여 일괄 등록하는 방식으로 <strong>동명이인 학생은 특별히 유의하여 처리합니다.</strong> 등록된 학생이 본교 입학대상자가 아닐 경우 <span class="btn">{삭제}</span> 합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 고교입학시스템에서 합격자 명단 파일을 다운로드한 뒤</dd></dl>
@@ -378,6 +422,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">배정자료 확인 후, 누락자 확인 시점</span><span class="tag opt">교육감 전형·학교장 전형 공통</span></div>
     <h3>재학생 입학 대상자 개별 추가</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="5" title="원문 p.1003–1004 열기">원문 p.1003–1004</button></p>
     <p class="desc">시·도교육청 배정자료에 들어오지 않은 학생을 한 명씩 등록하는 업무임. 소규모 입학생, 해당 학교에 배정된 특수학생, 검정고시 학생, 별도로 배정된 체육특기생 등이 대상이며 평준화지역 재배정 결과 반영도 이 방식으로 처리함. <strong>현재 학년도 중학교 3학년 학생은 졸업 처리를 완료했어도 {재학생} 탭에서 검색하여 등록함.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 교육청 배정자료 확인 후 누락 대상자가 파악된 뒤</dd></dl>
@@ -394,6 +439,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">입학 대상자 등록 시점</span><span class="tag opt">이전 학년도 졸업생이 있는 학교만</span></div>
     <h3>이전 학년도 졸업생 입학 대상자 추가</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="6" title="원문 p.1004 열기">원문 p.1004</button></p>
     <p class="desc">이전 학년도에 중학교를 졸업한 학생이 입학하는 경우에만 해당함. <strong>이전 학년도 졸업생은 교육감 전형이라도 시·도교육청에서 전송되지 않으므로 해당 학교에서 {졸업생} 탭에서 검색하여 추가함.</strong> 재학생 검색으로는 찾을 수 없어 절차가 따로 갈림.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 입학 대상자 명단에서 이전 학년도 졸업생을 확인한 뒤</dd></dl>
@@ -410,6 +456,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">입학 대상자 등록 시점</span><span class="tag opt">검정고시 합격자·학력인정 학교 출신자가 있는 학교만</span></div>
     <h3>검정고시 합격자·직접입력 대상자 추가</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="7" title="원문 p.1005 열기">원문 p.1005</button></p>
     <p class="desc">중학교 졸업 학력 검정고시 합격자, 특례입학 대상자(외국학교), 학력인정 대안학교 등 나이스를 활용하지 않는 학교 학생이 입학하는 경우에만 해당함. 출신학교에서 자료를 받을 수 없어 인적사항을 직접 입력함. <strong>'구분'에서 '검정고시'를 선택한 경우 '출신학교', '졸업일자'는 입력하지 않음.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 입학 대상자 명단에서 검정고시·학력인정 대상자를 확인한 뒤</dd></dl>
@@ -426,6 +473,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">전송요청 후 자료 도착 대기 중</span><span class="tag opt">교육감 전형 위주</span></div>
     <h3>출신교 미확인·미도착 학생 확인</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="11" title="원문 p.1009 열기">원문 p.1009</button></p>
     <p class="desc">입학 대상자로 등록하고 전송요청까지 마쳤는데도 출신 중학교에서 자료가 오지 않은 학생을 걸러내는 업무입니다. <strong>‘출신교상태’가 ‘미확인’인 입학 대상자의 출신 중학교의 업무 진행 상태를 확인함.</strong> 학적일괄생성 전에 미도착 건을 정리해 두어야 합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 입학 대상자 등록과 전송요청을 마쳐 배정자료가 도착하기를 기다리는 시점.</dd></dl>
@@ -442,6 +490,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">입학 대상자 등록과 자료 도착을 모두 확인한 뒤</span></div>
     <h3>신입생 학적 일괄 생성</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="12" title="원문 p.1010 열기">원문 p.1010</button></p>
     <p class="desc">등록을 마친 입학 대상자에게 예비 학적을 만드는 업무입니다. <strong>이후 <code>[학적-진급대상자반편성관리-진급대상자반편성관리]</code>에서 1학년으로 진급처리하는 입학생을 생성함.</strong> 재학생·졸업생·검정고시·기타로 등록한 대상자 수를 확인한 뒤 실행합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 입학 대상자 등록과 미도착 학생 확인을 끝낸 뒤.</dd></dl>
@@ -458,6 +507,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학적 생성 직후</span><span class="tag opt">필요시 저장·출력</span></div>
     <h3>입학자 현황 조회 및 저장·출력</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="13" title="원문 p.1011 열기">원문 p.1011</button></p>
     <p class="desc">등록한 입학 대상자의 현황을 한눈에 확인하는 업무입니다. <strong>조회 조건을 확인하여 조회한 뒤 필요시 PDF, 워드, 엑셀, 파워포인트, 한글 문서로 저장하거나 출력할 수 있음.</strong> 반편성 작업으로 넘어가기 전 인원 점검용으로 씁니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 신입생 학적 일괄 생성으로 예비 학적을 만든 뒤.</dd></dl>
@@ -473,6 +523,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학적 일괄 생성을 마친 뒤</span></div>
     <h3>1학년 진급대상자 생성</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="14" title="원문 p.1012 열기">원문 p.1012</button></p>
     <p class="desc">예비 학적이 만들어진 입학생을 신학년도 1학년 진급대상자로 확정하는 업무입니다. <strong>먼저 <code>[학적-진급대상자반편성관리-진급대상자반편성관리-대상자생성]</code>에서 <span class="btn">{입학대상자관리}</span>를 클릭 후 ‘입학대상자관리’ 창에서 <span class="btn">{조회}</span>한 다음 <span class="btn">{주민등록번호오류출력}</span>하여 입학 대상자의 주민등록번호 오류 여부를 확인함.</strong> 오류를 정리한 뒤 반영합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 입학 대상자의 예비 학적을 생성하고 주민등록번호 오류를 확인한 뒤.</dd></dl>
@@ -489,6 +540,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년말, 학적 생성 후</span><span class="tag opt">업무 12로 대체 가능</span></div>
     <h3>파일을 이용한 일괄 반편성</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="15" title="원문 p.1013–1014 열기">원문 p.1013–1014</button></p>
     <p class="desc">신입생을 입학 성적순 등으로 미리 편성해 둔 학교가 쓰는 방식입니다. 대상 인원이 많아 화면에서 한 명씩 고르기 어려울 때 <strong>내려받은 반편성자료 파일에 '진급반코드', '진급반번호'를 입력해 한 번에 올립니다.</strong> 파일 없이 화면에서 직접 지정하려면 업무 12를 씁니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 입학 대상자의 예비 학적 생성과 1학년 진급대상자 생성이 끝난 뒤.</dd></dl>
@@ -505,6 +557,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">일괄 반편성 직후 또는 학년말</span><span class="tag opt">업무 11로 대체 가능</span></div>
     <h3>직접 등록하는 개별 반편성</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="16" title="원문 p.1014 열기">원문 p.1014</button></p>
     <p class="desc">파일을 쓰지 않고 화면에서 학생마다 반을 지정하는 방식입니다. 인원이 적은 학교에서 처음부터 쓸 수도 있고, <strong>업무 11의 일괄 반편성 결과 중 일부만 고쳐야 할 때도 이 화면에서 수정합니다.</strong> 동명이인이 있는지도 이 화면에서 확인합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 입학생 학적이 생성된 뒤. 일괄 반편성을 했다면 그 직후.</dd></dl>
@@ -521,6 +574,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">반편성 완료 후</span></div>
     <h3>학생 반 번호 부여 및 수정</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="17" title="원문 p.1015–1016 열기">원문 p.1015–1016</button></p>
     <p class="desc">반편성이 끝난 학생에게 학급 내 번호를 매기는 업무입니다. '성명순 / 주민등록번호순' 중 <strong>'부여기준'을 정해 일괄로 부여한 뒤, <span class="btn">{결과조회}</span>의 '변경번호'에서 개별 수정합니다.</strong> 반편성 결과를 학생에게 알릴 때는 개인정보 유출에 특히 주의합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 일괄 반편성 또는 개별 반편성으로 진급반 지정이 끝난 뒤.</dd></dl>
@@ -537,6 +591,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">반 번호 부여 후, 학교생활기록부·건강기록부 마감 후</span></div>
     <h3>진급자 학적반영</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="19" title="원문 p.1017 열기">원문 p.1017</button></p>
     <p class="desc">반편성과 반 번호 부여를 마친 진급대상자를 신학년도 학적으로 확정하는 마지막 업무입니다. <strong>학교생활기록부와 건강기록부가 마감되어 있어야 <span class="btn">{승인요청}</span>이 가능합니다.</strong> 반영은 3학년부터 1학년 순서로 진행합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 반편성과 반 번호 부여가 끝나고 학교생활기록부와 건강기록부 마감이 완료된 뒤.</dd></dl>
@@ -623,6 +678,75 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
   if(!keep.length) return;
   document.querySelectorAll('a.home,a.hub').forEach(function(a){
     a.href = '../index.html#' + keep.join('&');
+  });
+})();
+</script>
+
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <b id="pdftitle">원문</b>
+      <span class="pdfsub"></span>
+      <span class="spacer"></span>
+      <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
+      <button type="button" id="pdfclose">닫기 (Esc)</button>
+    </div>
+    <iframe class="pdfframe" id="pdfframe" title="원문 PDF"></iframe>
+    <p class="pdfnote">화면이 비어 있으면 <b>새 탭에서 열기</b>를 누르세요. 원본 PDF(part9.pdf)가 이 HTML 파일과 같은 폴더에 있어야 합니다.</p>
+  </div>
+</div>
+
+
+<script>
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
+(function(){
+  var PDF = 'part9.pdf';
+  var modal = document.getElementById('pdfmodal');
+  var titleEl = document.getElementById('pdftitle');
+  var newTab = document.getElementById('pdfnew');
+  var lastFocus = null;
+
+  function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
+
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
+  function open(page, text, card){
+    lastFocus = document.activeElement;
+    titleEl.textContent = text;
+    newTab.href = url(page);
+    modal.hidden = false;
+    document.body.classList.add('pdfopen');
+    swapFrame(url(page));
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
+  }
+
+  function close(){
+    modal.hidden = true;
+    swapFrame(null);
+    document.body.classList.remove('pdfopen');
+    if(lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.srcbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
+    });
+  });
+
+  document.getElementById('pdfclose').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !modal.hidden) close();
   });
 })();
 </script>
