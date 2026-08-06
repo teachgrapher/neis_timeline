@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<!-- 업무카드 623장을 제목 버튼으로 늘어놓고 Part·문서별 정렬과 담당자 필터로 좁혀 보는 카드 벽 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>나이스 업무 타임라인 · 업무카드 모아보기</title>
+<meta name="description" content="나이스 업무카드를 한 화면에 모아 Part별·문서별로 정렬하고, 업무담당자로 걸러 바로 해당 카드로 이동하는 페이지.">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --mono:var(--sans);
+  --sitebar-h:50px;
+  --ctrl-h:auto;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단바 ── */
+.sitebar{position:sticky;top:0;z-index:80;background:rgba(238,240,233,.96);backdrop-filter:saturate(160%) blur(8px);border-bottom:1px solid var(--rule)}
+.sitebar .bar{height:var(--sitebar-h);display:flex;align-items:center;gap:14px}
+.sitebar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.sitebar .brand{font-size:15.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;color:var(--ink);text-decoration:none}
+.sitebar .brand:hover{color:var(--mark)}
+.sitebar .here{font-size:12.5px;font-weight:600;color:var(--ink-soft);padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap}
+.sitebar .back{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;white-space:nowrap}
+.sitebar .back:hover{color:var(--mark)}
+
+/* ── 머리말 ── */
+.hero{padding:34px 0 22px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.16em;color:var(--mark);margin:0 0 10px}
+.hero h1{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1.15;margin:0 0 10px}
+.hero p{font-size:14.5px;color:var(--ink-soft);margin:0;max-width:60ch}
+
+/* ── 조작 막대 ── */
+.ctrl{position:sticky;top:var(--sitebar-h);z-index:70;background:rgba(238,240,233,.97);backdrop-filter:saturate(160%) blur(8px);border-top:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)}
+.ctrl .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 0}
+.ctrl .row + .row{border-top:1px solid var(--rule-soft);padding-top:10px}
+.lab{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--ink-soft);white-space:nowrap}
+.seg{display:flex;border:1.5px solid var(--ink)}
+.seg button{
+  font-family:var(--sans);font-size:12.5px;font-weight:600;padding:5px 12px;
+  border:0;border-right:1px solid var(--rule);background:var(--sheet);color:var(--ink-soft);cursor:pointer;
+}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--ink);color:#fff}
+.seg button:hover:not(.on){background:var(--dropout)}
+.find{position:relative;flex:1;min-width:180px;max-width:340px}
+.find input{
+  width:100%;height:32px;padding:0 30px 0 11px;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;color:var(--ink);
+  background:var(--sheet);border:1.5px solid var(--ink);border-radius:0;
+}
+.find input::placeholder{color:var(--ink-soft);font-weight:400}
+.find input:focus{outline:2px solid var(--mark);outline-offset:1px}
+.find .x{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--ink-soft);font-size:16px;line-height:1;cursor:pointer;display:none}
+.find input:not(:placeholder-shown) ~ .x{display:block}
+.count{margin-left:auto;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+.count b{color:var(--mark)}
+
+.facet{
+  font-family:var(--sans);font-size:12.5px;font-weight:600;line-height:1.4;
+  padding:4px 9px;background:var(--sheet);border:1px solid var(--rule);color:var(--ink-soft);cursor:pointer;
+}
+.facet i{font-style:normal;font-weight:500;margin-left:3px;font-variant-numeric:tabular-nums}
+.facet:hover{border-color:var(--ink);color:var(--ink)}
+.facet.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.facet.on i{color:var(--dropout-deep)}
+.facet.more{border-style:dashed;background:none}
+.facet:focus-visible,.seg button:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.facets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}
+.facets.fold .rest{display:none}
+
+/* ── 카드 벽 ── */
+main{padding:0 0 80px}
+.group{margin:30px 0 0}
+.group h2{
+  display:flex;align-items:baseline;gap:10px;
+  font-size:15px;font-weight:800;letter-spacing:-.01em;margin:0 0 12px;
+  padding-bottom:7px;border-bottom:1.5px solid var(--ink);
+}
+.group h2 em{font-style:normal;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;color:var(--mark)}
+.group h2 i{font-style:normal;margin-left:auto;font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--ink-soft)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:8px}
+.cardbtn{
+  display:block;padding:10px 12px;background:var(--sheet);
+  border:1.5px solid var(--ink);box-shadow:2px 2px 0 var(--shadow);
+  color:var(--ink);text-decoration:none;
+  font-size:13.5px;font-weight:600;line-height:1.4;letter-spacing:-.01em;
+  transition:transform .1s,box-shadow .1s,background .1s;
+}
+.cardbtn:hover{background:var(--dropout);transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--shadow)}
+.cardbtn:active{transform:translate(1px,1px);box-shadow:0 0 0 var(--shadow)}
+.cardbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.empty{margin:40px 0;padding:24px;background:var(--sheet);border:1.5px dashed var(--rule);text-align:center;color:var(--ink-soft);font-size:14px}
+.empty button{font-family:var(--sans);font-size:13px;font-weight:600;padding:5px 12px;margin-left:8px;border:1.5px solid var(--ink);background:none;color:var(--ink);cursor:pointer}
+
+footer{border-top:1.5px solid var(--ink);padding:22px 0 40px;font-size:12.5px;color:var(--ink-soft)}
+footer a{color:var(--ink-soft)}
+
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+  .hero{padding:24px 0 16px}
+  .hero h1{font-size:28px}
+  .sitebar .here{display:none}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:6px}
+  .cardbtn{font-size:12.5px;padding:8px 10px}
+  .count{width:100%;margin-left:0}
+}
+@media print{
+  .sitebar,.ctrl,.find{display:none}
+  .cardbtn{box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<header class="sitebar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <a class="brand" href="index.html">나이스 업무 타임라인</a>
+    <span class="here">업무카드 모아보기</span>
+    <a class="back" href="index.html">← 전체 색인</a>
+  </div>
+</header>
+
+<div class="wrap hero">
+  <p class="eyebrow" id="eyebrow">전체 업무카드</p>
+  <h1>업무카드 모아보기</h1>
+  <p>문서 53편에 흩어져 있는 업무카드를 제목만 남겨 한 화면에 늘어놓았습니다. 누르면 그 카드가 있는 문서의 해당 자리로 바로 갑니다.</p>
+</div>
+
+<div class="ctrl">
+  <div class="wrap">
+    <div class="row">
+      <span class="lab">정렬</span>
+      <div class="seg" id="seg">
+        <button type="button" data-sort="part" class="on">Part별</button>
+        <button type="button" data-sort="doc">문서별</button>
+        <button type="button" data-sort="name">가나다</button>
+      </div>
+      <div class="find">
+        <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="제목으로 좁히기" aria-label="카드 제목으로 좁히기">
+        <button type="button" class="x" id="qx" aria-label="지우기">×</button>
+      </div>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="row">
+      <span class="lab">업무담당자</span>
+      <div class="facets fold" id="facets"></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap" id="wall"></main>
+
+<footer>
+  <div class="wrap">
+    <p id="built"></p>
+    <p>원문은 각 문서의 업무카드에서 확인할 수 있습니다. <a href="index.html">전체 색인으로 돌아가기</a></p>
+  </div>
+</footer>
+
+<script src="cards.js"></script>
+<script>
+(function(){
+'use strict';
+var DATA = window.NEIS_CARDS;
+var wall = document.getElementById('wall');
+if(!DATA){
+  wall.innerHTML = '<p class="empty">카드 자료(cards.js)를 읽지 못했습니다. <code>python3 tools/build_cards.py</code> 를 한 번 돌려 주세요.</p>';
+  return;
+}
+
+var docs = DATA.docs, cards = DATA.cards;
+var FACET_TOP = 12;          // 담당자 칩을 이만큼만 먼저 보이고 나머지는 접어 둔다
+var sortBy = 'part';
+var picked = [];             // 고른 담당자. 비어 있으면 전체
+var term = '';
+
+/* ── 담당자 목록 · 카드 수가 많은 차례로 ── */
+var roleCount = {};
+cards.forEach(function(c){
+  c.w.forEach(function(r){ roleCount[r] = (roleCount[r] || 0) + 1; });
+});
+var roles = Object.keys(roleCount).sort(function(a, b){
+  return roleCount[b] - roleCount[a] || a.localeCompare(b, 'ko');
+});
+
+/* ── 문서 순서를 Part 순서 그대로 쓴다. 매니페스트 차례로 뽑아 두었다 ── */
+var partOrder = [], seen = {};
+docs.forEach(function(d){ if(!seen[d.p]){ seen[d.p] = 1; partOrder.push(d.p); } });
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, function(m){
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m];
+  });
+}
+function urlOf(c){
+  return 'pages/' + encodeURIComponent(docs[c.d].f) + '#' + c.i;
+}
+function pad(n){ return String(n).length < 2 ? '0' + n : String(n); }
+
+/* ── 거르기 ── */
+function keep(c){
+  if(term && c.t.toLowerCase().indexOf(term) === -1) return false;
+  if(!picked.length) return true;
+  for(var i = 0; i < picked.length; i++){
+    if(c.w.indexOf(picked[i]) !== -1) return true;   // 여러 담당자를 고르면 그중 하나만 맞아도 남긴다
+  }
+  return false;
+}
+
+/* ── 칩 ── */
+function paintFacets(){
+  var box = document.getElementById('facets');
+  var html = '<button type="button" class="facet' + (picked.length ? '' : ' on') + '" data-role="">전체<i>' + cards.length + '</i></button>';
+  roles.forEach(function(r, i){
+    html += '<button type="button" class="facet' + (picked.indexOf(r) === -1 ? '' : ' on')
+          + (i >= FACET_TOP ? ' rest' : '') + '" data-role="' + esc(r) + '">'
+          + esc(r) + '<i>' + roleCount[r] + '</i></button>';
+  });
+  if(roles.length > FACET_TOP){
+    html += '<button type="button" class="facet more" id="morebtn">'
+          + (box.classList.contains('fold') ? '+' + (roles.length - FACET_TOP) + '종 더' : '접기') + '</button>';
+  }
+  box.innerHTML = html;
+}
+
+/* ── 벽 그리기 ── */
+function render(){
+  var list = cards.filter(keep);
+  document.getElementById('count').innerHTML =
+    '카드 <b>' + list.length + '</b>장' + (list.length === cards.length ? '' : ' / 전체 ' + cards.length + '장');
+
+  if(!list.length){
+    wall.innerHTML = '<p class="empty">조건에 맞는 업무카드가 없습니다.'
+                   + '<button type="button" id="reset">조건 지우기</button></p>';
+    document.getElementById('reset').addEventListener('click', function(){
+      picked = []; term = ''; document.getElementById('q').value = '';
+      paintFacets(); render();
+    });
+    return;
+  }
+
+  var html = '';
+  if(sortBy === 'name'){
+    list.slice().sort(function(a, b){ return a.t.localeCompare(b.t, 'ko'); }).forEach(function(c){
+      html += btn(c);
+    });
+    wall.innerHTML = '<section class="group"><h2><em>가나다순</em><span>업무카드 전체</span>'
+                   + '<i>' + list.length + '장</i></h2><div class="grid">' + html + '</div></section>';
+    return;
+  }
+
+  var keys = [], bucket = {};
+  list.forEach(function(c){
+    var k = sortBy === 'part' ? docs[c.d].p : String(c.d);
+    if(!bucket[k]){ bucket[k] = []; keys.push(k); }
+    bucket[k].push(c);
+  });
+  keys.sort(function(a, b){
+    return sortBy === 'part' ? partOrder.indexOf(a) - partOrder.indexOf(b) : a - b;
+  });
+
+  keys.forEach(function(k){
+    var head, sub;
+    if(sortBy === 'part'){ head = k; sub = ''; }
+    else { head = docs[k].t; sub = docs[k].p; }
+    html += '<section class="group"><h2><em>' + esc(sub || head.split(' ').slice(0, 2).join(' ')) + '</em>'
+          + '<span>' + esc(sortBy === 'part' ? head.split(' ').slice(2).join(' ') || head : head) + '</span>'
+          + '<i>' + bucket[k].length + '장</i></h2><div class="grid">'
+          + bucket[k].map(btn).join('') + '</div></section>';
+  });
+  wall.innerHTML = html;
+}
+
+function btn(c){
+  var d = docs[c.d];
+  var tip = d.t + ' · ' + pad(c.n) + '번' + (c.w.length ? ' · ' + c.w.join(', ') : '');
+  return '<a class="cardbtn" href="' + urlOf(c) + '" title="' + esc(tip) + '">' + esc(c.t) + '</a>';
+}
+
+/* ── 조작 ── */
+document.getElementById('seg').addEventListener('click', function(e){
+  var b = e.target.closest('button[data-sort]');
+  if(!b) return;
+  sortBy = b.dataset.sort;
+  [].forEach.call(this.querySelectorAll('button'), function(x){ x.classList.toggle('on', x === b); });
+  render();
+});
+
+document.getElementById('facets').addEventListener('click', function(e){
+  var b = e.target.closest('button');
+  if(!b) return;
+  if(b.id === 'morebtn'){ this.classList.toggle('fold'); paintFacets(); return; }
+  var r = b.dataset.role;
+  if(!r){ picked = []; }
+  else {
+    var i = picked.indexOf(r);
+    if(i === -1) picked.push(r); else picked.splice(i, 1);
+  }
+  paintFacets(); render();
+});
+
+var q = document.getElementById('q');
+q.addEventListener('input', function(){ term = q.value.trim().toLowerCase(); render(); });
+document.getElementById('qx').addEventListener('click', function(){ q.value = ''; term = ''; render(); q.focus(); });
+document.addEventListener('keydown', function(e){
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'){ e.preventDefault(); q.focus(); q.select(); }
+  if(e.key === 'Escape' && document.activeElement === q){ q.value = ''; term = ''; render(); }
+});
+
+document.getElementById('eyebrow').textContent = '문서 ' + docs.length + '편 · 업무카드 ' + cards.length + '장';
+document.getElementById('built').textContent = '이 목록은 ' + DATA.built + ' 기준입니다. 문서를 고친 뒤에는 tools/build_cards.py 를 다시 돌리면 갱신됩니다.';
+paintFacets();
+render();
+})();
+</script>
+</body>
+</html>

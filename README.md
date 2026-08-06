@@ -12,9 +12,11 @@ Part 1~9로 나뉜 나이스 업무 타임라인 문서 53편, 업무카드 622�
 ├─ templates/          복사해서 쓰는 FAQ 틀
 │   └─ 나이스_FAQ_모음_v1.html
 ├─ tools/
+│   ├─ build_cards.py         문서에서 업무카드 목록을 뽑아 cards.js 를 만드는 스크립트
 │   ├─ patch_pages.py         pages 문서에 복귀 링크·앞뒤 이동 막대를 넣는 스크립트
 │   ├─ patch_sitebar_rail.py  전역 상단바(검색·Part 이동)와 왼쪽 세로 타임라인을 넣는 스크립트
-│   └─ patch_handout.py       연수자료 뽑기(카드 골라 A4 인쇄)를 넣는 스크립트
+│   ├─ patch_handout.py       연수자료 뽑기(카드 골라 A4 인쇄)를 넣는 스크립트
+│   └─ patch_wall_link.py     문서 상단바에 카드 벽 링크를 넣는 스크립트
 ├─ checklist.md
 └─ context-notes.md
 ```
@@ -125,6 +127,8 @@ Part 1~9로 나뉜 나이스 업무 타임라인 문서 53편, 업무카드 622�
 3. `python3 tools/patch_pages.py` 를 돌린다. 새 문서에 복귀 링크와 앞뒤 문서 이동 막대가 붙는다.
    이어서 `python3 tools/patch_sitebar_rail.py` 와 `python3 tools/patch_handout.py` 도 차례로 돌린다.
    앞의 것이 먼저 적용되어 있어야 뒤의 것이 붙는다. 이미 적용된 문서는 건너뛰므로 몇 번을 돌려도 된다.
+   마지막으로 `python3 tools/patch_wall_link.py` 와 `python3 tools/build_cards.py` 를 돌린다.
+   문서 내용을 고쳤을 때도 `build_cards.py` 는 다시 돌려야 카드 벽(cards.html)에 반영된다.
 4. 커밋하고 밀어 넣으면 Vercel이 알아서 다시 배포한다.
 
 목록에 없는 새 파일이라면 해당 Part의 `docs` 배열에 아래 한 줄을 넣으면 된다.
