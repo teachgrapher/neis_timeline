@@ -218,6 +218,47 @@ footer a{color:var(--ink)}
   .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
   .task{break-inside:avoid;box-shadow:none}
 }
+
+/* ── 원문 출처 칩 ── */
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.srcbtn{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);
+  border-radius:999px;cursor:pointer;line-height:1.5;
+}
+.srcbtn::before{content:"▤ ";color:var(--mark)}
+.srcbtn:hover{background:var(--ink);color:#fff}
+.srcbtn:hover::before{color:#fff}
+.srcbtn.sub{border-color:var(--rule);color:var(--ink-soft);font-weight:500}
+.srcbtn.sub::before{content:""}
+.srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
+.srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
+.pdfmodal[hidden]{display:none}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
+.pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .spacer{margin-left:auto}
+.pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
+.pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
+  font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
+  .pdfbar .pdfsub{display:none}
+}
 </style>
 </head>
 <body>
@@ -339,6 +380,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">고사기간 중</span><span class="tag opt">메뉴 권한 필요</span></div>
     <h3>문항정보표 기존사용자 변경</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.756 열기">원문 p.756</button></p>
     <p class="desc">고사기간 중 문항정보표에 대한 '기존사용자'를 변경해야 할 경우에만 해당한다. <strong>'시행일자'의 '종료일'까지는 최초 등록한 교과담당교사만 문항정보표를 작성·열람·수정·출력할 수 있으므로, 담당 교사가 바뀌면 사용자를 변경해야 한다.</strong> 이 메뉴에 대한 권한이 필요하다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>고사기간 중, 문항정보표를 최초 등록한 교과담당교사가 계속 관리할 수 없게 된 때.</dd></dl>
@@ -355,6 +397,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">고사 직후</span><span class="tag opt">추정 분할점수 산출 과목</span></div>
     <h3>문항정보표 작성·마감 — 성취기준을 가져오는 과목</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="1" title="원문 p.753–755 열기">원문 p.753–755</button></p>
     <p class="desc">과목별 평가 계획에 따라 추정 분할점수를 산출하는 과목이 해당한다. 이 경우 <strong>[교과담임-성적-지필/수행선행작업-성취평가기준관리]에서 성취기준이 먼저 등록되어 있어야 하며, 문항정보표에 '내용영역', '성취기준', '난이도'를 모두 입력해야 한다.</strong> 세 항목 중 하나라도 비어 있으면 마감할 수 없다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>고사 종료 후 학생의 OMR 시트(카드)를 리딩하여 [성적-지필/수행선행작업-성적파일올리기]에서 파일을 이관한 뒤.</dd></dl>
@@ -371,6 +414,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">고사 직후</span><span class="tag opt">추정 분할점수를 산출하지 않는 과목</span><span class="tag">서답형 100% 과목 포함</span></div>
     <h3>정답·배점만 입력하는 과목의 문항정보표 처리</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="2" title="원문 p.754–755 열기">원문 p.754–755</button></p>
     <p class="desc">추정 분할점수를 산출하지 않는 과목은 '내용영역', '성취기준', '난이도' 없이 '정답'과 '배점'만 입력해 처리한다. <strong>서답형 100% 과목의 경우 '과목점수'에서 '서답형 만점/배점합'에 100점을 등록한다.</strong> 만점 오류를 미리 걸러내려면 선택형·서답형 만점을 먼저 {과목점수저장}한 뒤 문항별 배점을 입력해 '배점합'과 비교한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>고사 종료 후 학생의 OMR 시트(카드)를 리딩하여 [성적-지필/수행선행작업-성적파일올리기]에서 파일을 이관한 뒤.</dd></dl>
@@ -387,6 +431,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">성적파일 이관 직후</span><span class="tag opt">서답형 출제 과목</span></div>
     <h3>지필평가 학생 답 확인 및 서답형 점수 입력</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="5" title="원문 p.757 열기">원문 p.757</button></p>
     <p class="desc">업로드된 OMR 시트(카드) 마킹 내용을 학생별로 확인하는 업무다. <strong>선택형 문항은 입력 및 수정이 불가능하며, 확인만 할 수 있다.</strong> 학생 답안카드에 서답형 점수를 마킹하지 않았다면 여기 또는 [지필평가성적관리]에서 서답형 점수를 직접 입력해야 한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학생의 OMR 시트(카드)를 리딩하여 [성적-지필/수행선행작업-성적파일올리기]에서 파일을 이관한 뒤, 채점 전.</dd></dl>
@@ -403,6 +448,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">고사 종료 후 학생답안 파일 이관 직후</span><span class="tag opt">권장 경로</span></div>
     <h3>검증으로 무표기·대상자 확인한 뒤 채점하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="8" title="원문 p.760 열기">원문 p.760</button></p>
     <p class="desc">채점을 한 번만 수행하려면 이 경로를 택한다. 강의실별로 ‘총 수강학생’, ‘채점대상’, ‘제외대상’과 ‘무표기 문항번호’를 먼저 확인하고 나서 채점하므로, <strong>답안카드 누락을 채점 전에 잡을 수 있다</strong>. 서답형 100점 만점으로 치르는 경우에는 서답형 채점 방식 선택 과정을 생략한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, [성적-지필/수행선행작업-성적파일올리기]에서 학생답안 파일 이관이 끝난 뒤</dd></dl>
@@ -419,6 +465,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">고사 종료 후 학생답안 파일 이관 직후</span><span class="tag opt">검증 후 채점으로 대체 가능</span></div>
     <h3>일괄채점하고 뒤이어 검증하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="6" title="원문 p.758–759 열기">원문 p.758–759</button></p>
     <p class="desc">성적처리업무담당자가 고사종료 후 리딩한 학생답안 파일을 업로드하면 교과담당교사가 채점을 실시한다. 여러 강의실을 한 번에 처리할 때 쓰는 경로이며, <strong>채점 전에 대상자 수에 오류가 없는지 확인해야 한다</strong>. 서답형 100점 만점으로 치르는 경우에는 서답형 채점 방식 선택 과정을 생략한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, [성적-지필/수행선행작업-성적파일올리기]에서 학생답안 파일 이관이 끝난 뒤</dd></dl>
@@ -435,6 +482,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">채점 직후, 강의실 마감 전</span></div>
     <h3>지필평가 성적 관리 — 결시명칭·고사별 학적변동 입력</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="9" title="원문 p.761–762 열기">원문 p.761–762</button></p>
     <p class="desc">모든 과목의 교과담당교사가 채점 후에 반드시 거치는 업무다. 교과담당교사가 학생들의 점수와 결시명칭, 학적변동 등을 확인하고, 학생답안이 없는 결시생과 학적변동 학생은 ‘결시명칭’ 또는 ‘고사별 학적변동’을 선택하여 입력하고 저장해야 한다. <strong>학생들의 서답형 점수를 OMR 시트(카드)에 마킹하여 업로드하지 않으면 직접 입력해야 한다</strong>.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 채점 후, [교과담임-성적-지필평가-지필평가채점]에서 채점이 끝난 뒤</dd></dl>
@@ -451,6 +499,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">채점 직후</span><span class="tag opt">권장 경로</span></div>
     <h3>교과목별학생답정오표로 학생 확인받기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="11" title="원문 p.763–764 열기">원문 p.763–764</button></p>
     <p class="desc">채점이 끝난 지필평가 결과를 학생 개인별로 출력해 이상 유무를 확인받는 업무입니다. <strong>[교과담임-성적-지필평가-지필평가성적관리]에 '선택형', '서답형' 점수가 입력되어 있어야</strong> 조회됩니다. 강의실별 일람표는 선택형과 서답형이 구분되지 않으므로 이 표를 쓰는 것이 효율적입니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>채점 후 학생 확인 기간, 지필평가성적관리에 선택형·서답형 점수가 입력된 뒤</dd></dl>
@@ -467,6 +516,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">채점 직후</span></div>
     <h3>결시생명단 조회로 결시 처리 점검</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="13" title="원문 p.765 열기">원문 p.765</button></p>
     <p class="desc">지필평가 기간의 결시생을 학년 단위로 모아 확인하는 업무입니다. 정오표에는 결시자가 조회되지 않으므로 <strong>결시 처리 누락은 이 명단으로만 확인</strong>할 수 있습니다. 강의실별 마감 전에 결시명칭과 고사별 학적변동이 빠진 학생이 없는지 점검하는 데 씁니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>채점 후 성적 마감 전, 지필평가성적관리에 결시명칭 또는 고사별 학적변동을 입력한 뒤</dd></dl>
@@ -483,6 +533,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">채점 직후</span></div>
     <h3>성적처리이력조회로 수정 흔적 확인</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="8" title="원문 p.760 열기">원문 p.760</button></p>
     <p class="desc">채점이나 점수 입력을 다시 한 흔적이 남아 있는지 확인하는 업무입니다. <strong>채점을 다시 하면 성적 수정이력이 조회되므로 정답 및 배점을 수정한 경우를 제외하고 채점은 1회만 수행</strong>해야 합니다. 학생 확인 과정에서 정정이 발생한 과목을 사후에 점검할 때 엽니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>채점 및 점수 입력 이후, 성적 이상 유무 확인 단계</dd></dl>
@@ -499,6 +550,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">채점 직후부터</span><span class="tag">조회·출력 묶음</span></div>
     <h3>지필평가 일람표·정오표·결시생 표 조회 및 출력</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="29" title="원문 p.781–787 열기">원문 p.781–787</button></p>
     <p class="desc">지필평가 결과와 이상 유무, 결시생을 확인하는 조회 메뉴 묶음입니다. 표 종류는 여러 개지만 절차는 모두 조건 선택 후 <span class="btn">{조회}</span>하고 저장 또는 출력하는 흐름으로 같습니다. <strong>[학생별학생답정오표]는 [교과담임-성적-지필평가-지필평가마감관리]에서 강의실별 마감이 완료된 과목만 {미리보기}로 확인할 수 있습니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, [교과담임-성적-지필평가-지필평가성적관리]에 '선택형', '서답형' 점수가 입력된 뒤.</dd></dl>
@@ -515,6 +567,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">이의신청 기간 이후</span></div>
     <h3>교과목별·강의실별 성적 마감</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="14" title="원문 p.766–767 열기">원문 p.766–767</button></p>
     <p class="desc">교과담당교사가 자기 과목의 강의실을 하나씩 마감하는 업무입니다. <strong>성적 이상 유무에 대한 확인(출제 오류 확인, 학생 확인 등)이 완료된 뒤</strong>에 진행합니다. 해당 과목의 모든 강의실을 마감하면 문항분석이 자동으로 실행됩니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>성적 이의신청기간 이후 과목별 성적 확인이 완료된 뒤</dd></dl>
@@ -531,6 +584,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">모든 강의실 마감 후</span></div>
     <h3>지필평가마감관리에서 마감정보저장 및 승인요청</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="16" title="원문 p.768 열기">원문 p.768</button></p>
     <p class="desc">모든 교과담당교사의 강의실별 마감을 확인하고 고사 단위로 마감을 확정한 뒤 결재를 올리는 업무입니다. <strong>모든 강의실별 마감여부가 완료되어야</strong> 이후 성적산출 대상 선택이 활성화됩니다. 성적처리업무담당자가 마지막에 처리합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>교과목별·강의실별 마감이 모두 끝난 뒤</dd></dl>
@@ -547,6 +601,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">모든 강의실 마감 직후</span><span class="tag">조회·출력 묶음</span></div>
     <h3>도수분포표·구간비교표·정답률비교표·문항분석표·성적집계표 조회</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="40" title="원문 p.792–795 열기">원문 p.792–795</button></p>
     <p class="desc">학생들의 지필평가 성적 관련 각종 통계자료를 조회 및 출력하는 묶음입니다. <strong>[교과담임-성적-지필평가-지필평가성적관리]에서 해당 과목의 모든 강의실 {마감}과 동시에 문항분석이 자동으로 실행되므로</strong> 마감이 끝나야 문항분석표와 정답률이 제대로 조회됩니다. 표마다 조회 조건만 다르고 절차는 같습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 해당 과목의 모든 강의실 마감으로 문항분석이 실행된 뒤.</dd></dl>
@@ -563,6 +618,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">지필평가 마감 직후</span><span class="tag opt">1차·2차 각각 등록</span></div>
     <h3>성적산출 기준명 등록 — 학생부 미반영으로 지정</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="17" title="원문 p.769–770 열기">원문 p.769–770</button></p>
     <p class="desc">1･2차 지필평가 성적을 산출하려는 모든 학교가 가장 먼저 하는 작업이다. <strong>1차 지필평가와 2차 지필평가의 성적처리 시 '성적구분'은 '학생부 미반영'을 선택</strong>하며, '성적구분'이 '학기말'인 산출기준은 한 학기에 한 개만 등록할 수 있다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, [성적-지필평가-지필평가마감관리]에서 해당 지필평가가 마감된 뒤.</dd></dl>
@@ -579,6 +635,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">강의실별 마감과 마감정보저장 완료 후</span></div>
     <h3>성적산출 대상(고사/영역) 등록 및 반영비율일괄적용</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="19" title="원문 p.771 열기">원문 p.771</button></p>
     <p class="desc">산출기준명을 등록한 뒤 어느 고사를 산출에 넣을지 지정하는 작업이다. <strong>'고사/영역명'의 체크 박스는 교과담당교사가 [교과담임-성적-지필평가-지필평가성적관리]에서 강의실별 {마감}을 하고, 성적처리 업무담당자는 [성적-지필평가-지필평가마감관리]에서 {마감정보저장}이 완료된 이후 활성화</strong>되므로 마감이 끝나기 전에는 선택할 수 없다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 성적산출 기준명 등록과 지필평가 마감이 모두 끝난 뒤.</dd></dl>
@@ -595,6 +652,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">성적산출대상 등록 직후</span></div>
     <h3>성적산출 학생 대상자가져오기 및 포함여부 설정</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="20" title="원문 p.772 열기">원문 p.772</button></p>
     <p class="desc">산출대상 고사를 등록한 뒤 과목별로 수강자 명단을 불러와 산출에 넣을 학생을 확정하는 작업이다. <strong>지필평가 기간 중이나 이후의 자퇴생이 평가를 치른 과목에 대해서는 수강자수에 '포함'하여 성적을 산출</strong>한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 성적산출 대상(고사/영역) 등록이 끝난 뒤.</dd></dl>
@@ -611,6 +669,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">성적산출 학생 관리 이후</span><span class="tag opt">학년·학과 구분 없이 한 모집단으로 볼 때</span></div>
     <h3>성적산출 단위 — 통합산출로 처리</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="21" title="원문 p.773–774 열기">원문 p.773–774</button></p>
     <p class="desc">동일 교과목 수강생 전체를 한 모집단으로 묶어 성적을 산출할 과목에 해당한다. <strong>학년 또는 학과와 관계없이 동일학기, 학점(단위수), 학습내용이 동일한 경우 통합하여 산출</strong>한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 성적산출 학생 관리까지 마친 뒤.</dd></dl>
@@ -627,6 +686,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">성적산출 학생 관리 이후</span><span class="tag opt">학업성적관리규정으로 수강자수를 정한 경우</span></div>
     <h3>성적산출 단위 — 학년·계열·학과별 분리산출로 처리</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="22" title="원문 p.774–775 열기">원문 p.774–775</button></p>
     <p class="desc">교육과정 특성상 수강자수를 갈라야 하는 과목에 해당한다. <strong>시･도교육청 학업성적관리 시행지침에 따라 학교별 학업성적관리규정으로 수강자수를 정하는 경우</strong> 학년별, 계열별, 학과별로 분리하여 산출한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 성적산출 학생 관리까지 마친 뒤.</dd></dl>
@@ -643,6 +703,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">성적처리선행작업 완료 후</span></div>
     <h3>과목별 성적산출 및 마감함</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="24" title="원문 p.776–777 열기">원문 p.776–777</button></p>
     <p class="desc">선행작업이 모두 끝난 과목의 석차(동석차)를 실제로 뽑는 작업이다. <strong>[성적-성적처리선행작업]이 완료되어야</strong> 하며, 산출 전에 지필/수행 점수누락자를 먼저 확인한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, [성적-성적처리선행작업]이 완료된 뒤.</dd></dl>
@@ -659,6 +720,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">과목별 성적산출 직후</span></div>
     <h3>성적산출 마감관리 및 학생/학부모서비스반영</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="26" title="원문 p.778 열기">원문 p.778</button></p>
     <p class="desc">모든 과목의 산출이 끝난 뒤 마감 여부를 확인하고 결과를 학생･학부모에게 열어 주는 작업이다. <strong>{승인요청}은 학기말(학생부 반영) 성적산출기준에 대해서만 사용</strong>하므로 1･2차 지필평가에서는 사용하지 않는다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 과목별 성적산출을 마친 뒤.</dd></dl>
@@ -675,6 +737,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">산출 직후</span><span class="tag">조회·출력 묶음</span></div>
     <h3>학기말성적조회 성적일람표·과목별석차 조회 및 출력</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="36" title="원문 p.788–791 열기">원문 p.788–791</button></p>
     <p class="desc">석차가 산출된 뒤에 여는 조회 메뉴 묶음입니다. <strong>[성적-성적처리-성적산출관리-과목별성적산출]에서 {산출함}하여 과목별 성적산출이 완료되면</strong> 조회 기준('환산점기준' 또는 '받은점수기준')을 선택하여 성적일람표를 강의실별로 조회하고 출력할 수 있습니다. 표마다 조회 조건만 다르고 절차는 같습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 과목별 성적산출이 완료된 뒤.</dd></dl>
@@ -691,6 +754,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">성적산출 마감 후</span><span class="tag">학급담임 업무</span></div>
     <h3>가정통신문 입력 및 성적통지표 출력</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="27" title="원문 p.779–780 열기">원문 p.779–780</button></p>
     <p class="desc">학급담임교사가 반 학생의 성적통지표를 만드는 업무입니다. <strong>성적산출기준명이 등록된 후부터 개인별 또는 전체 가정통신문을 등록할 수 있습니다.</strong> 산출기준이 학기말 성적이 아닌 1･2차 지필평가에서는 성취도와 석차등급이 통지표에 나오지 않습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>1･2차 지필평가 실시 후, 성적산출기준명이 등록되고 과목별 성적산출과 마감이 끝난 뒤.</dd></dl>
@@ -777,6 +841,75 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
   if(!keep.length) return;
   document.querySelectorAll('a.home,a.hub').forEach(function(a){
     a.href = '../index.html#' + keep.join('&');
+  });
+})();
+</script>
+
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <b id="pdftitle">원문</b>
+      <span class="pdfsub"></span>
+      <span class="spacer"></span>
+      <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
+      <button type="button" id="pdfclose">닫기 (Esc)</button>
+    </div>
+    <iframe class="pdfframe" id="pdfframe" title="원문 PDF"></iframe>
+    <p class="pdfnote">화면이 비어 있으면 <b>새 탭에서 열기</b>를 누르세요. 원본 PDF(part6_2.pdf)가 이 HTML 파일과 같은 폴더에 있어야 합니다.</p>
+  </div>
+</div>
+
+
+<script>
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
+(function(){
+  var PDF = 'part6_2.pdf';
+  var modal = document.getElementById('pdfmodal');
+  var titleEl = document.getElementById('pdftitle');
+  var newTab = document.getElementById('pdfnew');
+  var lastFocus = null;
+
+  function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
+
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
+  function open(page, text, card){
+    lastFocus = document.activeElement;
+    titleEl.textContent = text;
+    newTab.href = url(page);
+    modal.hidden = false;
+    document.body.classList.add('pdfopen');
+    swapFrame(url(page));
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
+  }
+
+  function close(){
+    modal.hidden = true;
+    swapFrame(null);
+    document.body.classList.remove('pdfopen');
+    if(lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.srcbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
+    });
+  });
+
+  document.getElementById('pdfclose').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !modal.hidden) close();
   });
 })();
 </script>
