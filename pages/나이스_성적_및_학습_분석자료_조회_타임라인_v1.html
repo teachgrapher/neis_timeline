@@ -218,6 +218,47 @@ footer a{color:var(--ink)}
   .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
   .task{break-inside:avoid;box-shadow:none}
 }
+
+/* ── 원문 출처 칩 ── */
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.srcbtn{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);
+  border-radius:999px;cursor:pointer;line-height:1.5;
+}
+.srcbtn::before{content:"▤ ";color:var(--mark)}
+.srcbtn:hover{background:var(--ink);color:#fff}
+.srcbtn:hover::before{color:#fff}
+.srcbtn.sub{border-color:var(--rule);color:var(--ink-soft);font-weight:500}
+.srcbtn.sub::before{content:""}
+.srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
+.srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
+.pdfmodal[hidden]{display:none}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
+.pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .spacer{margin-left:auto}
+.pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
+.pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
+  font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
+  .pdfbar .pdfsub{display:none}
+}
 </style>
 </head>
 <body>
@@ -303,6 +344,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기말 성적처리 완료 후</span><span class="tag">학생 개별 조회</span></div>
     <h3>성적변화표로 과목별 성적 변화 확인</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.924 열기">원문 p.924</button></p>
     <p class="desc">학생 한 명을 고르고 과목을 선택해 <strong>그 과목의 성적이 학기를 거치며 어떻게 변했는지</strong>를 보는 화면이다. 표준점수 분석표와 조회 조건은 같지만, 여기서는 과목 단위로 변화 흐름만 본다. 학급담임교사가 상담 자료로 쓰기에 적합하다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>지필평가 및 학기말 성적처리 완료 후.</dd></dl>
@@ -318,6 +360,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학생/학부모서비스반영 이후</span><span class="tag">학생 개별 조회</span></div>
     <h3>표준점수 분석표로 학생의 상대적 위치 확인</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="1" title="원문 p.922–923 열기">원문 p.922–923</button></p>
     <p class="desc">[성적-성적처리-성적산출마감관리]에서 <strong>{학생/학부모서비스반영}을 한 과목만 조회되므로</strong>, 마감과 서비스반영이 끝난 뒤에 열어야 한다. 학생 한 명을 선택해 학년·학기·성적기준별로 표준점수를 보는 화면이다. 그래프와 상세조회로 학기별 변화까지 함께 확인할 수 있다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>지필평가 및 학기말 성적처리 완료 후, '산출기준별' {성적산출전체마감}과 {학생/학부모서비스반영}이 끝난 뒤.</dd></dl>
@@ -334,6 +377,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">성적산출 직후</span><span class="tag opt">성취기준 입력 과목 한정</span></div>
     <h3>개인별 성취기준 분석표 조회 및 저장·출력</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.925 열기">원문 p.925</button></p>
     <p class="desc">문항정보표에 문항별 성취기준을 입력하고 지필평가 절차를 정상적으로 거친 과목만 해당한다. <strong>문항정보표, 정답/배점관리, 학생답안, 채점정보가 모두 등록되어 성적산출 한 경우에만 정상적으로 조회된다.</strong> 학생 한 명씩 성취기준 도달 내용을 확인하고 저장 또는 출력해 상담이나 교과 지도 자료로 쓴다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>지필평가 및 학기말 성적처리 완료 후, 문항정보표에 문항별 성취기준이 입력되고 '산출기준별' {성적산출전체마감}과 {학생/학부모서비스반영}이 끝난 뒤.</dd></dl>
@@ -350,6 +394,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기말 성적처리 완료 후</span><span class="tag opt">성취기준 입력 과목만 정상 조회</span></div>
     <h3>교과목별 평가결과 분석표 조회 및 저장·출력</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="5" title="원문 p.926 열기">원문 p.926</button></p>
     <p class="desc">학기말 성적처리가 완료된 건에 대하여 각 학기별로 각 과목의 평가결과를 조회하는 업무입니다. 학생 개인이 아니라 과목 단위로 평가 결과를 보므로 교과담당교사가 자기 과목을 선택해 확인합니다. <strong>문항정보표, 정답/배점관리, 학생답안, 채점정보가 등록되어 성적 산출한 경우에만 정상적으로 조회가 가능합니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>지필평가 및 학기말 성적처리 완료 후, [성적-성적처리-성적산출마감관리]에서 '산출기준별' {성적산출전체마감}과 {학생/학부모서비스반영}을 마친 뒤.</dd></dl>
@@ -436,6 +481,75 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
   if(!keep.length) return;
   document.querySelectorAll('a.home,a.hub').forEach(function(a){
     a.href = '../index.html#' + keep.join('&');
+  });
+})();
+</script>
+
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <b id="pdftitle">원문</b>
+      <span class="pdfsub"></span>
+      <span class="spacer"></span>
+      <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
+      <button type="button" id="pdfclose">닫기 (Esc)</button>
+    </div>
+    <iframe class="pdfframe" id="pdfframe" title="원문 PDF"></iframe>
+    <p class="pdfnote">화면이 비어 있으면 <b>새 탭에서 열기</b>를 누르세요. 원본 PDF(part6_7.pdf)가 이 HTML 파일과 같은 폴더에 있어야 합니다.</p>
+  </div>
+</div>
+
+
+<script>
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
+(function(){
+  var PDF = 'part6_7.pdf';
+  var modal = document.getElementById('pdfmodal');
+  var titleEl = document.getElementById('pdftitle');
+  var newTab = document.getElementById('pdfnew');
+  var lastFocus = null;
+
+  function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
+
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
+  function open(page, text, card){
+    lastFocus = document.activeElement;
+    titleEl.textContent = text;
+    newTab.href = url(page);
+    modal.hidden = false;
+    document.body.classList.add('pdfopen');
+    swapFrame(url(page));
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
+  }
+
+  function close(){
+    modal.hidden = true;
+    swapFrame(null);
+    document.body.classList.remove('pdfopen');
+    if(lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.srcbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
+    });
+  });
+
+  document.getElementById('pdfclose').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !modal.hidden) close();
   });
 })();
 </script>
