@@ -218,6 +218,47 @@ footer a{color:var(--ink)}
   .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
   .task{break-inside:avoid;box-shadow:none}
 }
+
+/* ── 원문 출처 칩 ── */
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.srcbtn{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);
+  border-radius:999px;cursor:pointer;line-height:1.5;
+}
+.srcbtn::before{content:"▤ ";color:var(--mark)}
+.srcbtn:hover{background:var(--ink);color:#fff}
+.srcbtn:hover::before{color:#fff}
+.srcbtn.sub{border-color:var(--rule);color:var(--ink-soft);font-weight:500}
+.srcbtn.sub::before{content:""}
+.srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
+.srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
+.pdfmodal[hidden]{display:none}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
+.pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .spacer{margin-left:auto}
+.pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
+.pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
+  font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
+  .pdfbar .pdfsub{display:none}
+}
 </style>
 </head>
 <body>
@@ -330,6 +371,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년초, 기초시간표 편성 기간</span><span class="tag">수정 작업에도 사용</span></div>
     <h3>기초시간표에 직접 입력하고 우클릭 기능으로 수정하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.165–167 열기">원문 p.165–167</button></p>
     <p class="desc">외부 파일이나 다른 학기 시간표를 쓰지 않고 나이스에 직접 등록하여 시간표를 구성하는 방법입니다. 가져오기로 만든 시간표의 공백을 메우거나 편성을 고칠 때도 같은 화면에서 처리합니다. <strong>해당 강의실에 대해 등록된 과목별 학점 수만큼 시간표가 모두 편성되면 '완료여부'가 ×에서 ○로 변경됩니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초·학기중, 과목개설과 수강생편성이 끝난 뒤.</dd></dl>
@@ -346,6 +388,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년초, 과목개설·수강생편성 후</span><span class="tag opt">외부 시간표 프로그램 사용 학교</span></div>
     <h3>외부 프로그램 시간표를 파일로 가져오기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="1" title="원문 p.162–163 열기">원문 p.162–163</button></p>
     <p class="desc">별도의 시간표 프로그램으로 시간표를 짜는 학교에 해당합니다. 나이스에서 처음부터 편성하지 않고 작성해 둔 파일을 올려 기초시간표를 만듭니다. <strong>나이스에 등록된 과목명과 파일의 과목명이 띄어쓰기·로마자까지 일치해야</strong> 정상적으로 올라갑니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 편제및시간배당관리와 과목개설·수강생편성이 끝난 뒤.</dd></dl>
@@ -362,6 +405,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년초, 기초시간표 편성 기간</span><span class="tag opt">일반고등학교에서만 활용 가능</span></div>
     <h3>시간표작성정보 설정으로 시간표도우미 활용하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="8" title="원문 p.169–170 열기">원문 p.169–170</button></p>
     <p class="desc">일반고등학교에서만 활용 가능한 기능입니다. 초기설정과 엄수조건을 미리 정해 두고 시간표도우미에 보내면 조건이 반영된 시간표가 자동으로 작성됩니다. <strong>교육과정 편제된 학년별 시수보다 요일별 최대 교시의 합이 많으면 공강이 발생할 수 있으므로 '요일별 최대교시' 설정에 주의합니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 과목개설과 수강생편성이 끝나 기초시간표를 짜기 시작할 때.</dd></dl>
@@ -378,6 +422,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">검증 및 반영 전</span><span class="tag opt">기초시간표를 2개 이상 작성한 경우 필수</span></div>
     <h3>전체시간표에 반영할 기본시간표 지정하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="7" title="원문 p.168 열기">원문 p.168</button></p>
     <p class="desc">기초시간표를 강의실마다 여러 개 만들어 비교하는 학교에 해당합니다. 여러 안 중 실제로 쓸 시간표를 하나 골라 표시해 두는 작업입니다. <strong>기초시간표는 강의실마다 2개 이상 작성 가능하므로 검증 및 반영 전에 어느 것이 (기본)인지 확인해야 합니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 기초시간표 작성을 마치고 기초시간표검증및반영에 들어가기 전.</dd></dl>
@@ -394,6 +439,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">기초시간표 작성 완료 후</span><span class="tag">기본시간표 지정 필요</span></div>
     <h3>기초시간표 검증 후 전체시간표에 반영하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="12" title="원문 p.173 열기">원문 p.173</button></p>
     <p class="desc">기초시간표 작성을 마친 학교가 반드시 거치는 단계입니다. 검증 결과 이상이 있으면 기초시간표를 수정하고 이상이 없으면 학년별로 전체시간표에 반영합니다. <strong>[교육과정-시간표관리-기초시간표관리]에서 {기본시간표지정}된 기초시간표를 검증 및 반영하므로 기초시간표를 2개 이상 작성한 경우 확인 후 설정</strong>합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 기초시간표 작성과 기본시간표 지정이 끝난 뒤</dd></dl>
@@ -410,6 +456,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">전체시간표 반영 후</span></div>
     <h3>교시별 수업시간과 점심시간 설정하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="13" title="원문 p.174–175 열기">원문 p.174–175</button></p>
     <p class="desc">전체시간표를 반영한 뒤 교시별 수업 시작·종료 시각을 학교 실제 일과에 맞추는 업무입니다. 1교시의 ‘수업시작시간’만 입력하면 이후 교시가 자동 계산됩니다. <strong>점심시간을 선택할 수 없는 경우 [교육과정-시간표관리-기초시간표관리]에서 해당 학년 전체에 ‘점심시간’을 편성 후 저장</strong>하면 선택이 가능합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 기초시간표가 전체시간표에 반영된 뒤</dd></dl>
@@ -426,6 +473,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">행사 예정일 전</span><span class="tag opt">행사코드 등록 필요</span></div>
     <h3>전체시간표에 행사 처리하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="15" title="원문 p.176 열기">원문 p.176</button></p>
     <p class="desc">학교 행사로 정규 수업이 진행되지 않는 날이나 교시가 있을 때 하는 업무입니다. <strong>행사 처리를 위해서는 [교육과정-학사일정관리-학사일정관리]의 {행사코드관리} 탭에서 해당 행사가 등록되어 있어야 함.</strong> 강의실 단위부터 학교 단위까지 적용 범위를 골라 처리할 수 있습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 기초시간표를 전체시간표에 반영하고 행사코드가 등록된 뒤</dd></dl>
@@ -442,6 +490,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">연속 수업 등록 시, 단기간 교사 교체 시</span></div>
     <h3>복사·교사교체 등 수업시간 일괄 변경하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="17" title="원문 p.178 열기">원문 p.178</button></p>
     <p class="desc">연속 교시에 같은 수업을 등록해야 할 때나 단기간 교사가 바뀐 경우에 쓰는 업무입니다. <strong>'변경구분'의 '교사교체'는 단기간 교사교체(예: 특별휴가 대체 시간강사 등)로 변경된 교사의 이름을 전체시간표에만 반영할 경우에 사용함.</strong> 기간과 처리단위를 지정해 여러 교시를 한 번에 바꿉니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 전체시간표가 반영된 뒤</dd></dl>
@@ -458,6 +507,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">수업 변동 발생 시</span><span class="tag opt">이력추가 선택 시 결재 상신 가능</span></div>
     <h3>수업추가·수업교체·수업변경·수업고정 처리하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="18" title="원문 p.179–183 열기">원문 p.179–183</button></p>
     <p class="desc">학기 중 개별 교시에 수업 변동이 생겼을 때 해당 수업에서 마우스 우측 버튼으로 처리하는 업무입니다. <strong>{수업교체}, {수업변경}에서 '이력추가' 선택 시 [교육과정-시간표관리-수업교체이력관리]에서 조회할 수 있고, {승인요청}을 통해 '수업교환계획서'를 대신할 수 있음.</strong> 이력을 남기지 않으려면 '이력미추가'를 선택합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 전체시간표가 반영된 뒤</dd></dl>
@@ -474,6 +524,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">수업교체·수업변경 후 결재 상신 시점</span><span class="tag opt">‘이력추가’ 선택한 경우만</span></div>
     <h3>수업교체 이력 조회 후 승인요청하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="33" title="원문 p.194 열기">원문 p.194</button></p>
     <p class="desc">수업교체, 수업변경 시 이력을 추가한 경우 수업교체 이력을 조회하고 결재를 상신하는 업무입니다. <strong>수업교체 시 <span class="btn">{이력추가}</span>한 경우에만 조회됩니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, <span class="btn">{수업교체}</span> 또는 <span class="btn">{수업변경}</span>에서 ‘이력추가’를 선택해 처리한 뒤.</dd></dl>
@@ -490,6 +541,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">결·보강 발생 즉시</span><span class="tag opt">한 교시에 한 과목인 일반과목</span></div>
     <h3>전체시간표관리에서 교시별 결·보강 등록하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="30" title="원문 p.191 열기">원문 p.191</button></p>
     <p class="desc">출장이나 휴가 등으로 특정 교시 수업을 진행할 수 없을 때 그 교시 하나씩 결·보강을 등록하는 방법입니다. 한 교시에 한 과목만 존재하는 일반과목의 교시별 결·보강 처리는 <code>[교육과정-시간표관리-전체시간표관리]</code>의 <span class="btn">{결보강}</span>을 사용하며, <strong>결강사유를 반드시 입력해야 합니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 결·보강이 발생한 교시의 수업이 전체시간표에 반영되어 있는 상태에서.</dd></dl>
@@ -506,6 +558,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">결·보강 발생 즉시</span><span class="tag opt">여러 교시 일괄 또는 한 교시 다과목일 때</span></div>
     <h3>교사별결보강처리에서 여러 교시 결·보강 등록하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="31" title="원문 p.192 열기">원문 p.192</button></p>
     <p class="desc">한 교사가 일정 기간 출장 또는 휴가 등으로 여러 교시를 일괄 교체하고자 할 경우, 또는 수준별 이동수업이나 선택 이동수업 등으로 한 교시에 여러 과목/교사가 존재할 때 이 중 한 교사만 다른 교사로 교체하고자 할 경우에 사용합니다. <strong>‘결보강사유’를 입력하지 않으면 결보강 기록 없이 교사만 교체됩니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 결강 교사의 수업이 전체시간표에 반영되어 있는 상태에서.</dd></dl>
@@ -522,6 +575,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">결·보강 등록 후 결재 상신 시점</span></div>
     <h3>결·보강일지 조회 후 기안문 상신하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="32" title="원문 p.193 열기">원문 p.193</button></p>
     <p class="desc">결·보강 등록을 마친 뒤 해당 기간의 결보강일지를 생성해 결재를 받는 업무입니다. 업무 11과 업무 12에서 <strong>결강사유를 입력한 결·보강만 조회됩니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 해당 기간의 결·보강 등록이 모두 끝난 뒤.</dd></dl>
@@ -538,6 +592,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">2학기 기초시간표 작성 시점</span><span class="tag opt">1·2학기 시간표 변동이 없을 때</span></div>
     <h3>다른 학기 기초시간표를 가져와 구성하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.164–165 열기">원문 p.164–165</button></p>
     <p class="desc">1학기와 2학기의 시간표 변동이 없는 학교에 해당합니다. 나이스 상의 1학기 기초시간표를 가져와서 2학기 기초시간표를 구성할 때 사용합니다. <strong>2학기 과목이 편제되어 있고 과목이 개설되어 있어야 {가져오기}가 활성화됩니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 2학기 편제및시간배당관리와 과목개설이 끝난 뒤.</dd></dl>
@@ -554,6 +609,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">기초시간표 작성 후 수시</span><span class="tag">절차 동일 4종 묶음</span></div>
     <h3>교사별·학생별·전체·강의실별 시간표 조회 및 출력하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="23" title="원문 p.184–188 열기">원문 p.184–188</button></p>
     <p class="desc">시간표를 인쇄물이나 파일로 배부해야 할 때 여는 조회 메뉴 4종입니다. 네 메뉴 모두 절차가 '조건 선택 → {조회} → 저장 또는 출력'으로 같으므로 한 카드로 묶었습니다. 다만 <strong>교사별시간표조회는 [교육과정-시간표관리-기초시간표관리]에 등록된 시간표가 조회되므로 전체시간표의 교사별 시간표와 다를 수 있음</strong>에 주의합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초 또는 학기중, 기초시간표 작성이나 전체시간표 반영이 끝난 뒤 필요할 때마다</dd></dl>
@@ -570,6 +626,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">전체시간표 반영 후 수시</span></div>
     <h3>강의실별 수업일수 조회 및 출력하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="26" title="원문 p.187 열기">원문 p.187</button></p>
     <p class="desc">강의실 단위로 수업일수를 확인해야 할 때 여는 조회 메뉴입니다. 시간표 조회와 달리 <strong>강의실별로 누적된 수업일수가 집계되어 나오므로</strong> 조회 조건에 '강의실'을 지정해야 합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 기초시간표 반영으로 전체시간표가 구성된 뒤 필요할 때마다</dd></dl>
@@ -585,6 +642,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">교사 담당 수업 확인이 필요할 때</span></div>
     <h3>교사찾기로 교사별 수업 조회 및 출력하기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="28" title="원문 p.189 열기">원문 p.189</button></p>
     <p class="desc">특정 교사가 지정한 일자에 어떤 수업을 하는지 확인할 때 여는 메뉴입니다. 다른 조회 메뉴와 달리 <strong>'교사' 입력 후 {교사찾기}로 대상 교사를 먼저 확정해야 조회가 진행됩니다</strong>.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 전체시간표가 구성된 뒤 특정 교사의 수업 확인이 필요할 때</dd></dl>
@@ -671,6 +729,75 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
   if(!keep.length) return;
   document.querySelectorAll('a.home,a.hub').forEach(function(a){
     a.href = '../index.html#' + keep.join('&');
+  });
+})();
+</script>
+
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <b id="pdftitle">원문</b>
+      <span class="pdfsub"></span>
+      <span class="spacer"></span>
+      <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
+      <button type="button" id="pdfclose">닫기 (Esc)</button>
+    </div>
+    <iframe class="pdfframe" id="pdfframe" title="원문 PDF"></iframe>
+    <p class="pdfnote">화면이 비어 있으면 <b>새 탭에서 열기</b>를 누르세요. 원본 PDF(part2_7.pdf)가 이 HTML 파일과 같은 폴더에 있어야 합니다.</p>
+  </div>
+</div>
+
+
+<script>
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
+(function(){
+  var PDF = 'part2_7.pdf';
+  var modal = document.getElementById('pdfmodal');
+  var titleEl = document.getElementById('pdftitle');
+  var newTab = document.getElementById('pdfnew');
+  var lastFocus = null;
+
+  function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
+
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
+  function open(page, text, card){
+    lastFocus = document.activeElement;
+    titleEl.textContent = text;
+    newTab.href = url(page);
+    modal.hidden = false;
+    document.body.classList.add('pdfopen');
+    swapFrame(url(page));
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
+  }
+
+  function close(){
+    modal.hidden = true;
+    swapFrame(null);
+    document.body.classList.remove('pdfopen');
+    if(lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.srcbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
+    });
+  });
+
+  document.getElementById('pdfclose').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !modal.hidden) close();
   });
 })();
 </script>
