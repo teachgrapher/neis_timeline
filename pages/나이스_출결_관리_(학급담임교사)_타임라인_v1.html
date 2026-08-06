@@ -218,6 +218,47 @@ footer a{color:var(--ink)}
   .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
   .task{break-inside:avoid;box-shadow:none}
 }
+
+/* ── 원문 출처 칩 ── */
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.srcbtn{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);
+  border-radius:999px;cursor:pointer;line-height:1.5;
+}
+.srcbtn::before{content:"▤ ";color:var(--mark)}
+.srcbtn:hover{background:var(--ink);color:#fff}
+.srcbtn:hover::before{color:#fff}
+.srcbtn.sub{border-color:var(--rule);color:var(--ink-soft);font-weight:500}
+.srcbtn.sub::before{content:""}
+.srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
+.srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
+.pdfmodal[hidden]{display:none}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
+.pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .spacer{margin-left:auto}
+.pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
+.pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
+  font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
+  .pdfbar .pdfsub{display:none}
+}
 </style>
 </head>
 <body>
@@ -330,6 +371,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">당일</span><span class="tag opt">2026학년도 1･2학년</span></div>
     <h3>당일 출결상황에 변동이 있는 경우 일일출결 마감</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="1" title="원문 p.362–363 열기">원문 p.362–363</button></p>
     <p class="desc">결석･지각･조퇴･결과가 발생한 날에 하는 기본 업무이다. <strong>2026학년도 1･2학년의 경우 과목 담당교사의 일자별･교시별 출결 마감 후 조･종례 시간의 학생 출결상황을 포함하여 일일 출결을 마감함.</strong> 2015 개정 교육과정을 적용받는 2026학년도 3학년은 출결 관련 개선된 UI는 그대로 활용하되, 출결처리 방법은 2024학년도 방법과 동일하게 운영할 수 있다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중 당일, 수강학생 편성과 시간표가 등록되어 있고 교과담당교사의 교시별 출결 마감이 끝난 뒤</dd></dl>
@@ -346,6 +388,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">당일</span><span class="tag opt">필요 시</span></div>
     <h3>사유 확인과 사유일괄입력, 교과담당교사 전달내용 전송</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="5" title="원문 p.366 열기">원문 p.366</button></p>
     <p class="desc">일일출결관리 화면에서 마감을 돕는 보조 기능들이다. 학교장허가 교외체험학습처럼 여러 학생이 같은 사유인 날, 또는 교과담당교사가 과목출결을 마감하지 않아 일일 마감이 막힌 날에 쓴다. <strong>‘출결마감구분’ 창에서 사유를 미입력할 경우 ‘출결구분이 기타결석일 경우 사유 입력이 필요합니다.’라는 확인창이 뜨며 {적용}이 되지 않아 {출결마감}을 할 수 없으므로 반드시 사유 입력이 필요함.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중 당일, 일일출결 마감을 진행하는 중</dd></dl>
@@ -362,6 +405,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">당일</span><span class="tag opt">1학년에 유용</span></div>
     <h3>당일 출결상황에 변동이 없는 경우 반별 일출결 일괄마감</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="11" title="원문 p.372 열기">원문 p.372</button></p>
     <p class="desc">결석･지각･조퇴･결과가 없는 날의 마감을 일자 선택만으로 끝내는 기능이다. <strong>고교학점제 시행으로 이동수업에 따른 선택과목별 출결 관리로 인하여 일출결마감이 어려운 관계로, 주로 공통과목으로 운영되는 1학년에 유용한 기능임.</strong> 출결 변동이 있는 날은 업무 01로 처리한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중 당일, 그날 출결 변동이 없음을 확인한 뒤</dd></dl>
@@ -378,6 +422,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">창의적 체험활동 실시 후</span><span class="tag">일일출결관리와 실시간 연동</span></div>
     <h3>창의적 체험활동 영역별 출결관리</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.364 열기">원문 p.364</button></p>
     <p class="desc">일일출결관리(담임용)는 창의적 체험활동을 제외한 출결을 다루므로, 창체 출결은 영역별 메뉴에서 따로 마감한다. <strong>학급담임교사 창체, 교과 창체의 출결관리는 [학생생활-창의적체험활동]에서 하위 영역 메뉴의 {출결관리} 탭에서 수행함.</strong> 동아리활동은 이수시간 기준을 먼저 등록해야 한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중, 창의적 체험활동 시간이 운영된 뒤</dd></dl>
@@ -394,6 +439,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">수시</span><span class="tag">조회·출력</span></div>
     <h3>일별·기간별 결석자 조회와 출력</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="15" title="원문 p.376–377 열기">원문 p.376–377</button></p>
     <p class="desc">일일출결 마감 뒤 출결 변동이 있는 학생만 따로 뽑아 보는 업무입니다. 같은 <code>[학급담임-학적-출결관리-출결관리-일일결석자조회]</code> 화면에서 '일자'로 하루만 보거나 '기간'으로 시작일자와 종료일자를 설정해 여러 날을 볼 수 있으며, <strong>절차는 조회 조건만 다르고 동일합니다</strong>. 결과는 '일일 결석자 조회' 창에서 저장하거나 출력할 수 있습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중 수시, 해당 일자의 일일출결 처리 이후</dd></dl>
@@ -410,6 +456,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">현장실습 시작 시점</span><span class="tag opt">산업수요 맞춤형고･특성화고･직업계열 학과 설치 일반고 한정</span></div>
     <h3>현장실습생 출결기간 등록과 출석인정결석 처리</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="13" title="원문 p.374–375 열기">원문 p.374–375</button></p>
     <p class="desc">현장실습생을 운영하는 학교만 해당한다. 현장실습 기간을 한 번 등록해 두고 그 기간에 대해 출석인정결석으로 일괄 처리한다. <strong>현장실습생은 [학적-위탁･현장실습학생관리-위탁･현장실습학생관리-위탁･현장실습학생등록]에서 ‘교육구분’을 ‘현장실습’으로 등록한 뒤에 처리해야 함.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중, 현장실습 기간이 시작될 때 현장실습학생 등록이 끝난 뒤</dd></dl>
@@ -426,6 +473,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">다음달 초(5일 이내)</span><span class="tag opt">위탁학생 있는 학급 한정</span></div>
     <h3>위탁학생 소속교·위탁기관 출결자료 합산 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="19" title="원문 p.380 열기">원문 p.380</button></p>
     <p class="desc">위탁학생이 있는 학급만 해당한다. 위탁기간에 해당하는 월의 출결자료는 일일출결관리가 아니라 이 메뉴에 등록된 내용이 월출결자료로 반영된다. <strong>위탁기간 시작일과 종료일이 월 중간일인 경우 위탁기관의 수업일수 및 출결내용과 소속교의 수업일수 및 출결내용을 합산하여 등록</strong>해야 한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>월말, 위탁기관이 다음달 초(5일 이내)에 송부하는 학생 ‘개인별 출결 통지서’를 받은 뒤이며 반별월출결마감관리에서 월출결 마감을 하기 전</dd></dl>
@@ -442,6 +490,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">월 마지막 수업일 이후</span></div>
     <h3>반별 월출결 마감과 재마감</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="17" title="원문 p.378–379 열기">원문 p.378–379</button></p>
     <p class="desc">모든 학급담임교사가 매달 하는 업무다. 일일출결 마감이 끝난 월을 반 단위로 마감해야 월출결 통계가 생성되고 학교생활기록부에 출결상황을 반영할 수 있다. <strong>1･2학기가 같이 존재하는 8월은 1학기와 2학기를 별도로 마감</strong>해야 한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>월말, 해당 월의 일일출결 마감과 위탁학생 출결자료 등록이 끝난 뒤</dd></dl>
@@ -458,6 +507,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">수시, 월별 결석신고서 제출 시</span><span class="tag opt">일일출결관리 학교만 조회 가능</span></div>
     <h3>학급별출결현황 개인별·학급별 조회와 출력</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="20" title="원문 p.381–384 열기">원문 p.381–384</button></p>
     <p class="desc">기간별로 조회하는 화면이므로 <strong>일일출결관리를 하는 학교의 경우에만 조회가 가능함.</strong> 장기결석 학생의 '내교통지서 발송' 업무나 학년부 월별 결석신고서 제출, 학교생활기록부 정정대장 작성 때 증빙자료로 쓰는 표이다. 학생 한 명만 뽑는 개인별 출력과 반 전체를 뽑는 학급별 출력 두 가지를 같은 화면에서 처리한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중 수시. 수강학생 편성과 시간표가 등록되어 있어야 하며, 학년말에는 반별월출결마감관리에서 월 마감을 확인한 뒤</dd></dl>
@@ -474,6 +524,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">월출결 마감 후 수시</span><span class="tag opt">일일출결관리 학교만 조회 가능</span></div>
     <h3>반별연간출결통계와 반별과목출결현황 확인</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="24" title="원문 p.385–386 열기">원문 p.385–386</button></p>
     <p class="desc">반별연간출결통계는 마감된 월 자료를 연간으로 모아 보는 표이고, 반별과목출결현황은 학생별로 수강 과목의 '이수기준 충족 여부'를 보는 표이다. <strong>월마감이 정상적으로 처리된 월에 대해서만 조회가 되므로 조회되지 않는 월이 있으면 월마감 여부를 먼저 확인해야 한다.</strong> 반별과목출결현황도 일일출결관리를 하는 학교의 경우에만 조회가 가능하다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중 수시. 해당 월의 반별월출결마감이 끝난 뒤</dd></dl>
@@ -490,6 +541,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">결재 완결 후 수정이 필요할 때</span><span class="tag opt">수정 사유 발생 시에만</span></div>
     <h3>월출결 마감 취소를 위한 기결문서취소</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="18" title="원문 p.379 열기">원문 p.379</button></p>
     <p class="desc">이미 마감하고 결재까지 완결된 월의 출결을 고쳐야 할 때만 해당한다. <strong>결재 완결된 월에 대한 마감취소는 출결 통계 담당자의 기결문서취소 후에만 가능</strong>하므로 학급담임교사 혼자서는 진행되지 않는다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>월말 이후, 해당 월의 월출결 마감과 결재가 완결된 뒤 출결 오류나 반 변경이 확인된 시점</dd></dl>
@@ -506,6 +558,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">종업식(졸업식) 이후</span><span class="tag">월출결 마감 선행</span></div>
     <h3>개근 일괄입력과 출결 특기사항 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="26" title="원문 p.387–388 열기">원문 p.387–388</button></p>
     <p class="desc">모든 학급담임교사가 학년말에 수행하는 업무이다. 이 화면의 결석·지각·조퇴·결과 횟수는 반별월출결마감관리에서 마감한 월 자료를 합산한 것이므로 <strong>월출결 마감이 모두 끝난 뒤에 등록해야 한다.</strong> 개근 대상이 아닌 학생은 사유를 확인해 특기사항을 직접 입력한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 반별월출결마감관리에서 해당 학년도의 월출결 마감이 모두 끝난 뒤. '개근' 일괄입력 후 출결상황이 변동되었을 수 있으므로 종업식(졸업식) 이후 반드시 다시 확인함.</dd></dl>
@@ -522,6 +575,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년말, 학생부반영 이후</span></div>
     <h3>학교생활기록부 출결상황 반영 확인</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="28" title="원문 p.389 열기">원문 p.389</button></p>
     <p class="desc">모든 학급담임교사가 학년말에 마지막으로 확인하는 업무이다. 학급별출결현황의 수업일수는 학교생활기록부에 반영된 수업일수가 아니라 전체시간표에 반영된 수업일수이므로, <strong>반별월출결마감관리에서 월 마감을 확인하고 학생부반영에서 '출결상황'을 선택해 반영한 뒤에 확인해야 한다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 반별월출결마감관리의 월 마감 확인과 학생부반영의 '출결상황' 반영을 마친 뒤</dd></dl>
@@ -608,6 +662,75 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
   if(!keep.length) return;
   document.querySelectorAll('a.home,a.hub').forEach(function(a){
     a.href = '../index.html#' + keep.join('&');
+  });
+})();
+</script>
+
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <b id="pdftitle">원문</b>
+      <span class="pdfsub"></span>
+      <span class="spacer"></span>
+      <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
+      <button type="button" id="pdfclose">닫기 (Esc)</button>
+    </div>
+    <iframe class="pdfframe" id="pdfframe" title="원문 PDF"></iframe>
+    <p class="pdfnote">화면이 비어 있으면 <b>새 탭에서 열기</b>를 누르세요. 원본 PDF(part3_8.pdf)가 이 HTML 파일과 같은 폴더에 있어야 합니다.</p>
+  </div>
+</div>
+
+
+<script>
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
+(function(){
+  var PDF = 'part3_8.pdf';
+  var modal = document.getElementById('pdfmodal');
+  var titleEl = document.getElementById('pdftitle');
+  var newTab = document.getElementById('pdfnew');
+  var lastFocus = null;
+
+  function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
+
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
+  function open(page, text, card){
+    lastFocus = document.activeElement;
+    titleEl.textContent = text;
+    newTab.href = url(page);
+    modal.hidden = false;
+    document.body.classList.add('pdfopen');
+    swapFrame(url(page));
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
+  }
+
+  function close(){
+    modal.hidden = true;
+    swapFrame(null);
+    document.body.classList.remove('pdfopen');
+    if(lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.srcbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
+    });
+  });
+
+  document.getElementById('pdfclose').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !modal.hidden) close();
   });
 })();
 </script>
