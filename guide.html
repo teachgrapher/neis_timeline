@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<!-- 나이스 업무 타임라인을 선생님들께 소개하고 사용법을 안내하는 랜딩 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>나이스 업무 타임라인 · 사용 안내</title>
+<meta name="description" content="나이스 업무 타임라인이 무엇이고 어떻게 쓰는지 5분 만에 익히는 안내 페이지. 강원 나이스 현장지원단(고등).">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+a{color:inherit}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--ink-soft);white-space:nowrap}
+.go{
+  margin-left:auto;display:inline-flex;align-items:center;gap:7px;
+  height:34px;padding:0 14px;background:var(--mark);color:#fff;
+  border:1.5px solid var(--ink);box-shadow:3px 3px 0 var(--shadow);
+  font-size:13.5px;font-weight:700;text-decoration:none;white-space:nowrap;
+  transition:transform .12s,box-shadow .12s;
+}
+.go:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--dropout-deep)}
+.go:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* ── 섹션 티커 ── */
+.ticker{position:sticky;top:var(--topbar-h);z-index:59;border-top:1px solid var(--rule-soft);border-bottom:1px solid var(--rule);background:rgba(247,249,245,.94);backdrop-filter:saturate(160%) blur(8px)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;
+  padding:3px 8px;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;white-space:nowrap;text-decoration:none;display:block;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(30px,5.2vw,50px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:60ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule);margin:0}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0;margin-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+
+/* ── 공통 섹션 ── */
+.sec{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.sec-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:10px}
+.sec-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);text-transform:uppercase}
+.sec-head h2{font-family:var(--serif);font-size:21px;font-weight:700;margin:0;letter-spacing:-.01em}
+.sec-head .note{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
+.lede{max-width:64ch;color:var(--ink-soft);font-size:15px;margin:18px 0 0}
+.lede b{color:var(--ink);font-weight:700}
+
+/* ── 카드 ── */
+.card{
+  display:block;padding:18px 20px;background:var(--sheet);
+  border:1.5px solid var(--ink);box-shadow:3px 3px 0 var(--shadow);
+}
+a.card{text-decoration:none;color:var(--ink);transition:transform .12s,box-shadow .12s,border-color .12s}
+a.card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--dropout-deep);border-color:var(--mark)}
+a.card:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.card h3{font-size:15.5px;font-weight:700;letter-spacing:-.01em;margin:0 0 8px;line-height:1.42}
+.card p{margin:0;font-size:14px;color:var(--ink-soft);line-height:1.7}
+.card p + p{margin-top:9px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:12px;margin:20px 0 0;list-style:none;padding:0}
+
+/* ── 단계 ── */
+.steps{list-style:none;margin:22px 0 0;padding:0}
+.step{position:relative;padding:0 0 0 60px;margin:0 0 26px}
+.step:last-child{margin-bottom:0}
+.step-no{
+  position:absolute;left:0;top:2px;width:40px;height:40px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;
+  background:var(--sheet);border:1.5px solid var(--ink);box-shadow:3px 3px 0 var(--shadow);
+}
+.step h3{font-family:var(--serif);font-size:18px;font-weight:700;letter-spacing:-.01em;margin:0 0 8px;line-height:1.4}
+.step p{margin:0 0 10px;font-size:15px;color:var(--ink-soft);max-width:64ch}
+.step p:last-child{margin-bottom:0}
+.step p b{color:var(--ink);font-weight:700}
+
+/* ── 검색 시연 ── */
+.demo{margin:20px 0 0;border:1.5px solid var(--ink);background:var(--sheet);box-shadow:3px 3px 0 var(--shadow)}
+.demo-bar{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1.5px solid var(--ink);background:rgba(238,240,233,.6)}
+.demo-bar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.demo-input{
+  flex:1;position:relative;height:34px;display:flex;align-items:center;
+  padding:0 66px 0 12px;background:var(--sheet);border:1.5px solid var(--ink);
+  font-size:14px;font-weight:600;color:var(--ink);
+}
+.demo-input .caret{display:inline-block;width:1.5px;height:16px;background:var(--mark);margin-left:2px;animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.demo-input .caret{animation:none}}
+.kbd{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.06em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 5px;white-space:nowrap;
+}
+.demo-input .kbd{position:absolute;right:8px;top:50%;transform:translateY(-50%)}
+.demo-body{padding:14px 16px 16px}
+.hit-crumb{font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ink-soft);margin:0 0 5px}
+.hit-crumb b{color:var(--mark);font-weight:700}
+.demo-body h4{font-family:var(--serif);font-size:17px;font-weight:700;margin:0 0 7px;line-height:1.4;letter-spacing:-.01em}
+.demo-body h4 span{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--ink-soft);margin-left:7px}
+.hit-tags{margin:0 0 8px;display:flex;flex-wrap:wrap;gap:5px}
+.hit-tags i{font-style:normal;font-size:11px;font-weight:600;padding:2px 7px;background:var(--dropout);border:1px solid var(--dropout-deep);color:var(--ink)}
+.snip{margin:0;font-size:13.5px;line-height:1.7;color:var(--ink-soft)}
+mark{background:var(--dropout-deep);color:var(--ink);padding:0 2px;font-weight:600}
+.demo-foot{border-top:1px solid var(--rule-soft);padding:10px 16px;font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
+
+/* ── 업무카드 해부 ── */
+.anatomy{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,260px);gap:16px;margin:22px 0 0;align-items:start}
+.w6{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--rule-soft)}
+.w6 li{display:flex;gap:14px;padding:9px 0;border-bottom:1px solid var(--rule-soft);font-size:14px}
+.w6 .k{flex:none;width:96px;font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.06em;color:var(--mark);padding-top:3px}
+.w6 .v{color:var(--ink-soft);line-height:1.65}
+.legend{list-style:none;margin:0;padding:0}
+.legend li{padding:11px 13px;border-left:3px solid var(--dropout-deep);background:var(--sheet);border-top:1px solid var(--rule-soft);border-right:1px solid var(--rule-soft);border-bottom:1px solid var(--rule-soft);font-size:13px;color:var(--ink-soft);line-height:1.6;margin:0 0 8px}
+.legend li b{display:block;color:var(--ink);font-weight:700;font-size:13.5px;margin-bottom:2px}
+
+/* ── 역할 칩 ── */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 0;padding:0;list-style:none}
+.chip{
+  font-size:12.5px;font-weight:600;padding:4px 10px;background:var(--sheet);
+  border:1.5px solid var(--rule);color:var(--ink-soft);font-variant-numeric:tabular-nums;
+}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.chip.more{border-style:dashed}
+.narrow{margin:20px 0 0;border-collapse:collapse;width:100%;font-size:14px}
+.narrow caption{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);padding-bottom:8px}
+.narrow th,.narrow td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--rule-soft)}
+.narrow thead th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);border-bottom:1.5px solid var(--ink);font-weight:600}
+.narrow td b{font-variant-numeric:tabular-nums}
+.narrow .to{color:var(--mark);font-weight:700;font-variant-numeric:tabular-nums}
+
+/* ── 주의 ── */
+.notice{margin:20px 0 0;padding:14px 16px;border:1.5px solid var(--mark);background:var(--sheet);font-size:14px;line-height:1.7}
+.notice b{color:var(--mark)}
+.notice + .notice{margin-top:12px}
+.pair{margin:20px 0 0;border-collapse:collapse;width:100%;font-size:14px}
+.pair th,.pair td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--rule-soft)}
+.pair thead th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--ink-soft);border-bottom:1.5px solid var(--ink);font-weight:600;text-transform:none}
+.pair thead th b{color:var(--mark)}
+
+/* ── 요약 ── */
+.recap{margin:22px 0 0;border-collapse:collapse;width:100%;font-size:14.5px}
+.recap th,.recap td{text-align:left;padding:12px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+.recap thead th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);border-bottom:1.5px solid var(--ink);font-weight:600}
+.recap td:first-child{font-weight:600;width:36%}
+
+/* ── 마무리 ── */
+.closing{margin:52px 0 0;padding:30px 26px;background:var(--sheet);border:1.5px solid var(--ink);box-shadow:5px 5px 0 var(--dropout-deep)}
+.closing h2{font-family:var(--serif);font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0 0 10px}
+.closing p{margin:0 0 20px;color:var(--ink-soft);font-size:15px;max-width:56ch}
+.closing .go{margin-left:0;height:40px;padding:0 18px;font-size:14.5px}
+
+footer{margin:60px 0 0;border-top:1.5px solid var(--ink);padding:20px 0 48px}
+footer p{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-soft)}
+footer .by{margin-top:6px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#9AA199}
+
+@media (max-width:900px){
+  .anatomy{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .wrap{padding:0 18px}
+  .topbar .sub{display:none}
+  .meta-strip div{padding-right:18px;margin-right:18px}
+  .step{padding-left:0}
+  .step-no{position:static;margin-bottom:12px}
+  .w6 li{flex-direction:column;gap:2px}
+  .w6 dt{width:auto;padding-top:0}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>나이스 업무 타임라인</b>
+    <span class="sub">사용 안내</span>
+    <a class="go" href="https://neis-timeline.vercel.app/">사이트 열기 →</a>
+  </div>
+</header>
+
+<nav class="ticker" aria-label="이 문서 안에서 이동">
+  <div class="wrap bar">
+    <ol class="tick-list">
+      <li><a class="tick" href="#why">왜 만들었나</a></li>
+      <li><a class="tick" href="#card">업무카드란</a></li>
+      <li><a class="tick" href="#how">쓰는 법 4단계</a></li>
+      <li><a class="tick" href="#narrow">결과 좁히기</a></li>
+      <li><a class="tick" href="#more">모아보기 · 연수자료</a></li>
+      <li><a class="tick" href="#caution">미리 알아둘 것</a></li>
+      <li><a class="tick" href="#recap">한 장 요약</a></li>
+    </ol>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <section class="hero" id="top">
+    <p class="eyebrow">NEIS Task Timeline · 사용 안내</p>
+    <h1>“그거 어느 메뉴였더라”에<br>더는 시간을 쓰지 마세요
+      <em>나이스 매뉴얼을 업무 단위로 잘라 놓고, 낱말 하나로 그 업무까지 데려다주는 사이트입니다</em>
+    </h1>
+    <p class="hero-lede">
+      4세대 나이스 고등학교 업무를 <b>언제 · 누가 · 어디서 · 무엇을 어떻게 · 왜</b> 업무카드로 정리해
+      타임라인 위에 올렸습니다. 강원 나이스 현장지원단(고등)에서 만들어 무료로 열어 둔 자료입니다.
+    </p>
+    <dl class="meta-strip">
+      <div><dt>Part</dt><dd>9</dd></div>
+      <div><dt>문서</dt><dd>53편</dd></div>
+      <div><dt>업무카드</dt><dd>622장</dd></div>
+      <div><dt>이용료</dt><dd>없음 · 로그인 없음</dd></div>
+    </dl>
+  </section>
+
+  <section class="sec" id="why">
+    <div class="sec-head">
+      <span class="sec-no">01</span>
+      <h2>왜 만들었나</h2>
+    </div>
+    <p class="lede">
+      전입생이 왔습니다. 학적에서 전입 처리는 했는데, 수강과목을 다시 편성해야 하는지 출결은 언제부터 잡히는지가 막막합니다.
+      매뉴얼 PDF를 열어 ‘전입’을 찾아보지만 400쪽 문서에서 결과가 수십 개씩 쏟아집니다. 결국 옆자리 부장님께 여쭙게 됩니다.
+    </p>
+    <p class="lede">
+      <b>이 사이트는 그 몇 분을 줄이려고 만들었습니다.</b> 매뉴얼을 화면 순서가 아니라 <b>업무 단위</b>로 잘라 두었고,
+      검색은 문서가 아니라 <b>업무카드 한 장</b>을 찾아 그 자리까지 바로 이동시킵니다.
+    </p>
+    <ol class="grid">
+      <li class="card">
+        <h3>업무 단위로 잘라 두었습니다</h3>
+        <p>매뉴얼은 나이스 화면 순서대로 쓰여 있습니다. 우리가 겪는 일은 그 순서로 오지 않습니다. 그래서 “전입생 수강과목 편성”처럼 실제 업무 하나가 카드 한 장입니다.</p>
+      </li>
+      <li class="card">
+        <h3>메뉴 경로가 함께 있습니다</h3>
+        <p>무엇을 해야 하는지만 알아도 소용없습니다. 나이스 어느 메뉴로 들어가 어느 버튼을 누르는지가 카드 안에 적혀 있습니다.</p>
+      </li>
+      <li class="card">
+        <h3>원문 쪽수를 남겨 두었습니다</h3>
+        <p>카드마다 원본 매뉴얼의 Section 번호와 쪽수가 붙어 있습니다. 근거를 확인해야 할 때 원문으로 바로 돌아갈 수 있습니다.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="sec" id="card">
+    <div class="sec-head">
+      <span class="sec-no">02</span>
+      <h2>업무카드 한 장은 이렇게 생겼습니다</h2>
+      <span class="note">이 사이트의 최소 단위</span>
+    </div>
+    <p class="lede">
+      한 장에 육하원칙이 다 들어갑니다. 처음 맡는 업무여도 <b>이 카드 한 장만 읽으면 오늘 할 일이 정해집니다.</b>
+      아래는 형태를 보여드리는 예시입니다.
+    </p>
+    <div class="anatomy">
+      <div class="card">
+        <p class="hit-crumb"><b>Part 3 학적</b> · 전입생 관리</p>
+        <h4>전입생 학적 등록<span>카드 04</span></h4>
+        <p class="hit-tags"><i>학적</i><i>전입</i><i>학기중</i></p>
+        <ul class="w6">
+          <li><span class="k">언제</span><span class="v">전입 통보를 받은 즉시, 늦어도 3일 안에</span></li>
+          <li><span class="k">누가</span><span class="v">학적업무담당자 · 학급담임교사</span></li>
+          <li><span class="k">어디서</span><span class="v">[학적 - 학적변동관리 - 전입학]</span></li>
+          <li><span class="k">무엇을 어떻게</span><span class="v">전입 자료를 조회해 학년·반을 지정하고 저장한다</span></li>
+          <li><span class="k">왜</span><span class="v">학적이 서야 출결과 수강과목이 따라 붙기 때문</span></li>
+        </ul>
+      </div>
+      <ul class="legend">
+        <li><b>맨 윗줄</b>이 Part와 문서 이름입니다. 지금 매뉴얼 어디쯤을 보고 있는지 알려 줍니다.</li>
+        <li><b>어디서</b>가 나이스 메뉴 경로입니다. 이 줄만 보고 바로 들어가시면 됩니다.</li>
+        <li><b>왜</b>는 그냥 설명이 아닙니다. 이 업무를 건너뛰면 뒤에서 무엇이 막히는지가 적혀 있습니다.</li>
+        <li>카드 아래에 <b>실무 메모</b>가 붙기도 합니다. 현장에서 실제로 걸린 지점입니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="how">
+    <div class="sec-head">
+      <span class="sec-no">03</span>
+      <h2>쓰는 법은 4단계면 끝납니다</h2>
+      <span class="note">익히는 데 3분</span>
+    </div>
+
+    <ol class="steps">
+      <li class="step">
+        <span class="step-no">1</span>
+        <h3>검색창에 생각나는 낱말을 그냥 넣으세요</h3>
+        <p>사이트 맨 위에 검색창이 있습니다. 문서를 찾는 검색이 아니라 <b>업무카드를 찾는 검색</b>입니다. 결과를 누르면 53편 중 해당 문서의 그 카드 위치까지 한 번에 이동합니다.</p>
+        <div class="demo">
+          <div class="demo-bar">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="demo-input">전입 수강과목<span class="caret" aria-hidden="true"></span><span class="kbd">Ctrl K</span></span>
+          </div>
+          <div class="demo-body">
+            <p class="hit-crumb"><b>Part 3 학적</b> · 전입생 관리</p>
+            <h4><mark>전입</mark>생 <mark>수강과목</mark> 편성<span>카드 07</span></h4>
+            <p class="hit-tags"><i>학적</i><i>교육과정</i></p>
+            <p class="snip">…<mark>전입</mark> 처리가 끝난 뒤 우리 학교 교육과정에 맞추어 <mark>수강과목</mark>을 다시 편성해야 성적과 출결이…</p>
+          </div>
+          <p class="demo-foot">낱말을 띄어 쓰면 둘 다 들어 있는 카드만 남습니다.</p>
+        </div>
+        <p style="margin-top:12px">검색은 <b>메뉴 경로로도 걸립니다.</b> ‘성적처리’처럼 경로에 쓰이는 말은 검색 순위에서 더 높게 잡히도록 해 두었습니다.</p>
+      </li>
+
+      <li class="step">
+        <span class="step-no">2</span>
+        <h3>결과가 너무 많으면 ‘누가’ 칩을 누르세요</h3>
+        <p>넓은 낱말은 200장 가까이 걸립니다. 그럴 때 검색 결과 위에 뜨는 <b>업무담당자 칩</b>을 눌러 내 역할의 카드만 남기세요. 여러 개를 골라도 됩니다. 담임이면서 교과담당인 경우가 흔하니, 두 개를 고르면 둘 중 하나라도 해당하는 카드가 모두 남습니다.</p>
+        <ul class="chips" aria-label="업무담당자 칩 예시">
+          <li class="chip on">학급담임교사 67</li>
+          <li class="chip">교과담당교사 55</li>
+          <li class="chip">성적처리담당교사 37</li>
+          <li class="chip">학적업무담당자 24</li>
+          <li class="chip more">+ 12개 더</li>
+        </ul>
+      </li>
+
+      <li class="step">
+        <span class="step-no">3</span>
+        <h3>문서 안에서도 길을 잃지 않습니다</h3>
+        <p>카드를 열고 나면 화면에 네 가지가 함께 있습니다.</p>
+        <ul class="grid">
+          <li class="card"><h3>위쪽 검색창</h3><p>문서를 읽는 중에도 그대로 남아 있습니다. 다른 업무가 궁금해지면 그 자리에서 바로 검색하세요.</p></li>
+          <li class="card"><h3>← 전체 색인</h3><p>첫 화면으로 돌아갑니다. 검색을 거쳐 들어오셨다면 <b>그 검색 결과 그대로</b> 돌아갑니다.</p></li>
+          <li class="card"><h3>왼쪽 세로 타임라인</h3><p>화면이 넉넉한 PC에서는 그 문서의 업무 순서가 왼쪽에 고정으로 뜨고, 지금 보는 카드가 검게 표시됩니다.</p></li>
+          <li class="card"><h3>맨 아래 이동 막대</h3><p>같은 Part 안의 앞뒤 문서로 넘어갑니다. 전입 다음에 출결로 이어지는 흐름을 그대로 따라갈 수 있습니다.</p></li>
+        </ul>
+      </li>
+
+      <li class="step">
+        <span class="step-no">4</span>
+        <h3>손가락을 떼지 않고 쓰는 단축키</h3>
+        <p>검색을 자주 쓰시게 되면 이 세 개만 외워 두셔도 훨씬 빨라집니다.</p>
+        <ul class="chips">
+          <li class="chip"><span class="kbd" style="border:0;padding:0;color:var(--ink)">Ctrl K</span> &nbsp;검색창으로 이동</li>
+          <li class="chip"><span class="kbd" style="border:0;padding:0;color:var(--ink)">↑ ↓</span> &nbsp;결과 사이 이동</li>
+          <li class="chip"><span class="kbd" style="border:0;padding:0;color:var(--ink)">Esc</span> &nbsp;검색어 지우기</li>
+        </ul>
+      </li>
+    </ol>
+  </section>
+
+  <section class="sec" id="narrow">
+    <div class="sec-head">
+      <span class="sec-no">04</span>
+      <h2>넓은 낱말도 두 번 누르면 좁아집니다</h2>
+    </div>
+    <p class="lede">
+      ‘학교생활기록부’처럼 어디에나 나오는 말은 검색만으로 걸러지지 않습니다. 담당자 칩을 한 번 누르면 이 정도로 줄어듭니다.
+    </p>
+    <table class="narrow">
+      <caption>담당자 칩을 눌렀을 때 남는 카드 수</caption>
+      <thead>
+        <tr><th>검색어</th><th>걸린 카드</th><th>학급담임교사</th><th>교과담당교사</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>학교생활기록부</td><td><b>196장</b></td><td class="to">67장</td><td>—</td></tr>
+        <tr><td>마감</td><td><b>159장</b></td><td class="to">50장</td><td class="to">55장</td></tr>
+        <tr><td>승인요청</td><td><b>101장</b></td><td class="to">15장</td><td>—</td></tr>
+      </tbody>
+    </table>
+    <p class="lede">
+      칩에 적힌 숫자는 하나를 고른 뒤에도 그대로 유지됩니다. 다음에 무엇을 고를지 판단하시라고 그렇게 두었습니다.
+    </p>
+  </section>
+
+  <section class="sec" id="more">
+    <div class="sec-head">
+      <span class="sec-no">05</span>
+      <h2>검색어가 떠오르지 않을 때, 자료로 뽑아야 할 때</h2>
+    </div>
+    <ul class="grid">
+      <li><a class="card" href="https://neis-timeline.vercel.app/cards.html">
+        <h3>업무카드 모아보기 →</h3>
+        <p>600여 장의 카드 제목만 한 화면에 펼칩니다. Part별 · 문서별 · 가나다 순으로 정렬을 바꾸고, 업무담당자로 걸러서 “내가 맡은 일만” 볼 수 있습니다.</p>
+        <p><b>담임을 처음 맡으셨다면</b> 여기서 담당자를 ‘학급담임교사’로 걸어 두고 한 번 훑어보세요. 1년 치 나이스 업무의 지도가 그려집니다.</p>
+      </a></li>
+      <li class="card">
+        <h3>연수자료 뽑기</h3>
+        <p>문서 안 상단바의 <b>연수자료 뽑기</b>를 누르면 카드마다 선택칸이 생깁니다. 필요한 카드만 골라 인쇄하면 표지가 자동으로 만들어집니다. 문서명 · 업무 시기 · 업무 담당 · 출처와 담은 업무 목록까지 들어갑니다.</p>
+        <p>카드마다 쪽이 나뉘고 위에 진행 단계가 붙습니다. 표지와 타임라인은 각각 꺼도 됩니다. 교과협의회 자료나 신규 선생님 안내로 그대로 쓰실 수 있습니다.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="sec" id="caution">
+    <div class="sec-head">
+      <span class="sec-no">06</span>
+      <h2>미리 알아두시면 좋은 것</h2>
+    </div>
+
+    <p class="notice">
+      <b>반드시 웹 주소로 접속해 주세요.</b>
+      파일을 내려받아 더블클릭으로 여시면 브라우저가 다른 파일 읽기를 막기 때문에 검색이 작동하지 않습니다.
+      <a href="https://neis-timeline.vercel.app/" style="font-weight:700">neis-timeline.vercel.app</a>을 즐겨찾기에 넣어 두시는 편이 좋습니다.
+    </p>
+
+    <p class="notice">
+      <b>첫 화면을 연 직후 잠깐 기다려 주세요.</b>
+      사이트가 열리면서 53편 전체를 뒤에서 읽어 검색 준비를 합니다. 위쪽에 “카드 622개 검색 준비 완료”가 뜨면 끝난 것입니다.
+    </p>
+
+    <p class="notice">
+      <b>이름이 비슷한 문서 두 쌍을 조심하세요.</b>
+      Part 3(학적)에 헷갈리기 쉬운 짝이 있습니다. 검색하면 넷이 같이 걸리니, 지금 하려는 일이 내보내는 쪽인지 받는 쪽인지만 먼저 정하시면 됩니다.
+    </p>
+
+    <table class="pair">
+      <thead>
+        <tr><th>우리 학교 학생을 <b>내보내는</b> 쪽</th><th>다른 학교 학생을 <b>받는</b> 쪽</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>위탁학생 관리</td><td>타교수강생 관리(위탁)</td></tr>
+        <tr><td>공동교육과정 관리</td><td>타교수강생 관리(공동교육과정)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="sec" id="recap">
+    <div class="sec-head">
+      <span class="sec-no">07</span>
+      <h2>한 장 요약</h2>
+    </div>
+    <table class="recap">
+      <thead>
+        <tr><th>하고 싶은 일</th><th>이렇게 하세요</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>지금 막힌 업무를 찾기</td><td>검색창에 낱말 한두 개</td></tr>
+        <tr><td>결과가 너무 많을 때</td><td>업무담당자 칩으로 좁히기</td></tr>
+        <tr><td>내 역할의 일 전체 훑기</td><td>업무카드 모아보기 → 담당자 필터</td></tr>
+        <tr><td>연수 · 회의 자료 만들기</td><td>연수자료 뽑기 → 카드 선택 → 인쇄</td></tr>
+        <tr><td>검색창으로 빨리 가기</td><td>Ctrl + K</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="closing">
+    <h2>지금 한 번 열어 보세요</h2>
+    <p>
+      로그인도, 설치도 없습니다. 오늘 막힌 업무 이름 하나만 검색창에 넣어 보시면 이 사이트가 무엇인지 1분이면 아실 수 있습니다.
+      쓰시다가 내용이 실제와 다르거나 “이 업무는 카드가 없네” 싶은 부분이 있으면 현장지원단으로 알려 주세요. 그 제보가 다음 판을 만듭니다.
+    </p>
+    <a class="go" href="https://neis-timeline.vercel.app/">나이스 업무 타임라인 열기 →</a>
+  </section>
+
+  <footer>
+    <p>나이스 업무 타임라인 · 강원 나이스 현장지원단(고등)</p>
+    <p class="by">created by MSK</p>
+  </footer>
+
+</div>
+
+</body>
+</html>
