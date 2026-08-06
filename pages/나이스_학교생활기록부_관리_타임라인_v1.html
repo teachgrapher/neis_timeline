@@ -218,6 +218,47 @@ footer a{color:var(--ink)}
   .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
   .task{break-inside:avoid;box-shadow:none}
 }
+
+/* ── 원문 출처 칩 ── */
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.srcbtn{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);
+  border-radius:999px;cursor:pointer;line-height:1.5;
+}
+.srcbtn::before{content:"▤ ";color:var(--mark)}
+.srcbtn:hover{background:var(--ink);color:#fff}
+.srcbtn:hover::before{color:#fff}
+.srcbtn.sub{border-color:var(--rule);color:var(--ink-soft);font-weight:500}
+.srcbtn.sub::before{content:""}
+.srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
+.srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
+.pdfmodal[hidden]{display:none}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
+.pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .spacer{margin-left:auto}
+.pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
+.pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
+  font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
+  .pdfbar .pdfsub{display:none}
+}
 </style>
 </head>
 <body>
@@ -321,6 +362,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">연중, 항목별 반영 시점에 맞춰</span><span class="tag opt">자료반영 항목만 해당</span></div>
     <h3>학교생활기록부 자료반영(전체반영·개인별반영)</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="2" title="원문 p.936 열기">원문 p.936</button></p>
     <p class="desc">나이스 해당 메뉴에서 저장하면 학교생활기록부에 자동 반영되는 항목이 대부분이므로, 이 업무는 자동 반영되지 않는 항목에만 필요하다. <strong>'전공과정', '출결상황(특기사항 포함)', '자격증및인증취득상황'의 국가직무능력표준 이수상황, '교과학습발달상황'을 제외한 모든 항목은 나이스의 해당 메뉴에서 저장할 경우 학교생활기록부에 자동으로 반영됨.</strong> 따라서 담임교사는 위 항목들을 학생부반영 화면에서 직접 반영해 주어야 한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중. '출결상황'은 [학적-출결관리-반별월출결마감관리]에서 마감한 자료까지만 반영되고, '교과학습발달상황'은 [성적-성적처리-성적산출마감관리]에서 학기말 성적처리가 된 뒤 반영됨.</dd></dl>
@@ -337,6 +379,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년말 또는 대입전형자료 제공 이전</span><span class="tag opt">학기 중 검증 지양</span><span class="tag">반별 마감의 선행조건</span></div>
     <h3>자료검증과 '확인필요' 오류 처리</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.938 열기">원문 p.938</button></p>
     <p class="desc">학년말에 학교생활기록부를 마감하려는 모든 학급이 해당된다. 학기 중에는 가급적 검증을 지양하고, 학기 중에 하는 경우는 오류 참고 자료로만 활용한다. <strong>전체 항목에 대한 자료검증 과정을 거쳐야만 학급담임교사의 반별 {마감}이 가능하다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말(또는 대입전형자료 제공 이전), 학생부 자료반영이 끝난 뒤</dd></dl>
@@ -353,6 +396,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">자료검증 실시 이후</span><span class="tag opt">'전체' 조회 권장</span></div>
     <h3>검증결과 조회로 반 전체 오류내역 확인</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.938 열기">원문 p.938</button></p>
     <p class="desc">자료검증을 한 번이라도 실시한 학급이 해당된다. 반별로 하나씩 열어 보지 않고 <strong>{검증}을 실시한 모든 반에 대하여 항목별로 조회 또는 출력</strong>할 수 있어, 학년 단위로 남은 오류를 훑을 때 쓴다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 자료검증에서 {전체검증} 또는 {항목별검증}을 실시한 뒤</dd></dl>
@@ -369,6 +413,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년말 대조·확인 시점</span><span class="tag">학적변동자 조회 가능</span></div>
     <h3>학생부 조회 및 출력, 학생부자료검색</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="7" title="원문 p.941 열기">원문 p.941</button></p>
     <p class="desc">학년말 학교생활기록부 대조·확인 작업을 하려면 학생부 출력물이 필요하다. 재학생뿐 아니라 제적·자퇴·퇴학·휴학·전출생 등 학적변동자도 '재학아닌학생'으로 조회할 수 있다. <strong>학년말 대조·확인 작업을 위해서는 '학생부Ⅱ'를 선택하여 출력</strong>한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중 조회 가능하며, 학년말 대조·확인 작업 시점에 집중적으로 사용함.</dd></dl>
@@ -385,6 +430,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">당해 학년도 입력 완료 후</span><span class="tag opt">권장 경로</span></div>
     <h3>학생부 항목별 조회로 일괄 대조</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="9" title="원문 p.943 열기">원문 p.943</button></p>
     <p class="desc">학생 한 명씩 넘겨 보는 대신 항목 단위로 학급 전체를 한 화면에 놓고 비교하는 방식이다. <strong>학교생활기록부의 당해 학년도 입력이 완료되면 학교생활기록부Ⅱ 출력물과 각종 보조부의 내용을 3회 이상 대조·확인</strong>해야 하므로, 이 메뉴를 쓰면 효율적이고 일관성 있게 확인할 수 있다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>당해 학년도 학교생활기록부 입력이 완료된 뒤, 학년말 대조·확인 작업 기간.</dd></dl>
@@ -401,6 +447,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">전체 항목 자료검증 완료 후</span><span class="tag">학급담임교사</span></div>
     <h3>반별 마감과 마감취소</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="10" title="원문 p.944 열기">원문 p.944</button></p>
     <p class="desc">학급담임교사가 자기 반 학교생활기록부를 닫는 단계입니다. <strong>[학생부-학교생활기록부-학교생활기록부-자료검증및반마감]에서 전체 항목에 대한 자료검증 과정을 반드시 실행하고, 검증된 오류 내역 중 불가피한 오류는 '예외처리사유'를 등록해야</strong> 마감이 가능합니다. 반 마감이 되어 있지 않으면 업무담당교사의 전체마감도 할 수 없습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말 자료검증과 오류 수정 및 '예외처리사유' 등록을 마친 뒤.</dd></dl>
@@ -417,6 +464,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">해당 학년 모든 반 마감 확인 후</span><span class="tag opt">3학년은 대입전형 기간 중 버튼명 변경</span></div>
     <h3>학년별 전체마감</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="11" title="원문 p.945 열기">원문 p.945</button></p>
     <p class="desc">학교생활기록부 업무담당교사가 학년 단위로 마감하는 단계입니다. <strong>해당 학년의 모든 반이 마감되어 있어야 하며, 반 마감이 되어 있지 않은 반에 대해서는 마감을 할 수 없습니다.</strong> 3학년은 대입전형 기간 동안 버튼 이름이 달라집니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년말, 해당 학년의 모든 반이 반별 마감을 마친 뒤.</dd></dl>
@@ -433,6 +481,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">2월 말</span><span class="tag opt">개인결재선 활용 권장</span></div>
     <h3>기안문서 상신과 결재</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="13" title="원문 p.947 열기">원문 p.947</button></p>
     <p class="desc">학년별 전체마감까지 끝낸 뒤 학교생활기록부를 전자문서로 확정하는 마지막 단계입니다. <strong>기안문서를 작성하여 결재가 완료되면 해당 학년도의 학교생활기록부는 더 이상 수정이 불가능하기 때문에 <span class="btn">{승인요청}</span>은 2월 말에 처리하는 것이 효율적입니다.</strong> 결재가 끝나면 별도로 출력해 수기 결재를 하지 않습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>2월 말, 해당 학년의 전체 마감이 끝난 뒤.</dd></dl>
@@ -519,6 +568,75 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
   if(!keep.length) return;
   document.querySelectorAll('a.home,a.hub').forEach(function(a){
     a.href = '../index.html#' + keep.join('&');
+  });
+})();
+</script>
+
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <b id="pdftitle">원문</b>
+      <span class="pdfsub"></span>
+      <span class="spacer"></span>
+      <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
+      <button type="button" id="pdfclose">닫기 (Esc)</button>
+    </div>
+    <iframe class="pdfframe" id="pdfframe" title="원문 PDF"></iframe>
+    <p class="pdfnote">화면이 비어 있으면 <b>새 탭에서 열기</b>를 누르세요. 원본 PDF(part7_1.pdf)가 이 HTML 파일과 같은 폴더에 있어야 합니다.</p>
+  </div>
+</div>
+
+
+<script>
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
+(function(){
+  var PDF = 'part7_1.pdf';
+  var modal = document.getElementById('pdfmodal');
+  var titleEl = document.getElementById('pdftitle');
+  var newTab = document.getElementById('pdfnew');
+  var lastFocus = null;
+
+  function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
+
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
+  function open(page, text, card){
+    lastFocus = document.activeElement;
+    titleEl.textContent = text;
+    newTab.href = url(page);
+    modal.hidden = false;
+    document.body.classList.add('pdfopen');
+    swapFrame(url(page));
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
+  }
+
+  function close(){
+    modal.hidden = true;
+    swapFrame(null);
+    document.body.classList.remove('pdfopen');
+    if(lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.srcbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
+    });
+  });
+
+  document.getElementById('pdfclose').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !modal.hidden) close();
   });
 })();
 </script>
