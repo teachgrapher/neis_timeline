@@ -218,6 +218,47 @@ footer a{color:var(--ink)}
   .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
   .task{break-inside:avoid;box-shadow:none}
 }
+
+/* ── 원문 출처 칩 ── */
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.srcbtn{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);
+  border-radius:999px;cursor:pointer;line-height:1.5;
+}
+.srcbtn::before{content:"▤ ";color:var(--mark)}
+.srcbtn:hover{background:var(--ink);color:#fff}
+.srcbtn:hover::before{color:#fff}
+.srcbtn.sub{border-color:var(--rule);color:var(--ink-soft);font-weight:500}
+.srcbtn.sub::before{content:""}
+.srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
+.srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
+.pdfmodal[hidden]{display:none}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
+.pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .spacer{margin-left:auto}
+.pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
+.pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
+  font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
+  .pdfbar .pdfsub{display:none}
+}
 </style>
 </head>
 <body>
@@ -321,6 +362,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">입급 시점</span><span class="tag opt">본교 출신 학생</span></div>
     <h3>재입학생·복학생·편입학(본교) 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="1" title="원문 p.278–279 열기">원문 p.278–279</button></p>
     <p class="desc">본교에 이전 학적이 남아 있는 재입학생·복학생·편입학(본교) 학생을 등록하는 업무이다. <strong>이전 학적이 본교에 존재하는 학생만 이 경로로 등록할 수 있다.</strong> 등록 창에서 학생을 찾아 신규 취득 학적과 학적반영일자까지 한 번에 저장한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기중. 학생이 입급하는 시점.</dd></dl>
@@ -337,6 +379,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">입급 시점</span><span class="tag opt">타교 출신 편입생</span></div>
     <h3>편입학(타학교) 학생 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.280 열기">원문 p.280</button></p>
     <p class="desc">다른 학교에서 편입해 온 학생을 등록하는 업무이다. 등록 창의 변동구분을 ‘편입학(타학교)’로 골라 학교명과 성명으로 학생을 찾는다. <strong>전입생·편입생(타학교)의 경우 원적교에서 도착한 자료가 조회된다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기중. 원적교에서 자료가 도착한 뒤 입급하는 시점.</dd></dl>
@@ -353,6 +396,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">입급 시점</span><span class="tag opt">전산자료 없는 편입생 한정</span></div>
     <h3>이전 학적·전산자료가 없는 편입생 추가입학 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="2" title="원문 p.279 열기">원문 p.279</button></p>
     <p class="desc">앞의 두 경로로 학생이 조회되지 않을 때 쓰는 업무이다. <strong>이전 학적이 존재하지 않거나 전산자료가 없는 편입생(중도 입학자 포함)</strong>은 전편재입/복학생등록이 아니라 추가입학 메뉴에서 등록하고, 자료도 직접 입력해야 한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기중. 원적교 전산자료를 받을 수 없다고 확인된 시점.</dd></dl>
@@ -369,6 +413,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">등록 직후, 필요시</span><span class="tag opt">필요시</span></div>
     <h3>학적반영일자 및 신규 취득 학적 수정</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.281 열기">원문 p.281</button></p>
     <p class="desc">등록할 때 넣은 학적반영일자나 신규취득학적이 잘못된 경우에만 하는 업무이다. <strong>목록에서 학생의 ‘성명’을 클릭하면 나타나는 ‘전편재입/복학생 수정’ 창에서 ‘이전학적’을 먼저 확인</strong>한 뒤 수정한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기중. 전편재입/복학생 등록을 마친 뒤 값을 고쳐야 할 때.</dd></dl>
@@ -385,6 +430,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">등록 직후</span><span class="tag">확인용 조회</span></div>
     <h3>재입학생·편입학생·복학생 자료 조회</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="5" title="원문 p.282–283 열기">원문 p.282–283</button></p>
     <p class="desc">전편재입/복학생 등록을 마친 학생의 도착 자료를 학적반영 전에 미리 확인하는 단계이다. <strong>전입생·편입생(타학교)의 경우 원적교에서 도착한 자료가 조회되므로</strong> 이관 전에 내용이 맞는지 눈으로 확인해 둔다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초·학기중, 전편재입/복학생 등록을 마친 뒤</dd></dl>
@@ -401,6 +447,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학적반영 전, 결재 단계</span></div>
     <h3>재입학생·편입학생·복학생 기안문 상신</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="6" title="원문 p.283 열기">원문 p.283</button></p>
     <p class="desc">재입학생·편입학생·복학생 등록 내용을 학적에 반영하기 전에 반드시 거치는 결재 절차이다. <strong>{상신}으로 업무승인과정을 거쳐 결재권자의 결재를 완료해야</strong> 후속 학적반영으로 넘어갈 수 있다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초·학기중, 등록 내용과 전입자료 확인을 마친 뒤</dd></dl>
@@ -417,6 +464,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">결재 완료 후</span><span class="tag">자료이관 후 반영</span></div>
     <h3>재입학생·편입학생·복학생 학적반영</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="7" title="원문 p.284 열기">원문 p.284</button></p>
     <p class="desc">재입학·편입학·복학생을 등록하고 기안문 상신으로 결재까지 마쳤다면, 실제로 학적을 우리 학교 자료로 확정하는 단계이다. <strong>반영할 자료를 선택해 {자료이관}을 먼저 수행한 뒤에 {학적반영}을 해야 한다.</strong> 전입생·편입생(타학교)의 경우 원적교에서 도착한 자료가 조회된다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기중. [학적-전입관리-전입관리-상신]에서 결재권자의 결재를 완료한 뒤</dd></dl>
@@ -433,6 +481,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학적반영 후</span><span class="tag">조회·확인</span></div>
     <h3>재입학생·편입학생·복학생 종합자료 검색</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="8" title="원문 p.285–286 열기">원문 p.285–286</button></p>
     <p class="desc">학적반영을 마친 재입학생·편입학생·복학생의 전송받은 자료 전체를 항목별로 열어 확인하는 업무입니다. <strong>목록의 ‘상태’에서 ‘전입학적반영(완결)’을 클릭하면 [학적-전입관리-전입관리-학적반영]으로 이동</strong>하므로 반영 상태 점검도 이 화면에서 함께 합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기중. 재입학생·편입학생·복학생 학적반영을 마친 뒤.</dd></dl>
@@ -449,6 +498,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학적반영 직후</span><span class="tag opt">교육과정별 경로 다름</span></div>
     <h3>전입학생 수강과목편성 및 전입이전 출결산출 지정</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="9" title="원문 p.286–288 열기">원문 p.286–288</button></p>
     <p class="desc">학적반영을 마친 재입학생·편입학생·복학생에게 수강과목을 편성하고 전입 이전 기간의 출결산출 방식을 지정하는 업무입니다. <strong>수강과목이 편성되지 않으면 출결처리 및 성적처리를 할 수 없으므로 학적반영 후 반드시 편성해야 합니다.</strong> 적용 교육과정과 학년에 따라 편성 경로가 달라집니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기중. 재입학생·편입학생·복학생 학적반영을 마친 직후.</dd></dl>
@@ -535,6 +585,75 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
   if(!keep.length) return;
   document.querySelectorAll('a.home,a.hub').forEach(function(a){
     a.href = '../index.html#' + keep.join('&');
+  });
+})();
+</script>
+
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <b id="pdftitle">원문</b>
+      <span class="pdfsub"></span>
+      <span class="spacer"></span>
+      <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
+      <button type="button" id="pdfclose">닫기 (Esc)</button>
+    </div>
+    <iframe class="pdfframe" id="pdfframe" title="원문 PDF"></iframe>
+    <p class="pdfnote">화면이 비어 있으면 <b>새 탭에서 열기</b>를 누르세요. 원본 PDF(part3_3.pdf)가 이 HTML 파일과 같은 폴더에 있어야 합니다.</p>
+  </div>
+</div>
+
+
+<script>
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
+(function(){
+  var PDF = 'part3_3.pdf';
+  var modal = document.getElementById('pdfmodal');
+  var titleEl = document.getElementById('pdftitle');
+  var newTab = document.getElementById('pdfnew');
+  var lastFocus = null;
+
+  function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
+
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
+  function open(page, text, card){
+    lastFocus = document.activeElement;
+    titleEl.textContent = text;
+    newTab.href = url(page);
+    modal.hidden = false;
+    document.body.classList.add('pdfopen');
+    swapFrame(url(page));
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
+  }
+
+  function close(){
+    modal.hidden = true;
+    swapFrame(null);
+    document.body.classList.remove('pdfopen');
+    if(lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.srcbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
+    });
+  });
+
+  document.getElementById('pdfclose').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !modal.hidden) close();
   });
 })();
 </script>
