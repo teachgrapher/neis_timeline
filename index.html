@@ -672,6 +672,14 @@ document.addEventListener('keydown', function(e){
 /* ── 시작 ── */
 renderParts();
 
+// Part 목록은 위에서 방금 그렸으므로, 문서 페이지의 Part 네비로 들어온 해시는 직접 옮겨 준다
+(function(){
+  var id = location.hash.slice(1);
+  if(!/^(part\d+|faq)$/.test(id)) return;
+  var t = document.getElementById(id);
+  if(t) t.scrollIntoView({ block:'start' });
+})();
+
 if(location.protocol === 'file:'){
   $('idxstat').textContent = '검색 사용 불가';
   document.querySelectorAll('[data-role="meta"]').forEach(function(m){ m.textContent = '열기'; });
