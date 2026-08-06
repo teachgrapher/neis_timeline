@@ -218,6 +218,47 @@ footer a{color:var(--ink)}
   .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
   .task{break-inside:avoid;box-shadow:none}
 }
+
+/* ── 원문 출처 칩 ── */
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.srcbtn{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);
+  border-radius:999px;cursor:pointer;line-height:1.5;
+}
+.srcbtn::before{content:"▤ ";color:var(--mark)}
+.srcbtn:hover{background:var(--ink);color:#fff}
+.srcbtn:hover::before{color:#fff}
+.srcbtn.sub{border-color:var(--rule);color:var(--ink-soft);font-weight:500}
+.srcbtn.sub::before{content:""}
+.srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
+.srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
+.pdfmodal[hidden]{display:none}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
+.pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .spacer{margin-left:auto}
+.pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
+.pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
+  font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
+  .pdfbar .pdfsub{display:none}
+}
 </style>
 </head>
 <body>
@@ -303,6 +344,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">연중 수시</span><span class="tag opt">특정 교과에 해당하지 않는 독서활동</span></div>
     <h3>개인별 독서활동상황 기록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="2" title="원문 p.717 열기">원문 p.717</button></p>
     <p class="desc">학생 한 명씩 독서활동상황을 확인하며 입력할 때 쓰는 화면이다. <strong>특정 교과에 해당하지 않는 독서활동은 학급담임교사가 공통으로 입력한다.</strong> 입력 전에 이전 독서활동상황을 열어 같은 도서가 아닌지 확인하는 절차가 함께 들어 있다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중 수시, 학생의 독서활동을 확인한 시점마다.</dd></dl>
@@ -319,6 +361,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">연중 수시</span><span class="tag">교과담당교사 전용 경로</span></div>
     <h3>과목별 독서활동 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.719 열기">원문 p.719</button></p>
     <p class="desc">해당 학기에 개설된 과목과 관련된 독서활동은 교과담당교사가 자기 과목의 강의실 단위로 직접 입력한다. <strong>이전독서활동상황 조회 창에서 이전 독서활동과 중복되지 않음을 먼저 확인한 뒤 입력한다.</strong> 특정 교과에 해당하지 않는 독서활동은 이 화면이 아니라 학급담임교사가 공통으로 입력한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중 수시, 학기별로 구분하여 입력하며 학기말까지 마무리함.</dd></dl>
@@ -335,6 +378,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기말</span></div>
     <h3>반별 독서활동상황기록 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="2" title="원문 p.717 열기">원문 p.717</button></p>
     <p class="desc">학급 학생 전체의 독서활동상황을 한 화면에서 보며 입력할 때 쓴다. <strong>조회 조건에 '독서활동 영역'이 들어가므로 어느 영역에 기록할지 먼저 정해야 한다.</strong> 개인별 탭과 같은 메뉴이지만 여러 학생을 이어서 입력할 때 손이 덜 간다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, 학급 학생의 독서활동을 모아 정리하는 시점.</dd></dl>
@@ -351,6 +395,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기말</span><span class="tag opt">여러 학생 같은 도서일 때</span></div>
     <h3>반별 화면에서 같은 도서명 일괄입력</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.718 열기">원문 p.718</button></p>
     <p class="desc">학급의 여러 학생이 같은 책을 읽어 도서명이 겹칠 때 쓴다. <strong>{덮어쓰기}를 선택하면 기존 '독서활동상황기록'이 모두 삭제되므로 재차 확인하여 사용해야 한다.</strong> {반별} 탭의 <span class="btn">{일괄입력}</span> 기능이다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, 반별 독서활동상황을 조회한 뒤 같은 도서명을 여러 학생에게 넣어야 할 때.</dd></dl>
@@ -367,6 +412,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">잘못 등록한 것을 확인한 즉시</span><span class="tag">학급담임 화면에서만 삭제 가능</span></div>
     <h3>잘못 등록한 독서활동상황 삭제</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.719 열기">원문 p.719</button></p>
     <p class="desc">독서활동상황 내용을 입력하지 않아야 할 학생에게 실수로 등록한 경우에 해당한다. <strong>입력 화면에서 내용을 지우고 {저장}하면 '독서활동상황은 필수입니다'라는 안내가 나타나 지워지지 않는다.</strong> 내용을 비우는 방식이 아니라 해당 영역을 선택해 삭제하는 방식으로 처리한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>연중 / 학기말, 독서활동상황을 이미 등록한 뒤 잘못 등록한 것을 확인한 시점</dd></dl>
@@ -453,6 +499,75 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
   if(!keep.length) return;
   document.querySelectorAll('a.home,a.hub').forEach(function(a){
     a.href = '../index.html#' + keep.join('&');
+  });
+})();
+</script>
+
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <b id="pdftitle">원문</b>
+      <span class="pdfsub"></span>
+      <span class="spacer"></span>
+      <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
+      <button type="button" id="pdfclose">닫기 (Esc)</button>
+    </div>
+    <iframe class="pdfframe" id="pdfframe" title="원문 PDF"></iframe>
+    <p class="pdfnote">화면이 비어 있으면 <b>새 탭에서 열기</b>를 누르세요. 원본 PDF(part5_8.pdf)가 이 HTML 파일과 같은 폴더에 있어야 합니다.</p>
+  </div>
+</div>
+
+
+<script>
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
+(function(){
+  var PDF = 'part5_8.pdf';
+  var modal = document.getElementById('pdfmodal');
+  var titleEl = document.getElementById('pdftitle');
+  var newTab = document.getElementById('pdfnew');
+  var lastFocus = null;
+
+  function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
+
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
+  function open(page, text, card){
+    lastFocus = document.activeElement;
+    titleEl.textContent = text;
+    newTab.href = url(page);
+    modal.hidden = false;
+    document.body.classList.add('pdfopen');
+    swapFrame(url(page));
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
+  }
+
+  function close(){
+    modal.hidden = true;
+    swapFrame(null);
+    document.body.classList.remove('pdfopen');
+    if(lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.srcbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
+    });
+  });
+
+  document.getElementById('pdfclose').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !modal.hidden) close();
   });
 })();
 </script>
