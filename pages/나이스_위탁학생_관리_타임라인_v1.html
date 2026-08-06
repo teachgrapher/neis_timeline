@@ -218,6 +218,47 @@ footer a{color:var(--ink)}
   .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
   .task{break-inside:avoid;box-shadow:none}
 }
+
+/* ── 원문 출처 칩 ── */
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.srcbtn{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);
+  border-radius:999px;cursor:pointer;line-height:1.5;
+}
+.srcbtn::before{content:"▤ ";color:var(--mark)}
+.srcbtn:hover{background:var(--ink);color:#fff}
+.srcbtn:hover::before{color:#fff}
+.srcbtn.sub{border-color:var(--rule);color:var(--ink-soft);font-weight:500}
+.srcbtn.sub::before{content:""}
+.srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
+.srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
+.pdfmodal[hidden]{display:none}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
+.pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .spacer{margin-left:auto}
+.pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
+.pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
+  font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
+  .pdfbar .pdfsub{display:none}
+}
 </style>
 </head>
 <body>
@@ -330,6 +371,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">위탁기관 확인요청 접수 직후</span><span class="tag opt">나이스 활용 위탁교육 개설교 한정</span></div>
     <h3>위탁학생 확인요청 접수 및 요청확인 전송</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="2" title="원문 p.391 열기">원문 p.391</button></p>
     <p class="desc">나이스를 활용하는 위탁교육 개설교(위탁기관)에서 위탁학생을 등록하고 {확인요청}한 경우에만 접수 목록에 나타난다. <strong>{승인요청}으로 업무승인과정을 거쳐 결재권자의 결재가 완료된 뒤에야 {요청확인}이 가능하다.</strong> 위탁기관이 위탁학생 정보를 수정하고 {재확인요청}한 경우에도 같은 메뉴에서 다시 확인한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초, 반 편성 등 위탁학생의 학적을 구성하고 위탁교육 개설교에서 {확인요청}한 뒤</dd></dl>
@@ -346,6 +388,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">요청확인 전송 완료 후</span><span class="tag opt">나이스 활용 위탁기관 학생만</span><span class="tag">'등록구분'이 '타학교'</span></div>
     <h3>위탁기관이 등록한 위탁학생 정보 확인</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.393 열기">원문 p.393</button></p>
     <p class="desc">나이스를 활용하는 위탁교육 개설교(위탁기관)에서 등록한 위탁학생의 정보를 확인하는 과정이다. <strong>확인요청접수및전송에서 {요청확인}이 완료되면 이 메뉴에 자동으로 위탁학생이 등록되므로 별도 등록 없이 내용만 확인한다.</strong> 이때 '등록구분'은 '타학교'로 표기된다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초, 확인요청접수및전송에서 {요청확인}으로 '전송완료'가 된 뒤</dd></dl>
@@ -362,6 +405,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">위탁 시작 시점</span><span class="tag opt">나이스 미활용·NEIS+·대안교육 위탁기관</span><span class="tag">'등록구분'이 '본교'</span></div>
     <h3>나이스 미활용·나이스플러스(NEIS+)·대안교육 위탁기관 위탁학생 직접 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="5" title="원문 p.394 열기">원문 p.394</button></p>
     <p class="desc">나이스를 활용하지 않거나 나이스플러스(NEIS+)를 활용하는 위탁기관, 그리고 대안교육 위탁교육기관의 위탁학생은 재적교가 직접 등록해야 한다. <strong>위탁학생은 재적학교의 학기 단위로 등록하며, 같은 학기에 기간을 달리하여 2회 이상 위탁한 경우도 등록 가능하다.</strong> 이 메뉴에서 직접 등록한 학생은 '등록구분'이 '본교'로 표기된다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초 및 위탁이 시작되는 시점, 반 편성 등 위탁학생의 학적 구성이 끝난 뒤</dd></dl>
@@ -378,6 +422,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">매월 말, 반별월출결마감 후</span><span class="tag">재적교+위탁기관 합산</span></div>
     <h3>위탁학생 재적교 월별 출결 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="23" title="원문 p.412 열기">원문 p.412</button></p>
     <p class="desc">위탁학생이 있는 학급은 매월 말 위탁교육기관이 공문으로 송부한 월 출결자료를 재적교 출결자료와 합산해 등록해야 한다. <strong>위탁학생의 출결자료 최종 수정은 [학적-위탁･현장실습학생관리-출결관리]에서만 가능하다.</strong> 여기서 등록한 월별 출결자료가 학교생활기록부 출결상황에 반영된다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 재적학교 등교일 일일출결을 등록·마감하고 <code>[학적-출결관리-출결관리-반별월출결마감관리]</code>에서 해당 월을 마감한 뒤 월말에 처리함.</dd></dl>
@@ -394,6 +439,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">부적응 등으로 중도 복교한 즉시</span><span class="tag opt">중도 복교자 한정</span></div>
     <h3>위탁 중도 복교 시 위탁상태 변경 및 전공･과정 정리</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="22" title="원문 p.411 열기">원문 p.411</button></p>
     <p class="desc">위탁학생이 위탁교육기관 부적응 등으로 재적학교로 중도 복교한 경우에만 해당한다. 등록 정보의 '종료일자'와 '위탁상태'를 먼저 정리하고 학교생활기록부 '전공･과정'란을 삭제한다. <strong>중도 복교일이 포함된 해당 월까지는 [학적-위탁･현장실습학생관리-출결관리]에서 위탁교육기관 출결자료와 재적학교 출결자료를 합산하여 등록한다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 위탁학생이 위탁교육기관에서 재적학교로 중도 복교한 때 처리함.</dd></dl>
@@ -410,6 +456,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">중도 복교·전출 시, 재적교 학기말 성적 산출 시</span><span class="tag opt">2022 개정 교육과정 2026학년도 1･2학년</span></div>
     <h3>위탁 과목별 출결 시수 등록(2022 개정 교육과정 2026학년도 1･2학년)</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="29" title="원문 p.418 열기">원문 p.418</button></p>
     <p class="desc">2022 개정 교육과정을 적용받는 2026학년도 1･2학년 위탁학생이 중도 복교하거나 전출하는 경우, 또는 성적 미산출 위탁교육기관의 위탁학생으로 재적교에서 학기말 성적을 산출하는 경우에만 해당한다. 위탁기간 동안의 재적교 개설 과목별 출결 시수를 수기로 등록한다. <strong>위탁교육기관에서 학기말 성적을 산출하는 전일제 위탁 또는 당해 학기를 모두 이수한 경우에는 입력할 필요 없음.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중~학기말, 위탁학생이 중도 복교하거나 전출한 때 또는 재적교에서 학기말 성적을 산출하기 전에 처리함.</dd></dl>
@@ -426,6 +473,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">과목/실무과목추가 등록 직후</span><span class="tag opt">대안 교과목까지 나이스에서 모두 검색되는 경우</span></div>
     <h3>위탁생 수강과목매칭으로 과목 출석률 자동 산정</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="29" title="원문 p.418 열기">원문 p.418</button></p>
     <p class="desc">보통 교과목을 포함하여 대안 교과목도 나이스에서 모두 검색되는 경우에 쓰는 방법이다. 재적교 개설 과목과 위탁교육기관 수강 과목을 매칭하면 <strong>비매칭 과목도 자동으로 과목 출석률이 산정된다.</strong> 재적교에서 학기말 성적을 산출하는 위탁학생과 위탁 중도 복교생이 대상이다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>중도 복교·전출 시 또는 재적교에서 학기말 성적을 산출할 때, 사전에 위탁교육기관 또는 현장실습기관에서 수강한 과목을 <span class="btn">{과목/실무과목추가}</span>로 등록한 뒤 처리함.</dd></dl>
@@ -442,6 +490,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기말, 과목별 출결 시수 등록 후</span><span class="tag opt">2022 개정 교육과정 2026학년도 1･2학년</span></div>
     <h3>과목 출석률 산정 및 과목 출결 마감(2022 개정 교육과정 2026학년도 1･2학년)</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="1" title="원문 p.390 열기">원문 p.390</button></p>
     <p class="desc">2022 개정 교육과정을 적용받는 2026학년도 1･2학년 위탁학생에 해당하는 후행처리다. 위탁 과목별 출결 시수 등록과 수강과목매칭이 끝난 뒤 과목출석률을 산정하고 마감한다. <strong>과목출석률 산정은 창의적체험활동을 제외한 학기별과목출결마감에서, 최종 마감은 창의적체험활동을 포함한 과목전체마감에서 처리한다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, 위탁･현장실습과목별출결관리에서 '현재수업시수'와 '결과시수' 등록을 마친 뒤 처리함.</dd></dl>
@@ -458,6 +507,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">위탁기관 자료전송 후</span><span class="tag">확인 단계</span></div>
     <h3>위탁교육 개설교 자료전송 현황 확인</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="10" title="원문 p.399 열기">원문 p.399</button></p>
     <p class="desc">나이스나 나이스플러스(NEIS+)를 활용하는 위탁교육 개설교(위탁기관)에 위탁학생을 보낸 학교가 하는 업무입니다. 위탁기관에서 <span class="btn">{자료전송}</span>을 해야 조회되므로, <strong>'상태'가 '자료미도착'에서 '자료도착'으로 변경된 학생만 다음 단계인 자료 반영이 가능합니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, 위탁교육 개설교(위탁기관)에서 월출결･성적･세부능력 및 특기사항･학생생활 자료를 전송한 뒤</dd></dl>
@@ -474,6 +524,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">자료도착 확인 직후</span><span class="tag opt">나이스 활용 위탁기관 한정</span></div>
     <h3>타학교자료가져오기로 전송자료 반영</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="11" title="원문 p.400 열기">원문 p.400</button></p>
     <p class="desc">나이스를 활용하는 위탁교육 개설교(위탁기관)에서 자료를 전송한 경우에 하는 업무입니다. 나이스플러스(NEIS+)를 통해 전송한 성적･수상내역･독서활동도 이 방식으로 가져옵니다. <strong>위탁기관이 공문으로만 송부한 자료는 이 카드가 아니라 '성적', '학생생활' 하위 항목에서 {행추가}･{과목추가}로 직접 등록해야 합니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, <code>[학적-위탁･현장실습학생관리-위탁･현장실습학생관리-타학교자료전송확인]</code>에서 '상태'가 '자료도착'으로 확인된 뒤</dd></dl>
@@ -490,6 +541,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기말, 위탁기관 공문 수신 직후</span><span class="tag opt">2022 개정 교육과정 2026학년도 1･2학년</span></div>
     <h3>학기말 성적 등록(2022 개정 교육과정 2026학년도 1･2학년)</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="12" title="원문 p.401–402 열기">원문 p.401–402</button></p>
     <p class="desc">대안교육 위탁교육기관에서 공문으로 제공한 위탁학생의 성적을 재적교가 직접 등록하는 업무이다. <strong>2022 개정 교육과정을 적용받는 2026학년도 1･2학년은 '성적처리유형', '최소성취유형', '대체이수여부'를 추가로 등록해야 한다.</strong> 재적교 학기말 성적 산출이 마감된 상태에서도 등록할 수 있다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, 위탁교육 개설교(위탁기관)에서 공문으로 학기말 성적을 송부한 뒤</dd></dl>
@@ -506,6 +558,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기말, 위탁기관 공문 수신 직후</span><span class="tag opt">2015 개정 교육과정 2026학년도 3학년</span></div>
     <h3>학기말 성적 등록(2015 개정 교육과정 2026학년도 3학년)</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="14" title="원문 p.403–404 열기">원문 p.403–404</button></p>
     <p class="desc">대안교육 위탁교육기관에서 제공한 위탁학생의 성적을 등록하는 업무로, 2015 개정 교육과정을 적용받는 2026학년도 3학년만 해당한다. <strong>1･2학년과 달리 '과목표준편차'를 입력하고 '성적처리유형'･'최소성취유형'･'대체이수여부'는 등록하지 않는다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, 위탁교육 개설교(위탁기관)에서 공문으로 학기말 성적을 송부한 뒤</dd></dl>
@@ -522,6 +575,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기말 성적 등록 직후</span></div>
     <h3>과목별 세부능력 및 특기사항 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="16" title="원문 p.405 열기">원문 p.405</button></p>
     <p class="desc">대안교육 위탁교육기관에서 제공한 위탁학생의 세부능력 및 특기사항을 등록하는 업무이다. <strong>학기말 성적에서 등록한 과목을 그대로 가져오는 방식이므로 성적 등록을 먼저 끝내야 한다.</strong> 나이스플러스(NEIS+)로 전송한 경우에도 세부능력 및 특기사항은 <span class="btn">{과목추가}</span>로 등록한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, 위탁학생의 학기말 성적 등록을 마친 뒤</dd></dl>
@@ -538,6 +592,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기말, 위탁기관 자료 수신 후</span></div>
     <h3>창의적 체험활동 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="17" title="원문 p.406–407 열기">원문 p.406–407</button></p>
     <p class="desc">대안교육 위탁교육기관에서 제공한 위탁학생의 창의적 체험활동을 자료관리 화면에서 등록하는 업무이다. <strong>창의적 체험활동은 누가기록은 등록하지 않고 이수시간과 특기사항만 등록한다.</strong> 재적교에서 실시한 창의적 체험활동은 이 메뉴가 아니라 <code>[학생생활-창의적체험활동]</code>의 해당 영역에서 누가기록한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, 위탁교육 개설교(위탁교육기관)에서 자료를 송부한 뒤</dd></dl>
@@ -554,6 +609,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학기말, 위탁기관 자료 수신 후</span></div>
     <h3>수상내역･봉사활동실적･독서활동･행동특성및종합의견 등 학생생활 자료 등록과 관련 메뉴 반영</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="18" title="원문 p.407–409 열기">원문 p.407–409</button></p>
     <p class="desc">위탁교육 개설교(위탁교육기관)에서 공문으로 송부한 학생생활 자료를 자료관리 화면에서 등록하고, 학생생활 관련 메뉴에서 가져오기로 반영하는 업무이다. 항목별로 등록 버튼과 가져오기 메뉴가 다르므로 아래 목록에서 해당 항목을 찾아 순서대로 처리한다. <strong>아동학대 피해학생과 학생미혼모의 경우 위탁교육기관 명칭이 드러나지 않도록 '장소 또는 주관기관명'에 '(학교)재적학교장'으로 입력한다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, 위탁교육 개설교(위탁교육기관)에서 공문 또는 자료전송으로 학생생활 자료를 송부한 뒤</dd></dl>
@@ -570,6 +626,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">자료 등록 직후</span><span class="tag opt">위탁학생 개인 단위</span></div>
     <h3>위탁학생 학교생활기록부 개인별반영 및 조회･출력 확인</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="7" title="원문 p.396–397 열기">원문 p.396–397</button></p>
     <p class="desc">위탁학생의 전공･과정, 성적, 출결, 학생생활 자료를 나이스에 등록한 뒤 마지막으로 거치는 단계입니다. <strong>등록만 해두면 학교생활기록부에 나타나지 않으므로, 반영 항목을 선택해 반드시 {개인별반영}해야 합니다.</strong> 반영 후에는 학생부조회및출력에서 위탁 관련 내용이 제대로 표기되는지 눈으로 확인합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, 위탁학생의 전공･과정과 성적･출결･학생생활 자료 등록을 마친 뒤. 월별 출결은 해당 월 출결자료를 등록한 뒤</dd></dl>
@@ -656,6 +713,75 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
   if(!keep.length) return;
   document.querySelectorAll('a.home,a.hub').forEach(function(a){
     a.href = '../index.html#' + keep.join('&');
+  });
+})();
+</script>
+
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <b id="pdftitle">원문</b>
+      <span class="pdfsub"></span>
+      <span class="spacer"></span>
+      <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
+      <button type="button" id="pdfclose">닫기 (Esc)</button>
+    </div>
+    <iframe class="pdfframe" id="pdfframe" title="원문 PDF"></iframe>
+    <p class="pdfnote">화면이 비어 있으면 <b>새 탭에서 열기</b>를 누르세요. 원본 PDF(part3_9.pdf)가 이 HTML 파일과 같은 폴더에 있어야 합니다.</p>
+  </div>
+</div>
+
+
+<script>
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
+(function(){
+  var PDF = 'part3_9.pdf';
+  var modal = document.getElementById('pdfmodal');
+  var titleEl = document.getElementById('pdftitle');
+  var newTab = document.getElementById('pdfnew');
+  var lastFocus = null;
+
+  function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
+
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
+  function open(page, text, card){
+    lastFocus = document.activeElement;
+    titleEl.textContent = text;
+    newTab.href = url(page);
+    modal.hidden = false;
+    document.body.classList.add('pdfopen');
+    swapFrame(url(page));
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
+  }
+
+  function close(){
+    modal.hidden = true;
+    swapFrame(null);
+    document.body.classList.remove('pdfopen');
+    if(lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.srcbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
+    });
+  });
+
+  document.getElementById('pdfclose').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !modal.hidden) close();
   });
 })();
 </script>
