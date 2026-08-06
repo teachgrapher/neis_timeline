@@ -482,6 +482,15 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   code{font-size:8.5pt;white-space:normal}
 }
 /* == handout:end == */
+/* == walllink:begin == */
+.wall-link{
+  flex:none;font-size:12px;font-weight:700;white-space:nowrap;margin-left:12px;
+  padding:3px 9px;border:1px solid var(--ink);color:var(--ink);text-decoration:none;
+}
+.wall-link:hover{background:var(--ink);color:#fff}
+.wall-link:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.sitenav .bar{gap:0}
+/* == walllink:end == */
 </style>
 </head>
 <body>
@@ -504,6 +513,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
 <nav class="sitenav" aria-label="Part 바로가기">
   <div class="wrap bar">
     <ol class="snav-list" id="siteticks"></ol>
+    <!-- walllink:begin --><a class="wall-link" href="../cards.html">업무카드 모아보기 →</a><!-- walllink:end -->
   </div>
 </nav>
 <!-- handout:begin -->
