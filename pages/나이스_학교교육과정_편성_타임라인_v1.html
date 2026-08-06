@@ -218,6 +218,47 @@ footer a{color:var(--ink)}
   .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
   .task{break-inside:avoid;box-shadow:none}
 }
+
+/* ── 원문 출처 칩 ── */
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.srcbtn{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);
+  border-radius:999px;cursor:pointer;line-height:1.5;
+}
+.srcbtn::before{content:"▤ ";color:var(--mark)}
+.srcbtn:hover{background:var(--ink);color:#fff}
+.srcbtn:hover::before{color:#fff}
+.srcbtn.sub{border-color:var(--rule);color:var(--ink-soft);font-weight:500}
+.srcbtn.sub::before{content:""}
+.srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
+.srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
+.pdfmodal[hidden]{display:none}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
+.pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .spacer{margin-left:auto}
+.pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
+.pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
+  font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
+  .pdfbar .pdfsub{display:none}
+}
 </style>
 </head>
 <body>
@@ -330,6 +371,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">편제 등록 착수 시점</span><span class="tag opt">선택 · 신규 등록으로 대체 가능</span><span class="tag">성적처리유형 후속 등록 필수</span></div>
     <h3>이전 학년도 편제 가져오기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="25" title="원문 p.115 열기">원문 p.115</button></p>
     <p class="desc">이전 학년도와 편제가 크게 달라지지 않은 학교라면 과목을 하나씩 새로 등록하기 전에 먼저 가져오기를 시도한다. 다만 <strong>원본 편제와 대상 편제의 교육과정 차수가 다른 경우, 성적처리유형이 다른 경우, 해당 학년에 한 과목이라도 편제가 등록된 경우에는 {가져오기}를 할 수 없다.</strong> 가져온 과목은 '성적처리유형'이 공란으로 들어오므로 반드시 뒤이어 채워야 한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기초. [교육과정-입학생교육과정관리-입학생학교교육과정등록/검증]의 {학교유형정보설정}에서 입학년도별 1학년 기준으로 '학교유형'을 설정한 뒤, 해당 학년에 편제 과목이 아직 하나도 등록되지 않은 상태에서 함.</dd></dl>
@@ -346,6 +388,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">편제 등록 시작 시점</span><span class="tag">모든 고등학교</span></div>
     <h3>보통교과 과목 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.93–94 열기">원문 p.93–94</button></p>
     <p class="desc">모든 고등학교가 학년·학기별로 반드시 거치는 편제 등록의 기본 업무입니다. 2026학년도 1･2학년은 2022 개정 교육과정, 3학년은 2015 개정 교육과정 기준으로 교과(군)과 과목을 고르고 학점만 입력하면 시수는 자동 계산됩니다. <strong>편제 등록 전 [교육과정-입학생교육과정관리-입학생학교교육과정등록/검증]의 {학교유형정보설정}에서 입학년도별 1학년 기준으로 '학교유형'을 설정한 후 저장해야 함.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기초. 입학년도별 '학교유형' 설정을 저장한 뒤. 신학년도 이전에 등록할 경우 '교무학년도', '교무학기'는 현재학년도 2학기, '수업학년도', '수업학기'는 신학년도 1학기로 설정한 뒤.</dd></dl>
@@ -362,6 +405,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">교과 편제 등록과 같은 시기</span><span class="tag">모든 고등학교</span></div>
     <h3>창의적 체험활동 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="22" title="원문 p.112–113 열기">원문 p.112–113</button></p>
     <p class="desc">교과 과목과 달리 창의적 체험활동은 같은 창의 별도 탭에서 영역별 시수만 입력합니다. 2026학년도 1･2학년은 자율･자치활동, 동아리활동, 진로활동 영역이고 3학년은 자율활동, 동아리활동, 봉사활동, 진로활동 영역입니다. <strong>학교교육과정 편제표에 따라 각 활동 영역별 시수를 입력하면 해당 활동의 학점은 '0'으로 표기되나 최종 학점은 전체 영역의 시수가 합산되어 자동 계산됨.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기초. 해당 학년의 편제 등록 창을 열어 교과 편제를 등록하는 시점</dd></dl>
@@ -378,6 +422,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년초, 편제 등록 시</span><span class="tag opt">2026학년도 3학년 한정</span><span class="tag opt">특수목적고 위주</span></div>
     <h3>2015 개정 교육과정(2026학년도 3학년) 전문교과Ⅰ 과목 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="6" title="원문 p.96 열기">원문 p.96</button></p>
     <p class="desc">2015 개정 교육과정을 적용받는 2026학년도 3학년에 전문교과Ⅰ 과목을 편성한 학교만 해당한다. 전문교과Ⅰ은 성취도와 석차등급을 병기해 산출하므로 <strong>교과(전문교과Ⅰ)와 교과편제를 정확히 선택해야 성적처리유형이 제대로 잡힌다.</strong> 1학점은 17회를 이수하는 수업량이다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기초. '학교유형' 설정을 마친 뒤 편제 등록 단계에서 처리함.</dd></dl>
@@ -394,6 +439,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년초, 편제 등록 시</span><span class="tag opt">2026학년도 3학년 한정</span><span class="tag opt">특성화고·마이스터고 위주</span></div>
     <h3>2015 개정 교육과정(2026학년도 3학년) 전문교과Ⅱ 기초과목 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="12" title="원문 p.102–103 열기">원문 p.102–103</button></p>
     <p class="desc">2015 개정 교육과정을 적용받는 2026학년도 3학년에 전문교과Ⅱ 기초과목을 편성한 학교만 해당한다. 전문교과Ⅱ 전문공통과목인 '성공적인 직업생활'도 같은 방법으로 등록한다. <strong>전문교과Ⅱ는 성취도 5단계(A-B-C-D-E)로 평정하며 '석차등급'은 산출하지 않는다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기초. '학교유형' 설정을 마친 뒤 편제 등록 단계에서 처리함.</dd></dl>
@@ -410,6 +456,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년초, 편제 등록 시</span><span class="tag opt">2026학년도 3학년 한정</span><span class="tag opt">특성화고·마이스터고 한정</span></div>
     <h3>전문교과Ⅱ 실무과목의 능력단위 등록과 시수 수정</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="15" title="원문 p.105–107 열기">원문 p.105–107</button></p>
     <p class="desc">전문교과Ⅱ 실무과목을 편성한 학교만 해당한다. 능력단위 등록(1단계)과 능력단위 시수 수정(2단계)은 매뉴얼상 나뉘어 있지만 <strong>학점을 먼저 입력해 저장한 뒤 시수를 수정하는 방법으로 등록</strong>해야 하므로 한 호흡으로 처리한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기초. 편제 등록 단계에서 실무과목 등록과 함께 처리함.</dd></dl>
@@ -426,6 +473,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년초, 편제 등록 시</span><span class="tag opt">대체·교체 편성 학교만</span></div>
     <h3>전문교과를 진로선택 과목으로 등록(편제이동과목 등록)</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="18" title="원문 p.108–109 열기">원문 p.108–109</button></p>
     <p class="desc">전문교과Ⅰ이나 전문교과Ⅱ를 보통교과(군)으로 대체 편성하여 운영하는 학교만 해당한다. 이때는 교과과정등록 탭에서 과목을 바로 고르는 것이 아니라 <strong>보통교과(군)에서 '과목명'을 조회해 '편제이동과목/교육감승인과목 등록'으로 등록</strong>한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기초. 보통교과 편제를 등록하는 단계에서 함께 처리함.</dd></dl>
@@ -442,6 +490,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년초, 편제 등록 시</span><span class="tag opt">대체·교체 편성 학교만</span></div>
     <h3>보통교과·전문교과Ⅰ을 전문교과Ⅱ 기초과목으로 등록(편제이동과목 등록)</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="19" title="원문 p.109–110 열기">원문 p.109–110</button></p>
     <p class="desc">보통교과 또는 전문교과Ⅰ을 전문교과Ⅱ로 대체 편성하여 운영하는 학교만 해당한다. 전문교과Ⅱ 교과(군)에서 '과목명'을 조회해 '편제이동과목/교육감승인과목 등록'으로 올리며, <strong>성적처리유형은 전문교과Ⅱ의 성적처리 방법인 성취도(5단계)로 설정한다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기초. 전문교과Ⅱ 편제를 등록하는 단계에서 함께 처리함.</dd></dl>
@@ -458,6 +507,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">학년초, 편제 등록 시</span><span class="tag opt">공동교육과정 운영교만</span></div>
     <h3>공동교육과정 개설 과목 편제 등록</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="8" title="원문 p.98–100 열기">원문 p.98–100</button></p>
     <p class="desc">공동교육과정이나 온라인학교 개설 과목을 운영하는 학교만 해당한다. 공동교육과정은 진로선택 과목으로 편성하며, <strong>편제 등록 시 공동교육과정을 선택하고 <span class="btn">{저장}</span>해야 하며 등록 후 '학교교육과정편제 및 시간배당 수정' 창에서는 수정할 수 없다.</strong> 거점교의 공동교육과정 개설 교과목이 일과 내 교과목과 학점이 같은 경우라도 분리하여 등록할 수 있다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기초. 편제 등록 단계에서 처리하되 등록 후 수정이 불가하므로 편제표 확정 후에 처리함.</dd></dl>
@@ -474,6 +524,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">편제 등록 후 보완 시점</span><span class="tag opt">수정·삭제 필요 시</span></div>
     <h3>편제 및 시간배당 수정</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="26" title="원문 p.116–118 열기">원문 p.116–118</button></p>
     <p class="desc">편제명, 과목명, 학점, 성적처리유형 등을 잘못 등록했거나 변경이 필요한 학교만 해당합니다. <strong>편제한 과목을 삭제하는 경우 과목개설이 되었거나 성적이 입력된 경우 모두 삭제해야 합니다.</strong> 편제 가져오기로 가져온 과목은 '성적처리유형'이 공란이므로 이 창에서 반드시 등록해야 합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기초에 편제 및 시간배당 등록을 마친 뒤 오류나 변경사항이 확인된 시점</dd></dl>
@@ -490,6 +541,7 @@ footer a{color:var(--ink)}
   <div class="body">
     <div class="tags"><span class="tag now">편제 등록·수정을 모두 마친 뒤</span></div>
     <h3>편제 및 시간배당표 업무승인</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="29" title="원문 p.119 열기">원문 p.119</button></p>
     <p class="desc">편제 및 시간배당 등록과 수정을 끝낸 모든 학교가 마지막에 거치는 단계입니다. <strong>조회된 총계 시수와 학점은 교육지원청에서 승인받은 교육과정 편제표와 일치해야 합니다.</strong> {마감}을 해야 {승인요청}이 활성화됩니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 학기초에 계열·학과별 편제 및 시간배당 등록과 수정이 모두 끝난 뒤</dd></dl>
@@ -576,6 +628,75 @@ document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
   if(!keep.length) return;
   document.querySelectorAll('a.home,a.hub').forEach(function(a){
     a.href = '../index.html#' + keep.join('&');
+  });
+})();
+</script>
+
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <b id="pdftitle">원문</b>
+      <span class="pdfsub"></span>
+      <span class="spacer"></span>
+      <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
+      <button type="button" id="pdfclose">닫기 (Esc)</button>
+    </div>
+    <iframe class="pdfframe" id="pdfframe" title="원문 PDF"></iframe>
+    <p class="pdfnote">화면이 비어 있으면 <b>새 탭에서 열기</b>를 누르세요. 원본 PDF(part2_4.pdf)가 이 HTML 파일과 같은 폴더에 있어야 합니다.</p>
+  </div>
+</div>
+
+
+<script>
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
+(function(){
+  var PDF = 'part2_4.pdf';
+  var modal = document.getElementById('pdfmodal');
+  var titleEl = document.getElementById('pdftitle');
+  var newTab = document.getElementById('pdfnew');
+  var lastFocus = null;
+
+  function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
+
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
+  function open(page, text, card){
+    lastFocus = document.activeElement;
+    titleEl.textContent = text;
+    newTab.href = url(page);
+    modal.hidden = false;
+    document.body.classList.add('pdfopen');
+    swapFrame(url(page));
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
+  }
+
+  function close(){
+    modal.hidden = true;
+    swapFrame(null);
+    document.body.classList.remove('pdfopen');
+    if(lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.srcbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
+    });
+  });
+
+  document.getElementById('pdfclose').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !modal.hidden) close();
   });
 })();
 </script>
