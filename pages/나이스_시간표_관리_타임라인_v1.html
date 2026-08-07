@@ -491,6 +491,49 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
 .wall-link:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
 .sitenav .bar{gap:0}
 /* == walllink:end == */
+.figcap2{margin:0 0 4px;font-size:12.5px;color:var(--ink-soft);line-height:1.65}
+/* == ttmap:begin == */
+.ttscroll{overflow-x:auto;margin:10px 0 6px}
+.ttmap{display:block;width:100%;height:auto;min-width:820px;font-family:var(--sans)}
+
+.ttmap .hdbg{fill:var(--ink)}
+.ttmap .hdt{fill:#fff;font-size:14px;font-weight:700}
+.ttmap .sub{fill:var(--ink-soft);font-size:11.5px}
+.ttmap .cap{fill:var(--ink-soft);font-size:11px}
+
+.ttmap .dayhd{fill:var(--dropout);stroke:var(--dropout-deep);stroke-width:.8}
+.ttmap .dayt{fill:var(--ink);font-size:10.5px;font-weight:700}
+.ttmap .gcell{fill:var(--sheet);stroke:var(--rule);stroke-width:.8}
+.ttmap .gct{fill:var(--ink);font-size:10.5px}
+
+.ttmap .arw{fill:none;stroke:var(--ink);stroke-width:1.4}
+.ttmap marker path{fill:var(--ink)}
+.ttmap .midbg{fill:var(--dropout);stroke:var(--dropout-deep)}
+.ttmap .midt{fill:var(--ink);font-family:var(--mono);font-size:14px;font-weight:700}
+.ttmap .midsub{fill:var(--ink-soft);font-size:10.5px}
+.ttmap .mdot{fill:var(--mark)}
+.ttmap .midli{fill:var(--ink);font-size:10.5px}
+
+.ttmap .datebg{fill:var(--sheet);stroke:var(--rule)}
+.ttmap .datehd{fill:#EDEFE8;stroke:var(--rule)}
+.ttmap .datet{fill:var(--ink);font-family:var(--mono);font-size:11px;font-weight:700}
+.ttmap .pcell{fill:#fff;stroke:var(--rule);stroke-width:.8}
+.ttmap .pct{fill:var(--ink);font-size:10.5px}
+.ttmap .pcell.ev{fill:var(--ink);stroke:var(--ink)}
+.ttmap .pct.ev{fill:#fff;font-weight:600}
+.ttmap .pcell.kb{fill:var(--dropout);stroke:var(--dropout-deep);stroke-width:1.4}
+.ttmap .pct.kb{font-weight:700}
+.ttmap .pcell.sw{fill:#fff;stroke:var(--ink);stroke-width:1.4;stroke-dasharray:2.5 2}
+.ttmap .pct.sw{font-weight:700}
+.ttmap .markt{fill:var(--ink);font-size:10.5px;font-weight:700}
+
+.ttmap .warnbg{fill:none;stroke:var(--ink);stroke-width:1.3;stroke-dasharray:3 3}
+.ttmap .warnlab{fill:var(--ink);font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;font-weight:700}
+.ttmap .warnt{fill:var(--ink);font-size:12px;font-weight:600}
+.ttmap .warnsub{fill:var(--ink-soft);font-size:11px}
+
+@media print{.ttscroll{overflow:visible}.ttmap{min-width:0}}
+/* == ttmap:end == */
 </style>
 </head>
 <body>
@@ -649,7 +692,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-시간표관리-기초시간표관리]</code>에서 '학년도' 확인 후 '학기', '학년'을 선택하고 <span class="btn">{조회}</span> → 해당 강의실을 클릭한 후 추가하여 '시간표명'을 입력 → 해당 과목을 우측 시간표의 해당 요일, 해당 교시에 드래그 앤 드롭하여 시간표를 작성한 후 <span class="btn">{저장}</span>함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>교사·과목·교시 사정을 화면에서 직접 보면서 학점 수에 맞게 수업을 끼워 넣으려고.</dd></dl>
     </div>
-<div class="memo"><h4>우클릭 팝업 기능</h4><ul><li>수업 추가는 선택된 해당 요일/교시에 수업을 추가함.</li><li>점심시간 추가는 '3교시 후', '4교시 후', '5교시 후' 중 하나를 선택하여 추가하면 <b>해당 학년의 모든 요일에 적용됨.</b></li><li>공백삽입, 공백삭제는 기초시간표에 빈 수업을 설정하거나 삭제함.</li><li>삭제는 기초시간표에 편성한 수업 또는 추가된 점심시간을 삭제함.</li><li>일괄변경은 선택한 요일의 시간표를 일괄 변경함.</li><li><b>각 버튼을 사용해 기초시간표의 내용을 수정한 후 {저장}함.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>편성 확인 메모</h4><ul><li>'그룹설정'에서 <span class="btn">{설정}</span>으로 동시수업 그룹을 설정하면 기초시간표 작성에 활용 가능하며, 설정 순서에 따라 그룹 번호는 자동으로 생성됨.</li><li>해당 강의실에 대해 등록된 과목별 학점 수만큼 시간표가 모두 편성되면 '완료여부'가 ×에서 ○로 변경됨.</li><li>2명 이상의 교사에게 동일한 과목을 개설한 경우 '적용'은 기초시간표에 등록된 해당 과목 교사의 학점, '적용합'은 기초시간표에 등록된 해당 과목 학점의 총합임.</li><li><code>[교육과정-시간표관리-기초시간표관리]</code>에서 과목의 '학점'은 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code>에 등록된 학점을 의미함.</li></ul></div>
+<div class="memo"><h4>우클릭 팝업 기능</h4><ul><li>수업 추가는 선택된 해당 요일/교시에 수업을 추가함.</li><li>점심시간 추가는 '3교시 후', '4교시 후', '5교시 후' 중 하나를 선택하여 추가하면 <b>해당 학년의 모든 요일에 적용됨.</b></li><li>공백삽입, 공백삭제는 기초시간표에 빈 수업을 설정하거나 삭제함.</li><li>삭제는 기초시간표에 편성한 수업 또는 추가된 점심시간을 삭제함.</li><li>일괄변경은 선택한 요일의 시간표를 일괄 변경함.</li><li><b>각 버튼을 사용해 기초시간표의 내용을 수정한 후 <span class="btn">{저장}</span>함.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>편성 확인 메모</h4><ul><li>'그룹설정'에서 <span class="btn">{설정}</span>으로 동시수업 그룹을 설정하면 기초시간표 작성에 활용 가능하며, 설정 순서에 따라 그룹 번호는 자동으로 생성됨.</li><li>해당 강의실에 대해 등록된 과목별 학점 수만큼 시간표가 모두 편성되면 '완료여부'가 ×에서 ○로 변경됨.</li><li>2명 이상의 교사에게 동일한 과목을 개설한 경우 '적용'은 기초시간표에 등록된 해당 과목 교사의 학점, '적용합'은 기초시간표에 등록된 해당 과목 학점의 총합임.</li><li><code>[교육과정-시간표관리-기초시간표관리]</code>에서 과목의 '학점'은 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code>에 등록된 학점을 의미함.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t1" data-num="1" data-stage="A" data-when="학년초준비" data-who="시간표업무담당교사">
@@ -683,7 +726,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-시간표관리-기초시간표관리]</code>에서 '학년도' 확인 후 '학기', '학년'을 선택하고 <span class="btn">{조회}</span>하여 <span class="btn">{시간표작성정보설정}</span> → '시간표작성정보설정' 창에서 '학년도', '학기' 확인 후 <span class="btn">{조회}</span>하여 <span class="btn">{행추가}</span> → '시간표명'을 입력하고 <span class="btn">{저장}</span> → '시간표명'을 클릭해서 '초기설정'을 입력한 후 <span class="btn">{저장}</span>하고 '엄수조건'의 사용여부에 따라 <span class="btn">{설정}</span> 후 <span class="btn">{저장}</span>하여 <span class="btn">{시간표도우미전송}</span>함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>교사 사정과 블록수업·창체 고정 같은 조건을 미리 걸어 두고, 손으로 맞추기 어려운 배정을 시스템이 풀게 하려고.</dd></dl>
     </div>
-<div class="memo"><h4>초기설정 용어</h4><ul><li>일별 동일과목 최대 수업교시는 일 기준 동일 과목을 1~3교시 등으로 연속되게 진행하는 최대 교시수.</li><li>수업교시 공정배정은 특정 교사의 수업이 1교시 또는 7교시에 몰리지 않게 고려할지 여부.</li><li>연속 수업사용은 블록수업 사용 여부.</li><li>요일별 최대교시는 월요일~금요일까지 각 요일별 최대 교시 설정으로, <b>교육과정 편제된 학년별 시수보다 요일별 최대 교시의 합이 많으면 공강 발생 가능.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>엄수조건 용어와 전송 후</h4><ul><li>학급별 수업 우선배정은 특정 수업을 지정된 요일, 교시에 우선적으로 배정하는 기능(특정 요일에 수업이 진행되는 순회교사 운영 과목, 실무과목 수업과 같은 일반적인 수업 배치와는 다른 2교시 이상의 블록수업 배정 등).</li><li>학년별 창체수업우선배정은 학년별로 창체 수업을 고정하여 운영할 때 해당 시간을 지정하는 기능.</li><li>교사별 배정제외교시는 개인사정 등으로 교과담당교사가 수업을 진행하지 못하는 요일과 교시를 지정하는 기능.</li><li>점심시간연속수업허용은 4교시-점심-5교시 등 점심시간 이후에도 연속해서 동일한 수업을 진행할지 여부.</li><li>여러 과목을 동시 수업 그룹으로 설정하여 기초시간표 작성에 활용할 수 있으며, 설정하는 순서에 따라 그룹 번호는 자동으로 생성됨.</li><li><b>시간표작성정보 설정 후 {시간표도우미전송}하면 '시간표작성결과'에 {시간표보기}, '시간표적용'에 {시간표적용}이 활성화되어 작성된 시간표를 확인하고 기초시간표에 적용할 수 있음.</b></li></ul></div>
+<div class="memo"><h4>초기설정 용어</h4><ul><li>일별 동일과목 최대 수업교시는 일 기준 동일 과목을 1~3교시 등으로 연속되게 진행하는 최대 교시수.</li><li>수업교시 공정배정은 특정 교사의 수업이 1교시 또는 7교시에 몰리지 않게 고려할지 여부.</li><li>연속 수업사용은 블록수업 사용 여부.</li><li>요일별 최대교시는 월요일~금요일까지 각 요일별 최대 교시 설정으로, <b>교육과정 편제된 학년별 시수보다 요일별 최대 교시의 합이 많으면 공강 발생 가능.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>엄수조건 용어와 전송 후</h4><ul><li>학급별 수업 우선배정은 특정 수업을 지정된 요일, 교시에 우선적으로 배정하는 기능(특정 요일에 수업이 진행되는 순회교사 운영 과목, 실무과목 수업과 같은 일반적인 수업 배치와는 다른 2교시 이상의 블록수업 배정 등).</li><li>학년별 창체수업우선배정은 학년별로 창체 수업을 고정하여 운영할 때 해당 시간을 지정하는 기능.</li><li>교사별 배정제외교시는 개인사정 등으로 교과담당교사가 수업을 진행하지 못하는 요일과 교시를 지정하는 기능.</li><li>점심시간연속수업허용은 4교시-점심-5교시 등 점심시간 이후에도 연속해서 동일한 수업을 진행할지 여부.</li><li>여러 과목을 동시 수업 그룹으로 설정하여 기초시간표 작성에 활용할 수 있으며, 설정하는 순서에 따라 그룹 번호는 자동으로 생성됨.</li><li><b>시간표작성정보 설정 후 <span class="btn">{시간표도우미전송}</span>하면 '시간표작성결과'에 <span class="btn">{시간표보기}</span>, '시간표적용'에 <span class="btn">{시간표적용}</span>이 활성화되어 작성된 시간표를 확인하고 기초시간표에 적용할 수 있음.</b></li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t4" data-num="4" data-stage="A" data-when="학년초준비" data-who="시간표업무담당교사">
@@ -709,7 +752,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">기초시간표 작성 완료 후</span><span class="tag">기본시간표 지정 필요</span></div>
     <h3>기초시간표 검증 후 전체시간표에 반영하기</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="12" title="원문 p.173 열기">원문 p.173</button></p>
-    <p class="desc">기초시간표 작성을 마친 학교가 반드시 거치는 단계입니다. 검증 결과 이상이 있으면 기초시간표를 수정하고 이상이 없으면 학년별로 전체시간표에 반영합니다. <strong>[교육과정-시간표관리-기초시간표관리]에서 {기본시간표지정}된 기초시간표를 검증 및 반영하므로 기초시간표를 2개 이상 작성한 경우 확인 후 설정</strong>합니다.</p>
+    <p class="desc">기초시간표 작성을 마친 학교가 반드시 거치는 단계입니다. 검증 결과 이상이 있으면 기초시간표를 수정하고 이상이 없으면 학년별로 전체시간표에 반영합니다. <strong>[교육과정-시간표관리-기초시간표관리]에서 <span class="btn">{기본시간표지정}</span>된 기초시간표를 검증 및 반영하므로 기초시간표를 2개 이상 작성한 경우 확인 후 설정</strong>합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 기초시간표 작성과 기본시간표 지정이 끝난 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>시간표 업무담당교사</dd></dl>
@@ -717,6 +760,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’ 확인 후 ‘학기’를 선택하고 <span class="btn">{검증}</span>함. 오류 발생 시 기초시간표를 수정함 → 검증 결과 이상이 없을 경우 ‘학년도’, ‘학기’ 확인 후 ‘학년’, ‘강의실’ 단위로 ‘반영시작’, ‘반영종료’ 기간을 설정한 후 <span class="btn">{반영}</span>함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>학생과 교사가 실제로 보고 움직이는 전체시간표에 학사일정까지 맞물린 시간표를 올려, 출결과 결보강이 정상적으로 굴러가게 하려고.</dd></dl>
     </div>
+<div class="memo"><h4>기초시간표와 전체시간표는 무엇이 다른가</h4><p class="figcap2">이 카드가 하는 <span class="btn">{반영}</span>이 두 시간표를 잇는 지점이므로, 두 시간표가 어떻게 다른지 여기에 정리했습니다.</p><div class="ttscroll"><svg xmlns="http://www.w3.org/2000/svg" class="ttmap" viewBox="0 0 880 300" role="img" aria-label="기초시간표는 요일과 교시로만 짜인 학기 단위 틀이고, 기초시간표 검증 및 반영에서 반영시작부터 반영종료까지의 기간과 학사일정을 적용해 날짜별로 펼친 것이 전체시간표다. 전체시간표는 행사처리·결보강·수업교체로 날짜마다 달라진다"><defs><marker id="th" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z"/></marker></defs><g class="hd"><rect class="hdbg" x="8" y="8" width="240" height="26" rx="6"/><text class="hdt" x="128.0" y="26" text-anchor="middle">기초시간표</text></g><text class="sub" x="128.0" y="50" text-anchor="middle">학기 단위 · 요일 × 교시 틀</text><rect class="dayhd" x="23" y="62" width="40" height="18" rx="3"/><text class="dayt" x="43.0" y="75" text-anchor="middle">월</text><rect class="dayhd" x="65" y="62" width="40" height="18" rx="3"/><text class="dayt" x="85.0" y="75" text-anchor="middle">화</text><rect class="dayhd" x="107" y="62" width="40" height="18" rx="3"/><text class="dayt" x="127.0" y="75" text-anchor="middle">수</text><rect class="dayhd" x="149" y="62" width="40" height="18" rx="3"/><text class="dayt" x="169.0" y="75" text-anchor="middle">목</text><rect class="dayhd" x="191" y="62" width="40" height="18" rx="3"/><text class="dayt" x="211.0" y="75" text-anchor="middle">금</text><rect class="gcell" x="23" y="82" width="40" height="23" rx="3"/><text class="gct" x="43.0" y="97" text-anchor="middle">국어</text><rect class="gcell" x="65" y="82" width="40" height="23" rx="3"/><text class="gct" x="85.0" y="97" text-anchor="middle">수학</text><rect class="gcell" x="107" y="82" width="40" height="23" rx="3"/><text class="gct" x="127.0" y="97" text-anchor="middle">국어</text><rect class="gcell" x="149" y="82" width="40" height="23" rx="3"/><text class="gct" x="169.0" y="97" text-anchor="middle">영어</text><rect class="gcell" x="191" y="82" width="40" height="23" rx="3"/><text class="gct" x="211.0" y="97" text-anchor="middle">수학</text><rect class="gcell" x="23" y="107" width="40" height="23" rx="3"/><text class="gct" x="43.0" y="122" text-anchor="middle">영어</text><rect class="gcell" x="65" y="107" width="40" height="23" rx="3"/><text class="gct" x="85.0" y="122" text-anchor="middle">과학</text><rect class="gcell" x="107" y="107" width="40" height="23" rx="3"/><text class="gct" x="127.0" y="122" text-anchor="middle">수학</text><rect class="gcell" x="149" y="107" width="40" height="23" rx="3"/><text class="gct" x="169.0" y="122" text-anchor="middle">국어</text><rect class="gcell" x="191" y="107" width="40" height="23" rx="3"/><text class="gct" x="211.0" y="122" text-anchor="middle">과학</text><rect class="gcell" x="23" y="132" width="40" height="23" rx="3"/><text class="gct" x="43.0" y="147" text-anchor="middle">체육</text><rect class="gcell" x="65" y="132" width="40" height="23" rx="3"/><text class="gct" x="85.0" y="147" text-anchor="middle">국어</text><rect class="gcell" x="107" y="132" width="40" height="23" rx="3"/><text class="gct" x="127.0" y="147" text-anchor="middle">영어</text><rect class="gcell" x="149" y="132" width="40" height="23" rx="3"/><text class="gct" x="169.0" y="147" text-anchor="middle">과학</text><rect class="gcell" x="191" y="132" width="40" height="23" rx="3"/><text class="gct" x="211.0" y="147" text-anchor="middle">국어</text><rect class="gcell" x="23" y="157" width="40" height="23" rx="3"/><text class="gct" x="43.0" y="172" text-anchor="middle">과학</text><rect class="gcell" x="65" y="157" width="40" height="23" rx="3"/><text class="gct" x="85.0" y="172" text-anchor="middle">영어</text><rect class="gcell" x="107" y="157" width="40" height="23" rx="3"/><text class="gct" x="127.0" y="172" text-anchor="middle">체육</text><rect class="gcell" x="149" y="157" width="40" height="23" rx="3"/><text class="gct" x="169.0" y="172" text-anchor="middle">수학</text><rect class="gcell" x="191" y="157" width="40" height="23" rx="3"/><text class="gct" x="211.0" y="172" text-anchor="middle">영어</text><text class="cap" x="128.0" y="200" text-anchor="middle">날짜가 없습니다. 매주 되풀이되는 한 벌입니다.</text><text class="cap" x="128.0" y="216" text-anchor="middle">강의실마다 여러 개 만들어 (기본) 하나만 씁니다.</text><path class="arw" d="M250 128 H260" marker-end="url(#th)"/><path class="arw" d="M410 128 H424" marker-end="url(#th)"/><g class="mid"><rect class="midbg" x="262" y="66" width="146" height="124" rx="7"/><text class="midt" x="335.0" y="88" text-anchor="middle">{반영}</text><text class="midsub" x="335.0" y="104" text-anchor="middle">기초시간표 검증 및 반영</text></g><circle class="mdot" cx="276" cy="119" r="2.2"/><text class="midli" x="286" y="123" text-anchor="start">‘반영시작’ ~ ‘반영종료’ 기간</text><circle class="mdot" cx="276" cy="136" r="2.2"/><text class="midli" x="286" y="140" text-anchor="start">학사일정을 함께 반영</text><circle class="mdot" cx="276" cy="153" r="2.2"/><text class="midli" x="286" y="157" text-anchor="start">(기본) 지정된 것만 반영</text><circle class="mdot" cx="276" cy="170" r="2.2"/><text class="midli" x="286" y="174" text-anchor="start">학년 · 강의실 단위로</text><g class="hd"><rect class="hdbg" x="426" y="8" width="446" height="26" rx="6"/><text class="hdt" x="649.0" y="26" text-anchor="middle">전체시간표</text></g><text class="sub" x="649.0" y="50" text-anchor="middle">날짜 단위 · 실제로 운영된 시간표</text><rect class="datebg" x="428" y="62" width="82" height="128" rx="5"/><rect class="datehd" x="428" y="62" width="82" height="20" rx="5"/><text class="datet" x="469.0" y="76" text-anchor="middle">3/2(월)</text><rect class="pcell " x="433" y="86" width="72" height="21" rx="3"/><text class="pct " x="469.0" y="100" text-anchor="middle">국어</text><rect class="pcell " x="433" y="111" width="72" height="21" rx="3"/><text class="pct " x="469.0" y="125" text-anchor="middle">영어</text><rect class="pcell " x="433" y="136" width="72" height="21" rx="3"/><text class="pct " x="469.0" y="150" text-anchor="middle">체육</text><rect class="pcell " x="433" y="161" width="72" height="21" rx="3"/><text class="pct " x="469.0" y="175" text-anchor="middle">과학</text><rect class="datebg" x="519" y="62" width="82" height="128" rx="5"/><rect class="datehd" x="519" y="62" width="82" height="20" rx="5"/><text class="datet" x="560.0" y="76" text-anchor="middle">3/3(화)</text><rect class="pcell " x="524" y="86" width="72" height="21" rx="3"/><text class="pct " x="560.0" y="100" text-anchor="middle">수학</text><rect class="pcell " x="524" y="111" width="72" height="21" rx="3"/><text class="pct " x="560.0" y="125" text-anchor="middle">과학</text><rect class="pcell " x="524" y="136" width="72" height="21" rx="3"/><text class="pct " x="560.0" y="150" text-anchor="middle">국어</text><rect class="pcell " x="524" y="161" width="72" height="21" rx="3"/><text class="pct " x="560.0" y="175" text-anchor="middle">영어</text><rect class="datebg" x="610" y="62" width="82" height="128" rx="5"/><rect class="datehd" x="610" y="62" width="82" height="20" rx="5"/><text class="datet" x="651.0" y="76" text-anchor="middle">3/4(수)</text><rect class="pcell " x="615" y="86" width="72" height="21" rx="3"/><text class="pct " x="651.0" y="100" text-anchor="middle">국어</text><rect class="pcell ev" x="615" y="111" width="72" height="21" rx="3"/><text class="pct ev" x="651.0" y="125" text-anchor="middle">체육행사</text><rect class="pcell ev" x="615" y="136" width="72" height="21" rx="3"/><text class="pct ev" x="651.0" y="150" text-anchor="middle">체육행사</text><rect class="pcell ev" x="615" y="161" width="72" height="21" rx="3"/><text class="pct ev" x="651.0" y="175" text-anchor="middle">체육행사</text><text class="markt" x="651.0" y="205" text-anchor="middle">▲ 행사처리</text><rect class="datebg" x="701" y="62" width="82" height="128" rx="5"/><rect class="datehd" x="701" y="62" width="82" height="20" rx="5"/><text class="datet" x="742.0" y="76" text-anchor="middle">3/5(목)</text><rect class="pcell " x="706" y="86" width="72" height="21" rx="3"/><text class="pct " x="742.0" y="100" text-anchor="middle">영어</text><rect class="pcell " x="706" y="111" width="72" height="21" rx="3"/><text class="pct " x="742.0" y="125" text-anchor="middle">국어</text><rect class="pcell kb" x="706" y="136" width="72" height="21" rx="3"/><text class="pct kb" x="742.0" y="150" text-anchor="middle">과학</text><rect class="pcell " x="706" y="161" width="72" height="21" rx="3"/><text class="pct " x="742.0" y="175" text-anchor="middle">수학</text><text class="markt" x="742.0" y="205" text-anchor="middle">▲ 결·보강</text><rect class="datebg" x="792" y="62" width="82" height="128" rx="5"/><rect class="datehd" x="792" y="62" width="82" height="20" rx="5"/><text class="datet" x="833.0" y="76" text-anchor="middle">3/6(금)</text><rect class="pcell " x="797" y="86" width="72" height="21" rx="3"/><text class="pct " x="833.0" y="100" text-anchor="middle">수학</text><rect class="pcell sw" x="797" y="111" width="72" height="21" rx="3"/><text class="pct sw" x="833.0" y="125" text-anchor="middle">국어</text><rect class="pcell sw" x="797" y="136" width="72" height="21" rx="3"/><text class="pct sw" x="833.0" y="150" text-anchor="middle">과학</text><rect class="pcell " x="797" y="161" width="72" height="21" rx="3"/><text class="pct " x="833.0" y="175" text-anchor="middle">영어</text><text class="markt" x="833.0" y="205" text-anchor="middle">▲ 수업교체</text><text class="cap" x="649.0" y="226" text-anchor="middle">출결 · 결보강 · 성적이 붙는 곳은 전체시간표입니다.</text><rect class="warnbg" x="8" y="246" width="864" height="46" rx="6"/><text class="warnlab" x="24" y="265" text-anchor="start">주의</text><text class="warnt" x="58" y="265" text-anchor="start">현재일보다 이전일로 {반영}하면 이미 처리된 결보강과 수업교체 이력이 모두 삭제됩니다.</text><text class="warnsub" x="58" y="281" text-anchor="start">월출결마감이 되어 있으면 반영되지 않으므로 마감을 해제하고 다시 반영한 뒤 출결 자료를 정리합니다.  — 원문 p.173</text></svg></div><ul><li><b>기초시간표는 그 학기에 운영할 1·2·3학년 과목 시간표의 기초 틀입니다.</b> 요일과 교시로만 짜여 있고 날짜가 없습니다. 강의실마다 여러 개 만들어 비교할 수 있으며, 그중 <span class="btn">{기본시간표지정}</span>한 하나만 반영됩니다.</li><li><b>그 틀을 실제로 운영될 날짜에 펼쳐 놓은 것이 전체시간표입니다.</b> <span class="btn">{반영}</span>할 때 정한 ‘반영시작’~‘반영종료’ 기간과 학사일정이 함께 적용되어, 날짜마다 한 장씩 만들어집니다.</li><li><b>해당 날짜에 실제로 운영된 시간표는 전체시간표입니다.</b> 그래서 행사처리, 수업교체, 수업변경, 결·보강 같은 사정에 따라 날짜마다 달라질 수 있습니다. 기초시간표는 그대로 있고 전체시간표만 바뀝니다.</li><li>출결과 성적이 붙는 곳도 전체시간표입니다. 결보강으로 등록된 수업이 <code>[학적-출결관리-과목별출결관리-과목별출결관리(창의적체험활동제외)]</code>에 반영되는 것도 이 때문입니다.</li></ul></div>
 <div class="memo"><h4>실무 메모</h4><ul><li>기초시간표 반영은 현재 등록되어 있는 기초시간표와 학사일정을 전체시간표에 반영하는 작업임.</li><li>기초시간표 반영은 기초시간표 검증 작업수행 여부 및 결과에 관계없이 가능함.</li><li><b>현재일보다 이전일로 반영할 경우 이미 처리된 결보강과 수업교체 이력이 모두 삭제되므로 주의가 필요함.</b></li><li><b>월출결마감이 되었다면 반영이 되지 않으므로 마감을 해제하고 다시 반영 후 출결 자료를 정리해야 함.</b></li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
@@ -743,7 +787,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">행사 예정일 전</span><span class="tag opt">행사코드 등록 필요</span></div>
     <h3>전체시간표에 행사 처리하기</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="15" title="원문 p.176 열기">원문 p.176</button></p>
-    <p class="desc">학교 행사로 정규 수업이 진행되지 않는 날이나 교시가 있을 때 하는 업무입니다. <strong>행사 처리를 위해서는 [교육과정-학사일정관리-학사일정관리]의 {행사코드관리} 탭에서 해당 행사가 등록되어 있어야 함.</strong> 강의실 단위부터 학교 단위까지 적용 범위를 골라 처리할 수 있습니다.</p>
+    <p class="desc">학교 행사로 정규 수업이 진행되지 않는 날이나 교시가 있을 때 하는 업무입니다. <strong>행사 처리를 위해서는 [교육과정-학사일정관리-학사일정관리]의 <span class="btn">{행사코드관리}</span> 탭에서 해당 행사가 등록되어 있어야 함.</strong> 강의실 단위부터 학교 단위까지 적용 범위를 골라 처리할 수 있습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 기초시간표를 전체시간표에 반영하고 행사코드가 등록된 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>시간표 업무담당교사</dd></dl>
@@ -777,7 +821,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">수업 변동 발생 시</span><span class="tag opt">이력추가 선택 시 결재 상신 가능</span></div>
     <h3>수업추가·수업교체·수업변경·수업고정 처리하기</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="18" title="원문 p.179–183 열기">원문 p.179–183</button></p>
-    <p class="desc">학기 중 개별 교시에 수업 변동이 생겼을 때 해당 수업에서 마우스 우측 버튼으로 처리하는 업무입니다. <strong>{수업교체}, {수업변경}에서 '이력추가' 선택 시 [교육과정-시간표관리-수업교체이력관리]에서 조회할 수 있고, {승인요청}을 통해 '수업교환계획서'를 대신할 수 있음.</strong> 이력을 남기지 않으려면 '이력미추가'를 선택합니다.</p>
+    <p class="desc">학기 중 개별 교시에 수업 변동이 생겼을 때 해당 수업에서 마우스 우측 버튼으로 처리하는 업무입니다. <strong><span class="btn">{수업교체}</span>, <span class="btn">{수업변경}</span>에서 '이력추가' 선택 시 [교육과정-시간표관리-수업교체이력관리]에서 조회할 수 있고, <span class="btn">{승인요청}</span>을 통해 '수업교환계획서'를 대신할 수 있음.</strong> 이력을 남기지 않으려면 '이력미추가'를 선택합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 전체시간표가 반영된 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>시간표 업무담당교사</dd></dl>
@@ -802,7 +846,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’ 확인 후 ‘일자’ 설정하고 <span class="btn">{조회}</span> → 수업교체 일자를 선택하고 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>수기로 작성해 결재하던 ‘교환수업계획서’를 나이스 기록으로 대신하려고.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li><code>[교육과정-시간표관리-수업교체이력관리]</code>에서 일자별로 선택하여 상신할 수 있으며, <span class="btn">{출력}</span>으로 화면을 확인할 수 있음.</li><li><b>수업교체 시 <span class="btn">{이력추가}</span>한 경우에만 조회되고</b> 교환수업 시 수기로 작성하여 결재하는 ‘교환수업계획서’를 대신할 수 있음.</li><li><span class="btn">{교사찾기}</span>를 이용하여 특정 교사에 대한 수업교체 이력을 조회할 수 있음.</li><li><span class="btn">{수업교체}</span>, <span class="btn">{수업변경}</span>에서 ‘이력미추가’ 선택 또는 <span class="btn">{취소}</span>하면 이력을 남기지 않고 수업교환이나 수업변경을 할 수 있음.</li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li><code>[교육과정-시간표관리-수업교체이력관리]</code>에서 일자별로 선택하여 상신할 수 있으며, <span class="btn">{출력}</span>을 누르면 인쇄할 수 있음.</li><li><b>수업교체 시 <span class="btn">{이력추가}</span>한 경우에만 조회되고</b> 교환수업 시 수기로 작성하여 결재하는 ‘교환수업계획서’를 대신할 수 있음.</li><li><span class="btn">{교사찾기}</span>를 이용하여 특정 교사에 대한 수업교체 이력을 조회할 수 있음.</li><li><span class="btn">{수업교체}</span>, <span class="btn">{수업변경}</span>에서 ‘이력미추가’ 선택 또는 <span class="btn">{취소}</span>하면 이력을 남기지 않고 수업교환이나 수업변경을 할 수 있음.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t11" data-num="11" data-stage="D" data-when="결보강발생" data-who="시간표업무담당교사">
@@ -862,7 +906,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">2학기 기초시간표 작성 시점</span><span class="tag opt">1·2학기 시간표 변동이 없을 때</span></div>
     <h3>다른 학기 기초시간표를 가져와 구성하기</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.164–165 열기">원문 p.164–165</button></p>
-    <p class="desc">1학기와 2학기의 시간표 변동이 없는 학교에 해당합니다. 나이스 상의 1학기 기초시간표를 가져와서 2학기 기초시간표를 구성할 때 사용합니다. <strong>2학기 과목이 편제되어 있고 과목이 개설되어 있어야 {가져오기}가 활성화됩니다.</strong></p>
+    <p class="desc">1학기와 2학기의 시간표 변동이 없는 학교에 해당합니다. 나이스 상의 1학기 기초시간표를 가져와서 2학기 기초시간표를 구성할 때 사용합니다. <strong>2학기 과목이 편제되어 있고 과목이 개설되어 있어야 <span class="btn">{가져오기}</span>가 활성화됩니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 2학기 편제및시간배당관리와 과목개설이 끝난 뒤.</dd></dl>
       <dl><dt>누가?</dt><dd>시간표 업무담당교사</dd></dl>
@@ -870,7 +914,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-시간표관리-기초시간표관리]</code>에서 '학년도' 확인 후 '학기', '학년'을 선택하고 <span class="btn">{조회}</span> → 해당 강의실을 선택하고 <span class="btn">{가져오기}</span> → '기초시간표 가져오기' 창에서 '기초시간표에서'를 선택 → '원본'의 '학년도' 확인 후 '학기', '과정', '학년', '반', '시간표'를 선택하고 <span class="btn">{조회}</span>하여 원본과 대상의 내용을 확인 후 <span class="btn">{저장}</span>함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>학기가 바뀌어도 그대로인 시간표를 다시 짜는 헛수고를 없애고 달라진 부분만 손보게 하려고.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code>에서 2학기 과목이 편제되어 있고 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code>에서 과목이 개설되어 있어야 <span class="btn">{가져오기}</span>가 활성화됨.</li><li><b>과목개설을 한 후에 {가져오기}해야 하며, 1학기와 2학기의 개설 과목이 다른 경우 저장 후에 기초시간표 관리에서 공백으로 표시되므로 공백 부분은 해당 과목을 직접 드래그 앤 드롭하여 편성함.</b></li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-편제및시간배당관리]</code>에서 2학기 과목이 편제되어 있고 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code>에서 과목이 개설되어 있어야 <span class="btn">{가져오기}</span>가 활성화됨.</li><li><b>과목개설을 한 후에 <span class="btn">{가져오기}</span>해야 하며, 1학기와 2학기의 개설 과목이 다른 경우 저장 후에 기초시간표 관리에서 공백으로 표시되므로 공백 부분은 해당 과목을 직접 드래그 앤 드롭하여 편성함.</b></li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t15" data-num="15" data-stage="E" data-when="수시조회" data-who="시간표업무담당교사">
@@ -879,7 +923,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">기초시간표 작성 후 수시</span><span class="tag">절차 동일 4종 묶음</span></div>
     <h3>교사별·학생별·전체·강의실별 시간표 조회 및 출력하기</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="23" title="원문 p.184–188 열기">원문 p.184–188</button></p>
-    <p class="desc">시간표를 인쇄물이나 파일로 배부해야 할 때 여는 조회 메뉴 4종입니다. 네 메뉴 모두 절차가 '조건 선택 → {조회} → 저장 또는 출력'으로 같으므로 한 카드로 묶었습니다. 다만 <strong>교사별시간표조회는 [교육과정-시간표관리-기초시간표관리]에 등록된 시간표가 조회되므로 전체시간표의 교사별 시간표와 다를 수 있음</strong>에 주의합니다.</p>
+    <p class="desc">시간표를 인쇄물이나 파일로 배부해야 할 때 여는 조회 메뉴 4종입니다. 네 메뉴 모두 절차가 '조건 선택 → <span class="btn">{조회}</span> → 저장 또는 출력'으로 같으므로 한 카드로 묶었습니다. 다만 <strong>교사별시간표조회는 [교육과정-시간표관리-기초시간표관리]에 등록된 시간표가 조회되므로 전체시간표의 교사별 시간표와 다를 수 있음</strong>에 주의합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초 또는 학기중, 기초시간표 작성이나 전체시간표 반영이 끝난 뒤 필요할 때마다</dd></dl>
       <dl><dt>누가?</dt><dd>시간표 업무담당교사</dd></dl>
@@ -912,7 +956,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">교사 담당 수업 확인이 필요할 때</span></div>
     <h3>교사찾기로 교사별 수업 조회 및 출력하기</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="28" title="원문 p.189 열기">원문 p.189</button></p>
-    <p class="desc">특정 교사가 지정한 일자에 어떤 수업을 하는지 확인할 때 여는 메뉴입니다. 다른 조회 메뉴와 달리 <strong>'교사' 입력 후 {교사찾기}로 대상 교사를 먼저 확정해야 조회가 진행됩니다</strong>.</p>
+    <p class="desc">특정 교사가 지정한 일자에 어떤 수업을 하는지 확인할 때 여는 메뉴입니다. 다른 조회 메뉴와 달리 <strong>'교사' 입력 후 <span class="btn">{교사찾기}</span>로 대상 교사를 먼저 확정해야 조회가 진행됩니다</strong>.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 전체시간표가 구성된 뒤 특정 교사의 수업 확인이 필요할 때</dd></dl>
       <dl><dt>누가?</dt><dd>시간표 업무담당교사</dd></dl>
