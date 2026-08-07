@@ -491,6 +491,15 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
 .wall-link:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
 .sitenav .bar{gap:0}
 /* == walllink:end == */
+/* == fnote:begin == */
+.fnote{
+  display:block;margin:6px 0 0;padding:7px 10px;
+  background:var(--dropout);border-left:2.5px solid var(--dropout-deep);
+  font-size:12px;line-height:1.65;color:var(--ink-soft);
+}
+.fnote b{color:var(--ink);font-weight:600}
+@media print{.fnote{background:none;border-left:1px solid var(--rule)}}
+/* == fnote:end == */
 </style>
 </head>
 <body>
@@ -641,13 +650,13 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">학년초, 편제 등록 직후</span><span class="tag opt">선택과목 2개 이상·교차이수 학교만</span><span class="tag">3세대 이관 학교 확인 필요</span></div>
     <h3>선택과목군 등록과 편성과목 지정</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="1" title="원문 p.120–121 열기">원문 p.120–121</button></p>
-    <p class="desc">동일 학년에 선택과목이 2개 이상이거나 학기별로 교차 이수하는 경우에만 해당한다. <strong>동일한 학점의 과목에 대해서만 선택과목군으로 묶을 수 있다.</strong> 과목군을 먼저 만들고, 그 과목군에 실제 개설할 과목을 붙이는 두 단계를 한 번에 끝낸다.</p>
+    <p class="desc">동일 학년에 선택과목이 2개 이상이거나 학기별로 교차 이수하는 경우에만 해당합니다. <strong>동일한 학점의 과목에 대해서만 선택과목군으로 묶을 수 있습니다.</strong> 과목군을 먼저 만들고, 그 과목군에 실제 개설할 과목을 붙이는 두 단계를 한 번에 끝냅니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 교육과정 편제를 등록한 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-선택과목군편성]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’, ‘계열/학년/학과’ 확인 후 <span class="btn">{조회}</span> → <span class="btn">{행추가}</span> 후 ‘선택과목군 정보’에서 ‘과목군명’, ‘선택과목수’, ‘과목당학점’, ‘무학년제’ 여부를 입력하고 <span class="btn">{저장}</span> → 등록할 ‘선택과목군’을 선택하고 우측 하단의 ‘미편성 과목’에서 등록할 과목을 선택 후 <span class="btn">{추가}</span>하여 ‘편성과목’을 확인하고 <span class="btn">{저장}</span></dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>학생이 여러 과목 중 골라 듣는 구조를 편제에 그대로 담아, 뒤이은 과목개설과 수강생편성에서 학생별 선택 결과가 어긋나지 않게 하려고.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 여러 과목 중 골라 듣는 구조를 편제에 그대로 담아, 뒤이은 과목개설과 수강생편성에서 학생별 선택 결과가 어긋나지 않게 하려는 것입니다.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li>3세대 나이스의 편제표가 이관된 경우 ‘선택과목군’에 기존 선택과목군이 등록되어 있으나 ‘과목당 학점’이 ‘0’으로 설정되어 있으므로, <b>‘과목당 학점’을 입력하고 <span class="btn">{저장}</span> 후 편성과목을 등록해야 함.</b></li><li>[선택과목군 편성]은 동일 학년에 선택과목이 2개 이상이거나, 교차 이수할 경우 사용함. 예시로 2학년은 제2외국어를 일본어Ⅰ, 중국어Ⅰ 중에서 1과목 선택 이수, 1학년은 정보, 한문Ⅰ을 학기별로 교차 이수하는 경우다.</li><li>‘선택과목수’는 개설된 여러 선택과목 중 학생이 실제 수강하는 과목의 개수로, 세계지리·정치와 법·생활과 윤리 중 두 과목 선택이면 선택과목수는 ‘2’로 입력하며, 이 경우 편제 및 시간배당표에 ‘택 2’로 표시됨.</li><li><b>[선택과목군편성]에서는 동일한 학점의 과목에 대해서만 선택과목군으로 묶을 수 있음.</b> 3학점 A과목, 2학점 B과목, 1학점 C과목에서 A과목과 B･C과목을 선택과목군으로 묶을 수 없음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>이동수업이 있는 경우</h4><ul><li>동일 학급 내 학생별로 선택과목이 달라 교실 이동수업을 하는 경우 [선택과목군편성]을 완료 후 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code>에서 <span class="btn">{과목개설}</span>로 해당 강의실을 연결하고, <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>의 <span class="btn">{성적수강생편성}</span> 탭에서 수강학생을 편성함.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -658,13 +667,13 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">신학년도 편성 전</span><span class="tag opt">특별실 사용 학교는 필수</span></div>
     <h3>강의실 정보 등록·수정</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.123 열기">원문 p.123</button></p>
-    <p class="desc">신학년도에 편성할 강의실 정보를 등록하거나 기존에 등록된 강의실 정보를 수정하는 업무다. 반(학급) 강의실은 반을 등록하면 자동으로 생성되므로, 음악실·과학실 같은 특별실을 쓰는 학교가 손댈 일이 많다. <strong>‘사용여부’가 ‘미사용’으로 지정된 강의실은 사용할 수 없다.</strong></p>
+    <p class="desc">신학년도에 편성할 강의실 정보를 등록하거나 기존에 등록된 강의실 정보를 수정하는 업무입니다. 반(학급) 강의실은 반을 등록하면 자동으로 생성되므로, 음악실·과학실 같은 특별실을 쓰는 학교가 손댈 일이 많습니다. <strong>‘사용여부’가 ‘미사용’으로 지정된 강의실은 사용할 수 없습니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초, 신학년도 반정보를 등록한 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-강의실관리]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’ 확인 후 ‘학년’을 선택하고 <span class="btn">{조회}</span> → <span class="btn">{행추가}</span>하여 ‘강의실정보내역’에서 ‘학년도’, ‘주야과정구분’ 확인 후 ‘강의실명’, ‘사용여부’, ‘정렬순서’, ‘정원’, ‘비고’를 입력 또는 선택하고 <span class="btn">{저장}</span></dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>과목개설 때 교사와 함께 붙일 수업 장소를 미리 확보해, 이동수업과 시간표 작성에서 장소가 겹치거나 비는 일을 막으려고.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>과목개설 때 교사와 함께 붙일 수업 장소를 미리 확보해, 이동수업과 시간표 작성에서 장소가 겹치거나 비는 일을 막으려는 것입니다.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li><code>[학교정보-학교정보-기준/반정보관리]</code>에서 반을 등록하면 해당 반 강의실이 자동으로 생성됨.</li><li>강의실 현황은 ‘학년’ 단위로 조회할 수 있음. 이때 반(학급)은 해당 학년의 반만 조회되고, [강의실관리]에서 등록한 특별실(예: 음악실, 과학실 등)은 학년과 상관없이 모든 강의실이 조회됨.</li><li><b>‘강의실 정보내역’의 ‘강의실코드’는 자동으로 생성되어 수정할 수 없으며, ‘사용여부’가 ‘미사용’으로 지정된 강의실은 사용할 수 없음.</b></li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -726,13 +735,13 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">과목개설 직후</span><span class="tag opt">권장 경로</span></div>
     <h3>학교지정 과목 수강생 일괄 편성(선택등록)</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="10" title="원문 p.129 열기">원문 p.129</button></p>
-    <p class="desc">이동수업 없이 원적반 강의실 개설과목 기준으로 수강생을 편성하는 창의적체험활동이나 1학년 공통과목에 효과적인 방식이다. <strong>성적 처리된 과목이 있는 경우에는 일괄등록을 할 수 없다.</strong> 공통과목 등의 학교 지정과목과 창의적체험활동을 먼저 편성한 뒤 선택교과목으로 넘어가면 편성이 효율적이다.</p>
+    <p class="desc">이동수업 없이 원적반 강의실 개설과목 기준으로 수강생을 편성하는 창의적체험활동이나 1학년 공통과목에 효과적인 방식입니다. <strong>성적 처리된 과목이 있는 경우에는 일괄등록을 할 수 없습니다.</strong> 공통과목 등의 학교 지정과목과 창의적체험활동을 먼저 편성한 뒤 선택교과목으로 넘어가면 편성이 효율적입니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초, 학교지정 과목과 창의적체험활동의 과목개설을 마친 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 '학년도', '학기', '학년' 선택 후 <span class="btn">{조회}</span> → 해당 학년에 개설된 학교지정 과목을 선택하고 <span class="btn">{선택등록}</span>하여 일괄로 수강학생을 편성함.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>교과 성적처리 산출에 쓰이는 수강학생 자료를 손이 가장 적게 가는 순서로 먼저 확보하려고.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교과 성적처리 산출에 쓰이는 수강학생 자료를 손이 가장 적게 가는 순서로 먼저 확보하려는 것입니다.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li>이동수업 없이 원적반 강의실 개설과목 기준으로 수강생 편성하는 창의적체험활동이나 1학년 공통과목의 수강생편성에 효과적임.</li><li>해당 학년에 개설된 학교 지정과목을 선택하여 일괄로 수강 학생을 편성함. <b>성적 처리된 과목이 있는 경우에는 일괄등록을 할 수 없음.</b></li><li>공통과목 등의 학교 지정과목, 창의적체험활동의 과목개설을 먼저 시행하여 수강생을 편성하고, 이후 선택교과목의 과목개설 및 수강생편성을 진행하면 효율적인 편성이 가능함.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -743,13 +752,13 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">수강신청 결과가 나이스에 등록된 뒤</span><span class="tag opt">나이스 수강신청 운영 학교 한정</span></div>
     <h3>수강신청 학생 가져오기</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="13" title="원문 p.132 열기">원문 p.132</button></p>
-    <p class="desc">나이스에서 수강신청을 진행하고 학생이 나이스플러스로 신청한 학교에만 해당하는 업무다. <strong>학생이 나이스플러스를 통해 수강신청한 결과가 나이스에 등록되어 있는 경우에만 <span class="btn">{가져오기}</span>를 사용할 수 있다.</strong> 신청 결과가 없으면 과목별 선택 편성으로 직접 편성한다.</p>
+    <p class="desc">나이스에서 수강신청을 진행하고 학생이 나이스플러스로 신청한 학교에만 해당하는 업무입니다. <strong>학생이 나이스플러스를 통해 수강신청한 결과가 나이스에 등록되어 있는 경우에만 <span class="btn">{가져오기}</span>를 사용할 수 있습니다.</strong> 신청 결과가 없으면 과목별 선택 편성으로 직접 편성합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초, 나이스 수강신청과 나이스플러스 학생 신청이 끝난 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 '학년도' 확인 후 '학기', '계열/학년/학과'를 선택하고 <span class="btn">{조회}</span> → 수강학생을 편성할 과목을 클릭 후 <span class="btn">{가져오기}</span>를 클릭하면 나타나는 '성적 편성학생 가져오기' 창에서 '수강신청'을 선택함 → '계열/학년/학과', '반'을 선택 후 <span class="btn">{조회}</span>하고 수강 신청한 학생을 체크하여 <span class="btn">{선택}</span>하고 <span class="btn">{저장}</span>함.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>학생이 직접 신청한 결과를 그대로 옮겨 수강 명단을 다시 손으로 옮겨 적다 생기는 착오를 없애려고.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생이 직접 신청한 결과를 그대로 옮겨 수강 명단을 다시 손으로 옮겨 적다 생기는 착오를 없애려는 것입니다.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li><b>나이스에서 수강신청을 진행한 후 학생이 나이스플러스를 통해 수강신청한 결과가 나이스에 등록되어 있는 경우에만 <span class="btn">{가져오기}</span>를 사용할 수 있음.</b></li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -760,13 +769,13 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">학교지정 과목 편성 이후</span><span class="tag opt">선택교과목·이동수업 학교</span></div>
     <h3>과목별 수강학생 선택 편성</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="12" title="원문 p.131 열기">원문 p.131</button></p>
-    <p class="desc">학교지정 과목을 일괄로 편성한 뒤 남는 선택교과목처럼 과목마다 수강생이 다른 경우에 쓰는 방식이다. <strong>동일한 과목에는 수강학생을 이중으로 편성할 수 없으며, 능력단위는 실무과목에 편성된 학생만 편성할 수 있다.</strong> 위탁기관 성적 송부 후 복교하는 학생처럼 출결만 필요한 경우에는 <span class="btn">{출결수강생편성}</span> 탭을 쓴다.</p>
+    <p class="desc">학교지정 과목을 일괄로 편성한 뒤 남는 선택교과목처럼 과목마다 수강생이 다른 경우에 쓰는 방식입니다. <strong>동일한 과목에는 수강학생을 이중으로 편성할 수 없으며, 능력단위는 실무과목에 편성된 학생만 편성할 수 있습니다.</strong> 위탁기관 성적 송부 후 복교하는 학생처럼 출결만 필요한 경우에는 <span class="btn">{출결수강생편성}</span> 탭을 씁니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초, 선택교과목의 과목개설이 끝난 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 '학년도', '학기', '학년' 확인 및 선택 후 <span class="btn">{조회}</span> → 수강학생을 편성할 과목을 선택한 후 우측 하단의 '미편성학생'에서 편성할 학생을 <span class="btn">{조회}</span>하고 편성할 학생을 선택 후 '편성학생'에 <span class="btn">{추가}</span>하여 <span class="btn">{저장}</span>함.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>학생별로 수강 과목이 갈리는 선택과목까지 성적·출결 처리 대상 명단을 빠짐없이 맞추려고.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생별로 수강 과목이 갈리는 선택과목까지 성적·출결 처리 대상 명단을 빠짐없이 맞추려는 것입니다.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li>위탁기관 등에서 학기말 성적을 송부하고 재적교 종업일 이전에 복교하는 경우 교과목 시간 출결관리를 위해 <span class="btn">{출결수강생편성}</span> 탭에서 과목별 수강생을 편성함.</li><li><b>동일한 과목에는 수강학생을 이중으로 편성할 수 없으며, 능력단위는 실무과목에 편성된 학생만 편성할 수 있음.</b></li><li>타학년 또는 타교생을 수강학생으로 편성할 수 있음(공동교육과정 거점교(거점센터)의 경우 활용 가능).</li></ul></div><div class="memo" style="margin-top:12px"><h4>전입생 출결관리 예외</h4><ul><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년의 경우 전출교와 전입교 모두 2차 지필평가(기말고사)가 완료된 상태에서 전입교로 전입한 학생의 출결관리를 위해 <code>[학적-전입관리-전입관리-학적반영]</code>의 목록에서 해당 전입생 '성명'을 클릭 후 <span class="btn">{수강과목편성}</span>을 클릭하면 나타나는 '수강과목편성' 창에서 편성된 과목 목록의 '출결 수강생편성'에만 선택하고 <span class="btn">{저장}</span>함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년의 경우 전출교와 전입교 모두 학기말 성적 산출이 완료된 상태에서 전입교로 전입한 학생의 출결관리를 위해 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>의 <span class="btn">{출결수강생편성}</span> 탭에서만 수강생을 편성함.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -777,13 +786,13 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">과목별 편성 후 개별 보정 시점</span><span class="tag opt">2015 개정 교육과정 적용 2026학년도 3학년 전입생 가능 경로</span></div>
     <h3>학생별 수강과목 편성</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="26" title="원문 p.145 열기">원문 p.145</button></p>
-    <p class="desc">과목 단위가 아니라 학생 한 명을 기준으로 수강과목을 붙이거나 빼야 할 때 쓰는 업무다. <strong>선택과목 편성에 유의한다.</strong> 2015 개정 교육과정을 적용받는 2026학년도 3학년 전입생의 수강과목 편성은 이 메뉴에서도 수행할 수 있다.</p>
+    <p class="desc">과목 단위가 아니라 학생 한 명을 기준으로 수강과목을 붙이거나 빼야 할 때 쓰는 업무입니다. <strong>선택과목 편성에 유의합니다.</strong> 2015 개정 교육과정을 적용받는 2026학년도 3학년 전입생의 수강과목 편성은 이 메뉴에서도 수행할 수 있습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기초부터 학기 중, 과목개설과 과목별 수강생 편성이 끝난 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-학생별수강과목편성]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-학생별수강과목편성]</code>에서 '학년도', '학기', '계열/학년/학과', '반' 확인 및 선택 후 <span class="btn">{조회}</span> → 학생을 선택한 후 '미편성과목'에서 편성할 '과목'을 선택하고 <span class="btn">{저장}</span>함.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>학생 한 명의 이수 과목이 실제 시간표와 어긋난 채로 성적·출결이 처리되는 일을 막으려고.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학생 한 명의 이수 과목이 실제 시간표와 어긋난 채로 성적·출결이 처리되는 일을 막으려는 것입니다.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li><b>선택과목 편성에 유의함.</b></li><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년 전입생의 수강과목 편성은 <code>[학적-전입관리-전입관리-학적반영]</code>/<code>[종합자료검색]</code>의 <span class="btn">{수강과목편성}</span>으로 수강과목을 편성함(과목 출석률 계산을 위해 과목 출결과 매칭해야 함).</li></ul></div><div class="memo" style="margin-top:12px"><h4>2015 개정 교육과정 적용 2026학년도 3학년 전입생 편성 메뉴</h4><ul><li><code>[학적-전입관리-전입관리-학적반영]</code>의 <span class="btn">{수강과목편성}</span></li><li><code>[교육과정-편제및과목개설관리-학생별수강과목편성]</code></li><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>의 <span class="btn">{성적수강생편성}</span> 탭 또는 <span class="btn">{출결수강생편성}</span> 탭</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -845,7 +854,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">차수 등록 직후</span><span class="tag opt">이동수업 실시 학교 한정</span></div>
     <h3>이동반 편성(편성반명·강의실·담당교사)</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="21" title="원문 p.140 열기">원문 p.140</button></p>
-    <p class="desc">학생별로 이동하여 수업이 실시되는 반을 편성하는 단계입니다. 등록한 차수 안에서 이동반의 이름과 강의실, 담당교사를 지정합니다. <strong>'편성강의실'과 '담당교사'는 직접 입력하지 않고 {찾기}를 이용하여 선택합니다.</strong></p>
+    <p class="desc">학생별로 이동하여 수업이 실시되는 반을 편성하는 단계입니다. 등록한 차수 안에서 이동반의 이름과 강의실, 담당교사를 지정합니다. <strong>'편성강의실'과 '담당교사'는 직접 입력하지 않고 <span class="btn">{찾기}</span>를 이용하여 선택합니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기 초 또는 학기 중, 차수 등록을 마친 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
@@ -913,13 +922,13 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">전입생 학적 반영 직후</span><span class="tag opt">2022 개정 교육과정 적용 2026학년도 1·2학년 한정</span><span class="tag">이 경로로만 편성</span></div>
     <h3>전입생 수강과목 편성(2022 개정 교육과정 적용 2026학년도 1·2학년)</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="15" title="원문 p.134–135 열기">원문 p.134–135</button></p>
-    <p class="desc">2022 개정 교육과정을 적용받는 2026학년도 1･2학년 전입생에게만 해당하는 업무다. <strong>과목 출석률 계산을 위해 과목 출결과 매칭해야 하므로 <code>[학적-전입관리-전입관리-학적반영]</code>/<code>[종합자료검색]</code>의 <span class="btn">{수강과목편성}</span>을 통해서만 수강과목을 편성해야 한다.</strong> 수강과목이 편성되지 않으면 출결 처리 및 성적처리를 할 수 없다.</p>
+    <p class="desc">2022 개정 교육과정을 적용받는 2026학년도 1･2학년 전입생에게만 해당하는 업무입니다. <strong>과목 출석률 계산을 위해 과목 출결과 매칭해야 하므로 <code>[학적-전입관리-전입관리-학적반영]</code>/<code>[종합자료검색]</code>의 <span class="btn">{수강과목편성}</span>을 통해서만 수강과목을 편성해야 합니다.</strong> 수강과목이 편성되지 않으면 출결 처리 및 성적처리를 할 수 없습니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기 중, 전입생 학적 반영을 마친 직후</dd></dl>
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[학적-전입관리-전입관리-학적반영]</code>, <code>[종합자료검색]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학적-전입관리-전입관리-학적반영]</code>에서 '학년도', '계열', '학년', '기간' 확인 및 선택하고 <span class="btn">{조회}</span> 후 수강과목을 편성할 전입생 '성명'을 클릭함 → <span class="btn">{수강과목편성}</span>함 → '고등학교 2026학년 1학기 개설과목 목록'에서 '타반 강의실' 포함 여부를 선택하고 개설과목 목록에서 과목을 선택함 → '편성된 과목 목록'으로 추가 후 '전입이전 출결산출 포함 과목'을 선택하고 <span class="btn">{저장}</span> 후 <span class="btn">{닫기}</span>함.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>전출교에서 온 과목 출결을 전입교 과목에 정확히 이어 붙여 전입생의 학점 이수가 인정되게 하려고.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>전출교에서 온 과목 출결을 전입교 과목에 정확히 이어 붙여 전입생의 학점 이수가 인정되게 하려는 것입니다.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li><b>수강과목이 편성되지 않으면 출결 처리 및 성적처리를 할 수 없으므로 전입생 학적 반영한 후에는 수강과목을 반드시 편성해야 함.</b></li><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년 전입생의 수강과목 편성은 과목 출석률 계산을 위해 과목 출결과 매칭해야 하므로 <code>[학적-전입관리-전입관리-학적반영]</code>/<code>[종합자료검색]</code>의 <span class="btn">{수강과목편성}</span>을 통해서만 수강과목을 편성해야 함. 전출교에서 전송한 과목 출결과 매칭해야 함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>출결산출 포함 과목 매칭 규칙</h4><ul><li>학점 이수는 과목과 창의적 체험활동 모두 해당이 되므로 <b>전입 이전 출결산출 과목에 창의적체험활동도 반드시 매칭하여야 함.</b></li><li><b>전출교에서 전송된 과목 하나당 전입교 과목은 한 번만 매칭할 수 있음.</b></li><li>매칭할 과목이 없는 경우 전입 이전 출결산출 포함 과목에 '비매칭과목 출결산출'로 지정함.</li><li>해외 귀국학생, 복학, 편입학, 재입학, 재취학, 학기중 중도 입학의 경우 전입 이전 출결산출 포함 과목에 '해외귀국/복학/학기중 신입학 인정출결산출'로 지정함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 전입생의 수강과목 편성은 <code>[학적-전입관리-전입관리-학적반영]</code>의 <span class="btn">{수강과목편성}</span>, <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>, <code>[교육과정-편제및과목개설관리-학생별수강과목편성]</code>에서 수행함.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -930,13 +939,13 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">학적변동(전입) 발생 후</span></div>
     <h3>미편성학생 일괄 편성</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="14" title="원문 p.133 열기">원문 p.133</button></p>
-    <p class="desc">학적변동(전입)으로 수강 편성에서 빠진 학생이 생겼을 때 쓰는 업무다. 수강학생이 미편성된 경우 <code>[성적-지필평가]</code>, <code>[수행평가]</code>에서 수강학생이 조회되지 않는다. <strong><code>[성적-지필평가]</code>/<code>[수행평가]</code>에 성적이 등록되어 있으면 <span class="btn">{일괄등록}</span>, <span class="btn">{미편성학생일괄등록}</span>, <span class="btn">{일괄삭제}</span>를 할 수 없다.</strong></p>
+    <p class="desc">학적변동(전입)으로 수강 편성에서 빠진 학생이 생겼을 때 쓰는 업무입니다. 수강학생이 미편성된 경우 <code>[성적-지필평가]</code>, <code>[수행평가]</code>에서 수강학생이 조회되지 않습니다. <strong><code>[성적-지필평가]</code>/<code>[수행평가]</code>에 성적이 등록되어 있으면 <span class="btn">{일괄등록}</span>, <span class="btn">{미편성학생일괄등록}</span>, <span class="btn">{일괄삭제}</span>를 할 수 없습니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기 중, 학적변동(전입) 처리 후 성적 등록 전</dd></dl>
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 '학년도', '학기', '계열/학년/학과' 확인 및 선택 후 <span class="btn">{조회}</span> → <span class="btn">{미편성학생일괄등록}</span>하여 <span class="btn">{확인}</span>하면 학적변동(전입)으로 인하여 미편성된 학생을 해당 학년에 개설된 모든 과목에 대하여 수강 편성함.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>편성에서 누락된 학생이 지필·수행평가 화면에 아예 나타나지 않아 성적이 비는 일을 막으려고.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>편성에서 누락된 학생이 지필·수행평가 화면에 아예 나타나지 않아 성적이 비는 일을 막으려는 것입니다.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li>수강학생이 미편성된 경우 <code>[성적-지필평가]</code>, <code>[수행평가]</code>에서 수강학생이 조회되지 않음.</li><li><b><code>[성적-지필평가]</code>/<code>[수행평가]</code>에 성적이 등록되어 있으면 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 <span class="btn">{일괄등록}</span>, <span class="btn">{미편성학생일괄등록}</span>, <span class="btn">{일괄삭제}</span>를 할 수 없음.</b></li><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 동일한 과목에는 수강학생을 이중으로 편성할 수 없으며, 능력단위는 실무과목에 편성된 학생만 편성할 수 있음.</li><li>타학년 또는 타교생을 수강학생으로 편성할 수 있음(공동교육과정 거점교(거점센터)의 경우 활용 가능).</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -970,7 +979,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-교사별담당과목조회]</code>, <code>[교육과정-편제및과목개설관리-강의실별과목담당교사일람표조회]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd>교사별 담당과목은 <code>[교육과정-편제및과목개설관리-교사별담당과목조회]</code>에서 '학년도', '학기' 확인 후 '교사명'을 입력하여 <span class="btn">{교사찾기}</span> 한 후 <span class="btn">{조회}</span>함 → 강의실별 일람표는 <code>[교육과정-편제및과목개설관리-강의실별과목담당교사일람표조회]</code>에서 '학년도', '학기', '계열/학년/학과', '강의실' 확인 및 선택 후 <span class="btn">{조회}</span>하여 출력할 수 있음.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>교사와 강의실 양쪽에서 편성 결과를 맞대어 보아 담당 누락이나 중복 배정을 시간표 작성 전에 잡아내려고.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교사와 강의실 양쪽에서 편성 결과를 맞대어 보아 담당 누락이나 중복 배정을 시간표 작성 전에 잡아내려는 것입니다.</dd></dl>
     </div>
 <div class="memo"><h4>어떤 표를 언제 여는가</h4><ul><li>교사별담당과목조회 — 특정 교사가 이번 학기에 어떤 과목을 맡았는지 확인할 때 엶. <b>'교사명'을 공란으로 두고 <span class="btn">{조회}</span>하면 전체 교과담당교사의 담당과목을 확인할 수 있음.</b></li><li>강의실별과목담당교사일람표조회 — 특정 강의실에 어떤 과목과 담당교사가 붙어 있는지 확인할 때 엶. '학기'는 '1학기', '2학기'를 선택할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>두 메뉴 모두 '학년도'는 교무학년도를 포함하여 5개 학년도를 선택할 수 있음.</li><li>강의실별과목담당교사일람표조회는 <span class="btn">{조회}</span> 후 출력할 수 있음.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -987,9 +996,9 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-시수배정현황조회]</code>, <code>[교육과정-편제및과목개설관리-교사별시수누계조회]</code>, <code>[교육과정-편제및과목개설관리-과목별/강의실별시수누계조회]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd>시수배정 현황은 <code>[교육과정-편제및과목개설관리-시수배정현황조회]</code>에서 '학년도', '학기' 확인 후 <span class="btn">{조회}</span>하여 출력할 수 있음 → 교사별 시수 누계는 <code>[교육과정-편제및과목개설관리-교사별시수누계조회]</code>에서 '학년도', '기간별(기준일자)', '월별', '날짜별', '창의적체험활동' 여부, '기준일자' 확인 및 선택 후 <span class="btn">{조회}</span>하고 출력함 → 과목별·강의실별 시수 누계는 <code>[교육과정-편제및과목개설관리-과목별/강의실별시수누계조회]</code>에서 '학년도', '학년', '학기' 확인 후 조회 조건(강의실별/반별/개설강좌별)을 선택하고 '기준일자', '기간별/날짜별'을 선택하여 <span class="btn">{조회}</span>함.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>계획된 시수와 실제 진행된 시수의 차이를 기준일자별로 확인해 교육과정 운영 시수를 제때 조정하려고.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>계획된 시수와 실제 진행된 시수의 차이를 기준일자별로 확인해 교육과정 운영 시수를 제때 조정하려는 것입니다.</dd></dl>
     </div>
-<div class="memo"><h4>어떤 표를 언제 여는가</h4><ul><li>시수배정현황조회 — 학년도·학기 단위로 과목별 시수 배정이 편제대로 되었는지 볼 때 엶. <b>{시간표과목배정현황}으로 월별 전체 시간표 과목 배정현황을 확인할 수 있음.</b></li><li>교사별시수누계조회 — 교사 개인의 수업 시수를 기간별·월별·날짜별로 집계할 때 엶. '창의적체험활동' 포함 여부를 선택함.</li><li>과목별/강의실별시수누계조회 — 강의실별/반별/개설강좌별로 시수 누계를 볼 때 엶.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>세 메뉴 모두 '학년도'는 설정된 교무학년도를 포함하여 5개 학년도를 선택할 수 있음.</li><li>'학기'는 '1학기', '2학기'를 선택할 수 있음.</li><li>학과가 설치된 특수목적고등학교, 특성화고등학교, 직업계열 학과가 설치된 일반고등학교에서는 시수배정현황조회의 조회 조건에 '계열'이 나타남.</li><li><b>과목별/강의실별시수누계조회의 '67/5/67'은 '기간계/누계/계획'을 의미하며, '기간계'는 조회 기간 시수 합계를, '누계'는 조회 학기 시작일부터 조회일까지 시수 합계를, '계획'은 전체시간표 기준으로 조회 학기 전체 시수 합계를 나타냄.</b></li></ul></div>
+<div class="memo"><h4>어떤 표를 언제 여는가</h4><ul><li>시수배정현황조회 — 학년도·학기 단위로 과목별 시수 배정이 편제대로 되었는지 볼 때 엶. <b><span class="btn">{시간표과목배정현황}</span>으로 월별 전체 시간표 과목 배정현황을 확인할 수 있음.</b></li><li>교사별시수누계조회 — 교사 개인의 수업 시수를 기간별·월별·날짜별로 집계할 때 엶. '창의적체험활동' 포함 여부를 선택함.</li><li>과목별/강의실별시수누계조회 — 강의실별/반별/개설강좌별로 시수 누계를 볼 때 엶.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>세 메뉴 모두 '학년도'는 설정된 교무학년도를 포함하여 5개 학년도를 선택할 수 있음.</li><li>'학기'는 '1학기', '2학기'를 선택할 수 있음.</li><li>학과가 설치된 특수목적고등학교, 특성화고등학교, 직업계열 학과가 설치된 일반고등학교에서는 시수배정현황조회의 조회 조건에 '계열'이 나타남.</li><li><b>과목별/강의실별시수누계조회의 '67/5/67'은 '기간계/누계/계획'을 의미하며, '기간계'는 조회 기간 시수 합계를, '누계'는 조회 학기 시작일부터 조회일까지 시수 합계를, '계획'은 전체시간표 기준으로 조회 학기 전체 시수 합계를 나타냄.</b><br><span class="fnote">각주 · 화면의 시수 칸에는 세 숫자가 <b>67/5/67</b>처럼 빗금으로 이어져 한 칸에 표시됩니다. 앞에서부터 <b>기간계 / 누계 / 계획</b> 순서이며, '67/5/67'은 원문 화면 캡처에 찍혀 있던 예시 값이지 정해진 숫자가 아닙니다. 우리 학교 화면에서는 다른 숫자가 나타납니다.</span></li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 
