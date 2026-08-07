@@ -492,6 +492,51 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
 .wall-link:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
 .sitenav .bar{gap:0}
 /* == walllink:end == */
+/* == dtable:begin == */
+.dt-filter{border-top:1.5px solid var(--ink);padding:14px 0 0;margin:0 0 14px}
+.dt-grp{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;margin:0 0 8px}
+.dt-grp b{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);font-weight:600;min-width:86px}
+.dt-chip{
+  font-size:12.5px;font-weight:600;padding:3px 10px;cursor:pointer;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink-soft);
+  transition:border-color .12s,background .12s,color .12s;
+}
+.dt-chip:hover{border-color:var(--ink);color:var(--ink)}
+.dt-chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.dt-chip:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.dt-count{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px}
+.dt-count b{color:var(--ink);font-weight:700}
+.dt-wrap{max-height:520px;overflow:auto;border:1px solid var(--rule);background:var(--sheet)}
+.dt{width:100%;border-collapse:collapse;font-size:13.5px}
+.dt th{
+  position:sticky;top:0;z-index:1;background:var(--dropout);text-align:left;
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;font-weight:600;color:var(--ink-soft);
+  padding:9px 12px;border-bottom:1.5px solid var(--ink);white-space:nowrap;
+}
+.dt td{padding:7px 12px;border-bottom:1px solid var(--rule-soft);line-height:1.5;vertical-align:top}
+.dt tr:last-child td{border-bottom:0}
+.dt tbody tr:hover td{background:#FAFBF8}
+.dt td:first-child{white-space:nowrap;color:var(--ink-soft)}
+.dt .pg{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);white-space:nowrap;text-align:right}
+.kind{font-family:var(--mono);font-size:11.5px;font-weight:600;padding:1px 7px;border:1px solid var(--rule);white-space:nowrap}
+.kind.k1{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2B}
+.kind.k2{background:#E7EDF6;border-color:#BACBE2;color:#243C5E}
+.kind.k3{background:#F6EDE7;border-color:#E2C9BA;color:#5E3A24}
+.dt-empty{padding:22px 12px;font-size:13.5px;color:var(--ink-soft)}
+@media (max-width:640px){
+  .dt{font-size:12.5px}
+  .dt th,.dt td{padding:6px 8px}
+  .dt-grp b{min-width:auto;width:100%}
+}
+@media print{
+  .dt-filter{display:none}
+  .dt-wrap{max-height:none;overflow:visible;border:0}
+  .dt{font-size:8pt}
+  .dt th{position:static;padding:2mm 3mm;font-size:7.5pt}
+  .dt td{padding:1.2mm 3mm}
+  .dt tr{break-inside:avoid}
+}
+/* == dtable:end == */
 </style>
 </head>
 <body>
@@ -555,7 +600,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <header class="hero">
     <p class="eyebrow">Part 1 학교업무분장 · Section_01~08 · pp. 3–62</p>
     <h1>학교업무분장 권한관리
-      <em>업무 29개를 손대는 시점 순서로</em>
+      <em>업무 30개를 손대는 시점 순서로</em>
     </h1>
     <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
     <dl class="meta-strip">
@@ -597,7 +642,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
             <p class="tl-no">03</p>
             <h3>업무분장 권한 부여</h3>
             <p class="tl-sub">담당자 지정 후 · 부서장→부서원→메뉴 순서 준수</p>
-            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 부서장 지정"><span>04</span>부서장 지정</button><button type="button" class="tl-btn" data-go="t5" title="05 부서원 편성"><span>05</span>부서원 편성</button><button type="button" class="tl-btn" data-go="t7" title="07 메뉴·자료권한"><span>07</span>메뉴·자료권한</button><button type="button" class="tl-btn" data-go="t10" title="10 공통업무 메뉴"><span>10</span>공통업무 메뉴</button><button type="button" class="tl-btn" data-go="t11" title="11 자료권한 승인요청"><span>11</span>자료권한 승인요청</button></div>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 부서장 지정"><span>04</span>부서장 지정</button><button type="button" class="tl-btn" data-go="t5" title="05 부서원 편성"><span>05</span>부서원 편성</button><button type="button" class="tl-btn" data-go="t7" title="07 메뉴·자료권한"><span>07</span>메뉴·자료권한</button><button type="button" class="tl-btn" data-go="t10" title="10 공통업무 메뉴"><span>10</span>공통업무 메뉴</button><button type="button" class="tl-btn" data-go="t11" title="11 자료권한 승인요청"><span>11</span>자료권한 승인요청</button><button type="button" class="tl-btn" data-go="t11a" title="11-1 자료권한 대상 메뉴표"><span>11-1</span>자료권한 대상 메뉴표</button></div>
           </div>
         </li>
         <li class="tl-phase">
@@ -717,8 +762,8 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>언제?</dt><dd>학년초, 부서관리(부서장지정)에서 부서장과 단위업무 등록을 마친 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자)</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-업무관리(부서원편성)]</code></dd></dl>
-      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도' 확인 후 <span class="btn">{조회}</span> → '부서명'을 클릭하고 <span class="btn">{행추가}</span>하여 '부서명', '업무설명'을 각각 입력 → '클릭해서 사용자 지정하기'를 클릭해 '업무별 사용자 등록' 창에서 업무담당 부서원을 '사용자명'에 입력하고 <span class="btn">{조회}</span> 후 '사용여부'를 선택하고 <span class="btn">{확인}</span> → <span class="btn">{저장}</span></dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>업무 하나하나에 책임자를 붙여 두어야 권한 오남용 없이 업무별로 책임을 물을 수 있기 때문이다.</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도' 확인 후 <span class="btn">{조회}</span> → '부서명'을 클릭하고 <span class="btn">{행추가}</span>하여 '업무명', '업무설명'을 각각 입력 → '클릭해서 사용자 지정하기'를 클릭해 '업무별 사용자 등록' 창에서 업무담당 부서원을 '사용자명'에 입력하고 <span class="btn">{조회}</span> 후 '사용여부'를 선택하고 <span class="btn">{확인}</span> → <span class="btn">{저장}</span></dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>업무 하나하나에 책임자를 붙여 두어야 권한 오남용 없이 업무를 수행할 수 있기 때문임.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li>'업무찾기'로 등록된 업무명을 빠르게 검색할 수 있음.</li><li><span class="btn">{메뉴목록내려받기}</span>로 업무영역명, 단위업무명, 세부업무명, 메뉴그룹명, 메뉴레벨, 메뉴명, 업무분장구분, 자료권한구분을 확인할 수 있음.</li><li><span class="btn">{업무목록내려받기}</span>로 등록된 업무목록을 엑셀파일로 다운로드 받을 수 있음.</li><li><b>부서장은 '업무명'이 자동으로 생성되며, 삭제할 수 없음.</b> 부서장의 '업무명'은 '부서장'으로 나타나며, <code>[업무관리(메뉴, 자료권한관리)]</code>에서 부서장의 업무 메뉴를 등록하거나 관리 권한을 부여할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>자동 등록 업무의 사용자 지정</h4><ul><li>자동으로 등록된 교장･교감 업무에서 '클릭해서 사용자 지정하기'를 클릭하면 나타나는 '업무별 사용자 등록' 창에서 '사용자'를 선택하고 <span class="btn">{확인}</span>함.</li><li>자동으로 등록된 정보공시의 '정보공시(작성자)', '정보공시(확인자)', '정보공시(관리자)' 업무에서 각각 '클릭해서 사용자 지정하기'를 클릭해 '사용자'를 선택하고 <span class="btn">{확인}</span>함.</li><li><b>정보공시 차시별 업무 담당자는 관리자가 <code>[정보공시(관리자)-공시항목관리-기준정보관리-담당자관리]</code>에서 지정함.</b></li><li>자동으로 등록된 교육통계부의 '교육통계-관리', '교육통계' 업무에서 각각 '클릭해서 사용자 지정하기'를 클릭해 '사용자'를 선택하고 <span class="btn">{확인}</span>함.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -752,7 +797,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자)</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-담임업무기준관리]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd>'담임구분'을 선택 후 <span class="btn">{조회}</span> → '편성 대상 업무'에서 '교무업무' 클릭 후 메뉴 트리에서 당해학교에서 필요한 메뉴를 선택하고 <span class="btn">{추가}</span>로 '현재 편성 업무'로 이동하여 <span class="btn">{저장}</span> → 추가한 메뉴를 삭제하려면 '현재 편성 업무'에서 해당 메뉴를 선택하고 <span class="btn">{반환}</span> 후 <span class="btn">{저장}</span></dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>담임이 학급 업무를 처리하는 데 학교마다 다르게 필요한 화면을 미리 열어 주어 담임마다 따로 권한을 신청하지 않게 하려고 한다.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>담임이 학급 업무를 처리하는 데 학교마다 또는 개인마다 다르게 필요한 화면을 커스터마이징 하여 편리하게 사용하기 위함.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li>메뉴 추가 시 추가하고자 하는 메뉴를 선택 후 '현재 편성 업무'로 드래그 온 드롭으로도 추가할 수 있음.</li><li>교육부 제공 공통업무(학급담임, 교과담임, 동아리담임)에 당해학교에서 필요한 메뉴 추가 시 '현재 편성 업무' 시스템별 트리에 따라 자동으로 추가됨.</li><li><b>당해학교에서 추가로 부여한 메뉴를 삭제하려면 '현재 편성 업무'에서 해당 메뉴를 선택하고 <span class="btn">{반환}</span> 후 <span class="btn">{저장}</span>해야 함.</b></li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -772,6 +817,49 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl class="why"><dt>왜?</dt><dd>학생 개인정보에 닿는 자료권한을 학교장 결재로 확인받아, 담당자 임의로 권한이 늘어나는 일을 막으려고 한다.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li><b>승인과정을 거쳐 결재권자의 결재를 완료해야 권한이 부여됨.</b></li><li>학급담임교사, 교과담당교사, 동아리활동 지도교사 권한부여는 다음 메뉴에서 편성하고 <code>[기본메뉴-권한관리-교무자료권한승인관리]</code>에서 '담임편성'을 선택 후 <span class="btn">{학년반}</span>, <span class="btn">{교과목}</span>, <span class="btn">{동아리활동}</span> 탭에서 각각 <span class="btn">{승인요청}</span>함. 학급담임교사는 <code>[교육과정-학급담임편성관리-학급담임편성관리]</code>, 교과담당교사는 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-과목개설]</code>, 동아리활동은 <code>[학생생활-창의적체험활동-동아리활동관리-부서만들기]</code>임.</li><li><b>학교업무분장관리 담당자가 권한부여 후 교무자료권한 <span class="btn">{승인요청}</span> 시에는 '권한관리'를 선택함.</b></li><li><b>교무업무권한, 교무자료권한 업무승인과정에서 학교장의 결재를 필수적으로 거쳐야 함.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>승인메뉴목록 확인</h4><ul><li>'교무자료권한승인관리'의 '메뉴목록'에서 <span class="btn">{보기}</span>를 클릭하면 나타나는 '교무자료권한 승인메뉴목록' 창에서 부여된 메뉴를 트리 형태로 확인할 수 있음.</li><li><span class="btn">{전체펼치기}</span>는 부여된 전체 메뉴 트리를 한꺼번에 펼치고, <span class="btn">{전체접기}</span>는 펼쳐진 메뉴 트리를 한꺼번에 접음.</li><li>최초 상신한 업무담당교사가 <code>[승인사항-상신함]</code>에서 <span class="btn">{기결문서취소}</span>를 못하는 경우는 학교업무분장관리 담당자가 <code>[{업무승인관리}업무승인-결재현황관리-결재현황판관리]</code>에서 삭제 후 해당 업무를 처리하면 됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t11a" data-num="11-1" data-stage="D" data-when="승인상신" data-who="학교업무분장관리담당자 교원">
+  <div class="gutter"><b>11-1</b><span class="gstage" title="원문 STAGE D · 현황 점검·오류 대응">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">자료권한을 등록·확인할 때</span><span class="tag opt">참고표 · 원문 STAGE D</span></div>
+    <h3>서버사이드 자료권한 적용 대상 메뉴 목록(원문 표 그대로)</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="41" title="원문 p.41–42 열기">원문 p.41–42</button><button type="button" class="srcbtn sub" data-page="38" title="참고 p.38–40 열기">+ p.38–40</button></p>
+    <p class="desc">나이스 서버사이드 권한 관리 기능 중 <strong>자료권한 적용 대상 목록</strong>이다. 메뉴마다 요구하는 자료권한 유형이 학년반·교과목·동아리로 다르므로, 자료권한을 부여하기 전이나 '자료 권한이 없습니다' 알림을 만났을 때 이 표에서 해당 메뉴를 먼저 찾는다. 원문 p.41~42의 표를 행 하나도 빼지 않고 그대로 옮겼다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기중. <span class="btn">{메뉴관리}</span>로 업무 메뉴를 등록한 뒤 어떤 자료권한을 함께 부여해야 하는지 확인할 때, 또는 '자료 권한이 없습니다' 알림을 만났을 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자), 나이스 업무를 수행하는 교원</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-업무관리(메뉴, 자료권한관리)]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>아래 표에서 해당 메뉴를 찾아 '자료권한 유형'을 확인 → <code>[업무관리(메뉴, 자료권한관리)]</code>에서 그 유형에 맞는 '학년반 자료권한', '교과목 자료권한', '동아리활동 자료권한' 중 해당하는 곳에 권한을 부여함 → <span class="btn">{교무자료권한승인관리}</span>에서 <span class="btn">{승인요청}</span>으로 업무승인과정을 거쳐 결재권자의 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>메뉴마다 요구하는 자료권한 유형이 달라, 유형을 모른 채 부여하면 엉뚱한 자료권한을 넣고도 권한 알림이 계속 뜨기 때문임.</dd></dl>
+    </div>
+
+    <div class="dt-filter">
+      <div class="dt-grp" role="group" aria-label="세부업무로 좁히기">
+        <b>세부업무</b>
+        <button type="button" class="dt-chip" data-f="work" data-v="개별화교육계획" aria-pressed="false">개별화교육계획</button>
+        <button type="button" class="dt-chip" data-f="work" data-v="성적" aria-pressed="false">성적</button>
+        <button type="button" class="dt-chip" data-f="work" data-v="학생생활" aria-pressed="false">학생생활</button>
+        <button type="button" class="dt-chip" data-f="work" data-v="학생부" aria-pressed="false">학생부</button>
+        <button type="button" class="dt-chip" data-f="work" data-v="학적" aria-pressed="false">학적</button>
+      </div>
+      <div class="dt-grp" role="group" aria-label="자료권한 유형으로 좁히기">
+        <b>자료권한 유형</b>
+        <button type="button" class="dt-chip" data-f="kind" data-v="학년반" aria-pressed="false">학년반</button>
+        <button type="button" class="dt-chip" data-f="kind" data-v="교과목" aria-pressed="false">교과목</button>
+        <button type="button" class="dt-chip" data-f="kind" data-v="동아리" aria-pressed="false">동아리</button>
+      </div>
+    </div>
+    <p class="dt-count" id="dtcount">전체 <b>105</b>개 메뉴</p>
+    <div class="dt-wrap">
+      <table class="dt">
+        <thead><tr><th>세부업무</th><th>메뉴명</th><th>자료권한 유형</th><th>원문</th></tr></thead>
+        <tbody id="dtbody"><tr data-work="개별화교육계획" data-kind="학년반"><td>개별화교육계획</td><td>학기별개별화교육계획/평가조회(담임)</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="개별화교육계획" data-kind="학년반"><td>개별화교육계획</td><td>월별개별화교육계획/평가조회(담임)</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>수행평가정답/배점관리</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>수행평가학생답관리</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>수행평가채점</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>수행평가성적관리</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>교과목별일람표-강의실별</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>교과목별일람표-전체학급</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>학급별일람표-전체영역</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>결시생명단</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>수행평가결시생인정점</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>영역별학생답정오표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>학생별학생답정오표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>학급별일람표-전체교과목</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>도수분포표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>구간비교표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>정답률비교표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>문항분석표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>성적집계표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>관찰내용관리</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>결시생인정점관리</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>과목별성적산출</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>성적통지표(가정통신문)관리</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>교양교과이수관리</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>학급별일람표-전체교과목</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>결시생인정점</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>교과목별학생답정오표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>학생별학생답정오표</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>도수분포표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>구간비교표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>정답률비교표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>문항분석표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>성적집계표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>표준점수분석표</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>성적변화표</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>개인별성취기준분석표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>교과목별평가결과분석표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.41</td></tr><tr data-work="학생생활" data-kind="학년반"><td>학생생활</td><td>동아리활동부서배정</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="학생생활" data-kind="동아리"><td>학생생활</td><td>동아리활동이수시간기준등록</td><td><span class="kind k3">동아리</span></td><td class="pg">p.41</td></tr><tr data-work="학생생활" data-kind="학년반"><td>학생생활</td><td>동아리활동관리(담임용)</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="학생생활" data-kind="학년반"><td>학생생활</td><td>봉사활동실적관리-개인별</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="학생생활" data-kind="학년반"><td>학생생활</td><td>진로활동관리-학생부자료기록</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="학생생활" data-kind="학년반"><td>학생생활</td><td>국가직무능력표준이수상황관리</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="학생생활" data-kind="학년반"><td>학생생활</td><td>국가직무능력표준이수상황조회</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="학생생활" data-kind="학년반"><td>학생생활</td><td>학생별이수예정능력단위및필수이수시간조회</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="학생생활" data-kind="학년반"><td>학생생활</td><td>인증관리-개인</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="학생생활" data-kind="학년반"><td>학생생활</td><td>학부모서비스승인관리</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="학생생활" data-kind="학년반"><td>학생생활</td><td>독서활동상황기록-개인별</td><td><span class="kind k1">학년반</span></td><td class="pg">p.41</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>과목별세부능력및특기사항</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>개인별세부능력및특기사항</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>편입/복학생세부능력및특기사항관리</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>과목별독서활동</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>성적산출학생관리</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>성적일람표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>개인별성적일람표</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>학기말성적종합일람표</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>고사별비교</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>성적우수/부진자명단</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>지필/수행성적일람표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>과목별세부능력및특기사항</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>개인별세부능력및특기사항</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>교양교과이수여부</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>과목별석차</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="학년반"><td>성적</td><td>성적일람표-전과목</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>성적산출기준별비교</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>성취도-도수분포표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>학기말점수-도수분포표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>학기말점수-구간비교표</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>지필평가학생답관리</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>지필평가채점</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>지필평가성적관리</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>평가준거성취기준관리</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>평가기준관리</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>수행평가영역관리</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>반영비율/만점관리</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>교과목별일람표-강의실별</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="성적" data-kind="교과목"><td>성적</td><td>교과목별일람표-전체학급</td><td><span class="kind k2">교과목</span></td><td class="pg">p.42</td></tr><tr data-work="학생생활" data-kind="학년반"><td>학생생활</td><td>학교폭력조치상황관리</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학생생활" data-kind="학년반"><td>학생생활</td><td>학교폭력조치상황관리</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학생부" data-kind="학년반"><td>학생부</td><td>학교생활기록부</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학생부" data-kind="학년반"><td>학생부</td><td>학생부반영</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학생부" data-kind="학년반"><td>학생부</td><td>자료검증및반마감</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학생부" data-kind="학년반"><td>학생부</td><td>검증결과조회</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학생부" data-kind="학년반"><td>학생부</td><td>학생부조회및출력</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학생부" data-kind="학년반"><td>학생부</td><td>학생부항목별조회</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학생부" data-kind="학년반"><td>학생부</td><td>정정대장작성</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학생부" data-kind="학년반"><td>학생부</td><td>이전년도성적자료반영</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학생부" data-kind="학년반"><td>학생부</td><td>정정대장공개여부관리</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학생부" data-kind="학년반"><td>학생부</td><td>편제일괄정정</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학생부" data-kind="학년반"><td>학생부</td><td>능력단위일괄정정</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>출석부출력(담임용)</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>일일출결관리(담임용)</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>일일결석자조회</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>반별월출결마감관리</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>출결특기사항등록</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>학급별출결현황</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>반별연간출결통계</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>기본신상관리</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>사진일괄입력</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>학생주소연계</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>학생주소연계이력조회</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>위탁·현장실습학생등록</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>타학교자료전송확인</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>자료관리</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr><tr data-work="학적" data-kind="학년반"><td>학적</td><td>출결관리</td><td><span class="kind k1">학년반</span></td><td class="pg">p.42</td></tr></tbody>
+      </table>
+      <p class="dt-empty" id="dtempty" hidden>고른 조건에 해당하는 메뉴가 없습니다.</p>
+    </div>
+
+<div class="memo" style="margin-top:16px"><h4>표를 읽을 때</h4><ul><li>같은 칩을 여러 개 고르면 그중 하나라도 해당하는 행이 남고, 세부업무와 자료권한 유형을 함께 고르면 둘 다 맞는 행만 남는다.</li><li><b>원문 표에 같은 메뉴가 두 번 나오는 자리가 있다.</b> <code>학급별일람표-전체교과목</code>, <code>도수분포표</code>, <code>구간비교표</code>, <code>정답률비교표</code>, <code>문항분석표</code>, <code>성적집계표</code>, <code>교과목별일람표-강의실별</code>, <code>교과목별일람표-전체학급</code>, <code>과목별세부능력및특기사항</code>, <code>개인별세부능력및특기사항</code>, <code>학교폭력조치상황관리</code>가 그렇다. 원문 대조가 가능하도록 지우지 않고 그대로 두었다.</li><li><b><code>학생별학생답정오표</code>는 교과목과 학년반 두 유형으로 각각 실려 있다.</b> 원문 p.41의 왼쪽 표와 오른쪽 표에 서로 다른 유형으로 나오므로, 실제 화면에서 어느 쪽이 잡히는지 확인이 필요하다.</li><li>이 표는 나이스 서버사이드 권한 관리 기능이 적용된 뒤의 목록이며, <b>기능 적용 시점은 시·도교육청별로 다를 수 있으므로 시도교육청별 나이스 관리 담당부서에 확인</b>한다.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t20" data-num="20" data-stage="E" data-when="학년초설정" data-who="업무승인관리자">
@@ -820,7 +908,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>누가?</dt><dd>원격업무 담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[{업무승인관리}업무승인-결재경로관리-결재선관리]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[{업무승인관리}업무승인-결재경로관리-결재선관리]</code>에서 '업무영역(공통관리)', '결재문서명(eVPN사용자접속승인요청)' 선택 후 <span class="btn">{조회}</span> → <span class="btn">{등록}</span>을 클릭하면 나타나는 '결재선등록' 창의 '결재선구분'에서 '직접입력'을 선택하고 '결재선명'을 입력 후 <span class="btn">{중복확인}</span>하고 <span class="btn">{저장}</span> → 결재선 목록에서 해당 결재선명을 선택하여 <span class="btn">{결재선지정}</span>을 하고 '적용 대상자 목록'에서 <span class="btn">{등록}</span>을 클릭하면 나타나는 '결재선 적용 대상자 등록' 창에서 사용자를 추가하고 <span class="btn">{저장}</span>.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>외부에서 접속하는 교원의 신청이 결재선 없이 반려되거나 막히는 일을 미리 막으려고.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>원격업무 신청과 승인이 이루어지게 하기 위함.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li><b>원격업무 담당자가 결재선 및 적용대상자를 사전에 등록하여야 하며, 미등록 시 외부에서 신청이 불가함.</b></li><li>학교 등 교육관련기관에서 원격업무를 신청하는 방법은 <code>[기본메뉴-원격업무지원서비스-원격업무지원서비스(EVPN)]</code>에서 <span class="btn">{신규}</span>를 클릭하여 내용을 입력하고 <span class="btn">{저장}</span> 후 <span class="btn">{승인요청}</span>으로 결재권자의 결재를 완료하되, 결재선은 학교별 전결 규정에 따름.</li></ul></div><div class="memo" style="margin-top:12px"><h4>원격업무 외부신청 및 승인절차</h4><ul><li>(원격업무담당자) 원격업무 외부신청에 필요한 결재선 사전 등록. 업무영역은 공통관리, 결재문서명은 eVPN사용자접속승인요청임.</li><li>(사용자) 원격업무지원서비스(eVPN)에 접속하여 원격업무 외부신청 페이지 접속.</li><li>(사용자) 교육디지털원패스 로그인 후 원격업무 신청.</li><li>(부서장) 원격업무담당자가 등록한 결재선으로 내부결재 진행.</li><li>(사용자) 승인이 완료되면 원격업무서비스 로그인 가능.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -939,7 +1027,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리자)</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[학교업무분장-학교업무분장관리-학교업무분장권한이양]</code>, <code>[학교업무분장-학교업무분장관리-교무자료권한승인관리]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[학교업무분장-학교업무분장관리-학교업무분장권한이양]</code>에서 '인계자'에 임시교원 '사용자명'을 입력하고 <span class="btn">{조회}</span>함 → '인수자'에 '사용자명'을 입력하고 <span class="btn">{조회}</span> 후 <span class="btn">{업무분장인계}</span>함('사용자 ID'는 자동 삭제되며, 권한이 일괄 변경됨) → 이후 <code>[학교업무분장-학교업무분장관리-교무자료권한승인관리]</code>에서 <span class="btn">{학년반}</span>, <span class="btn">{교과목}</span>, <span class="btn">{동아리활동}</span> 탭에서 미상신인 '자료권한'을 모두 선택 후 <span class="btn">{승인요청}</span>함.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>임시 아이디에 쌓인 업무를 정식 아이디로 옮겨 임시 계정이 방치되지 않게 하려고.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>임시 아이디로 작업하던 것을 정식 아이디로 옮겨 계속 업무 할 수 있도록 하려고.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li><span class="btn">{조회}</span>를 클릭하면 나타나는 '인수자찾기' 창에서는 업무분장을 하지 않은 신규 아이디만 조회됨. <b>이미 업무분장을 한 사용자는 부여된 업무분장 내용을 삭제해야 조회됨.</b></li><li><span class="btn">{업무분장인계}</span> 시 '사용자 ID'는 자동 삭제되며, 권한이 일괄 변경됨.</li><li><b>업무승인과정을 거쳐 결재권자의 결재가 완료되어야 자료권한이 부여됨.</b></li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -1018,15 +1106,15 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">행공 사용자 지정이 필요할 때</span><span class="tag opt">시스템관리 단위업무 필요</span></div>
     <h3>전체사용자관리를 통한 행공 권한 부여</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="35" title="원문 p.35 열기">원문 p.35</button></p>
-    <p class="desc">행정업무시스템을 써야 하는 사용자에게 '행공' 체크를 넣어 주는 업무이다. 다른 권한과 달리 <strong>'단위업무'에서 '공통관리'의 '시스템관리'를 먼저 등록해야 <code>[{시스템관리}사용자-사용자관리-전체사용자관리]</code>에 들어갈 수 있음.</strong> 부서장지정부터 메뉴관리까지 네 단계를 순서대로 거친다.</p>
+    <p class="desc">행정정보 공동이용(행공)을 써야 하는 사용자에게 '행공' 체크를 넣어 주는 업무이다. 다른 권한과 달리 <strong>'단위업무'에서 '공통관리'의 '시스템관리'를 먼저 등록해야 <code>[{시스템관리}사용자-사용자관리-전체사용자관리]</code>에 들어갈 수 있음.</strong> 부서장지정부터 전체사용자관리까지 네 단계를 순서대로 거친다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초 또는 학기중, 행공 사용자 지정이 필요할 때</dd></dl>
       <dl><dt>누가?</dt><dd>학교업무분장관리 담당자(권한관리 담당자)</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[업무분장설정업무-학교업무분장-학교업무분장관리-학교업무분장설정-부서관리(부서장지정)]</code>, <code>[업무관리(부서원편성)]</code>, <code>[업무관리(메뉴, 자료권한관리)]</code>, <code>[{시스템관리}사용자-사용자관리-전체사용자관리]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[부서관리(부서장지정)]</code>에서 <span class="btn">{행추가}</span> 후 '단위업무'에서 '클릭해서 단위업무 선택하기'를 클릭해 '단위업무선택' 창의 '공통관리'에서 '시스템관리'를 선택하여 등록 → <code>[업무관리(부서원편성)]</code>에서 <span class="btn">{행추가}</span>로 해당 부서명에 부서원을 등록 → <code>[업무관리(메뉴, 자료권한관리)]</code>의 '업무메뉴관리'에서 <span class="btn">{메뉴관리}</span>를 클릭해 '업무메뉴관리' 창에서 '전체사용자관리' 메뉴명에 메뉴등록에 체크하고 '관리권한(등록/수정/삭제)'을 체크하고 <span class="btn">{저장}</span> → <code>[{시스템관리}사용자-사용자관리-전체사용자관리]</code>에서 해당사용자에게 '행공' 체크 후 <span class="btn">{저장}</span></dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>교무업무 권한과 별개로 행정업무시스템 사용 여부를 학교가 직접 통제하려고 한다.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교무업무 권한과 별개로, 다른 기관이 보유한 행정정보를 함께 쓰는 행정정보 공동이용 사용자를 학교가 직접 지정하기 위함.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li><b>'전체사용자관리' 메뉴는 메뉴등록 체크만으로는 부족하고 '관리권한(등록/수정/삭제)'까지 체크해야 '행공' 체크와 저장이 가능함.</b></li><li>학교 업무분장관리 담당자가 위 네 단계 절차에 따라 권한을 부여함.</li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>'업무메뉴관리' 창에서 '전체사용자관리' 메뉴명에 '메뉴등록'을 체크하고 '관리권한(등록/수정/삭제)'도 함께 체크한 뒤 <span class="btn">{저장}</span>함.</b></li><li>학교 업무분장관리 담당자가 위 네 단계 절차에 따라 권한을 부여함.</li><li>'행공'은 행정정보 공동이용을 가리킨다. 행정정보 공동이용 센터(행정정보공유과)는 행정정보의 원활한 공동이용을 위하여 필요한 정책을 수립하고 서비스를 제공하는 정보공유 허브다(원문에는 '행공'의 뜻이 나오지 않아 덧붙인 설명임).</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t17" data-num="17" data-stage="D" data-when="수시" data-who="학교업무분장관리담당자">
@@ -1092,7 +1180,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>누가?</dt><dd>학교 업무담당자(업무승인 관리자), 학교업무분장관리 담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[{업무승인관리}업무승인-결재현황관리-결재현황판관리]</code>, <code>[승인사항-상신함]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd>최초 상신한 업무담당교사가 <code>[승인사항-상신함]</code>에서 해당 결재문서명에 대해 <span class="btn">{기결문서취소}</span>가 되는지 확인 → 취소가 불가한 경우 학교업무분장관리 담당자가 <code>[{업무승인관리}업무승인-결재현황관리-결재현황판관리]</code>에서 해당 결재문서를 삭제하고 삭제 사유를 등록 → 미상신 상태로 변경된 것을 확인하고 해당 업무를 다시 처리함.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>결재가 걸려 멈춘 문서를 풀어 담당교사가 자료를 다시 상신할 수 있게 하려고.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>피치 못할 상황으로 인하여 결재 과정이 걸려 멈춘 문서를 풀어 담당교사가 자료를 다시 상신할 수 있게 하려고.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li>삭제 시 삭제 사유를 등록하며, <b>결재문서명에 빨간색 취소선이 표기되고 해당 결재문서는 미상신 상태로 변경됨.</b></li><li>최초 상신한 업무담당교사가 <code>[승인사항-상신함]</code>에서 <span class="btn">{기결문서취소}</span>를 못하는 경우는 학교업무분장관리 담당자가 <code>[{업무승인관리}업무승인-결재현황관리-결재현황판관리]</code>에서 삭제 후 해당 업무를 처리하면 됨.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
@@ -1492,5 +1580,44 @@ document.addEventListener('keydown', function(e){
 });
 })();
 </script>
-<!-- handout:end --></body>
+<!-- handout:end --><script>
+// 자료권한 적용 대상 표를 세부업무·자료권한 유형으로 좁혀 본다
+(function(){
+'use strict';
+var body = document.getElementById('dtbody');
+if(!body) return;
+var rows = Array.prototype.slice.call(body.rows);
+var count = document.getElementById('dtcount');
+var empty = document.getElementById('dtempty');
+var chips = Array.prototype.slice.call(document.querySelectorAll('.dt-chip'));
+
+function picked(f){
+  return chips.filter(function(c){
+    return c.dataset.f === f && c.getAttribute('aria-pressed') === 'true';
+  }).map(function(c){ return c.dataset.v; });
+}
+
+function apply(){
+  var w = picked('work'), k = picked('kind'), n = 0;
+  rows.forEach(function(r){
+    var ok = (!w.length || w.indexOf(r.dataset.work) > -1)
+          && (!k.length || k.indexOf(r.dataset.kind) > -1);
+    r.hidden = !ok;
+    if(ok) n++;
+  });
+  empty.hidden = n > 0;
+  count.innerHTML = (w.length || k.length)
+    ? '<b>' + n + '</b>개 메뉴 · 전체 105개 중'
+    : '전체 <b>105</b>개 메뉴';
+}
+
+chips.forEach(function(c){
+  c.addEventListener('click', function(){
+    c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    apply();
+  });
+});
+})();
+</script>
+</body>
 </html>
