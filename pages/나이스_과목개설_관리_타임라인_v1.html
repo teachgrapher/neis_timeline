@@ -500,6 +500,66 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
 .fnote b{color:var(--ink);font-weight:600}
 @media print{.fnote{background:none;border-left:1px solid var(--rule)}}
 /* == fnote:end == */
+/* == flowcard:begin == */
+.flowscroll{overflow-x:auto;margin:10px 0 6px}
+.flowmap,.yearmap,.joinmap{display:block;width:100%;height:auto;font-family:var(--sans)}
+.flowmap{min-width:840px}
+.yearmap{min-width:600px}
+.joinmap{min-width:700px}
+
+.flowmap .hdbg{fill:var(--ink)}
+.flowmap .hdtag{fill:#fff;font-family:var(--mono);font-size:11px;letter-spacing:.12em;font-weight:700}
+.flowmap .hdsec{fill:#fff;font-family:var(--mono);font-size:11px;opacity:.72}
+.flowmap .ttl{fill:var(--ink);font-size:15px;font-weight:700}
+.flowmap .pp{fill:var(--ink-soft);font-family:var(--mono);font-size:10.5px}
+.flowmap .unitbg{fill:var(--dropout);stroke:var(--dropout-deep);stroke-width:1}
+.flowmap .unitlab{fill:var(--ink-soft);font-family:var(--mono);font-size:10px;letter-spacing:.1em;font-weight:600}
+.flowmap .unitval{fill:var(--ink);font-size:13px;font-weight:700}
+.flowmap .unitsub{fill:var(--ink-soft);font-size:11px}
+.flowmap .menu{fill:var(--ink-soft);font-family:var(--mono);font-size:10px}
+.flowmap .bodybg{fill:var(--sheet);stroke:var(--rule);stroke-width:1}
+.flowmap .dot{fill:var(--mark)}
+.flowmap .li{fill:var(--ink);font-size:12px}
+.flowmap .outbg{fill:none;stroke:var(--ink);stroke-width:1.4;stroke-dasharray:3 3}
+.flowmap .outlab{fill:var(--ink-soft);font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;font-weight:600}
+.flowmap .outval{fill:var(--ink);font-size:11.5px;font-weight:600}
+.flowmap .arwlab{fill:var(--ink-soft);font-family:var(--mono);font-size:10px}
+
+.flowmap .arw,.joinmap .arw{fill:none;stroke:var(--ink);stroke-width:1.4}
+.joinmap .arw.thin{stroke:var(--rule);stroke-width:1.2}
+.flowmap marker path,.joinmap marker path{fill:var(--ink)}
+
+.yearmap .yhdbg{fill:var(--sheet);stroke:var(--rule)}
+.yearmap .yhd.on .yhdbg{fill:var(--ink);stroke:var(--ink)}
+.yearmap .yhdt{fill:var(--ink);font-family:var(--mono);font-size:11.5px;font-weight:600}
+.yearmap .yhd.on .yhdt{fill:#fff}
+.yearmap .colhi{fill:var(--dropout);opacity:.55}
+.yearmap .rowlab{fill:var(--ink);font-size:12.5px;font-weight:600}
+.yearmap .cellbg{fill:var(--sheet);stroke:var(--rule)}
+.yearmap .cell.on .cellbg{fill:#fff;stroke:var(--ink);stroke-width:1.6}
+.yearmap .cellt{fill:var(--ink);font-size:12.5px;font-weight:700}
+.yearmap .cellsub{fill:var(--ink-soft);font-size:10.5px}
+.yearmap .foot{fill:var(--ink-soft);font-size:11px}
+
+.joinmap .inbg{fill:var(--sheet);stroke:var(--rule)}
+.joinmap .int{fill:var(--ink);font-size:12.5px;font-weight:600}
+.joinmap .insub{fill:var(--ink-soft);font-size:10.5px}
+.joinmap .midbg{fill:var(--ink);stroke:var(--ink)}
+.joinmap .midt{fill:#fff;font-size:14px;font-weight:700;text-anchor:middle}
+.joinmap .midsub{fill:#fff;opacity:.8;font-size:11px;text-anchor:middle}
+.joinmap .outbg2{fill:var(--dropout);stroke:var(--dropout-deep)}
+.joinmap .outt{fill:var(--ink);font-size:12px;font-weight:600}
+
+.figcap{margin:0 0 14px;font-size:11.5px;color:var(--ink-soft);line-height:1.6}
+.figcap b{color:var(--ink);font-weight:600}
+@media (max-width:640px){
+  .flowmap .li,.yearmap .cellt{font-size:12px}
+}
+@media print{
+  .flowscroll{overflow:visible}
+  .flowmap,.yearmap,.joinmap{min-width:0}
+}
+/* == flowcard:end == */
 </style>
 </head>
 <body>
@@ -561,7 +621,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <header class="hero">
     <p class="eyebrow">Part 2 교육과정 · Section_05 · pp. 120–150</p>
     <h1>과목개설 관리
-      <em>업무 21개를 손대는 시점 순서로</em>
+      <em>업무 21개와 참고 1장을 손대는 시점 순서로</em>
     </h1>
     <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
     <dl class="meta-strip">
@@ -630,7 +690,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
             <p class="tl-no">06</p>
             <h3>편성 결과 점검</h3>
             <p class="tl-sub">과목개설·시간표 운영 후 수시 조회</p>
-            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t20" title="20 담당과목 일람표"><span>20</span>담당과목 일람표</button><button type="button" class="tl-btn" data-go="t21" title="21 시수 누계 조회"><span>21</span>시수 누계 조회</button></div>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t20" title="20 담당과목 일람표"><span>20</span>담당과목 일람표</button><button type="button" class="tl-btn" data-go="t21" title="21 시수 누계 조회"><span>21</span>시수 누계 조회</button><button type="button" class="tl-btn" data-go="t22" title="22 참고 · 세 단계 흐름"><span>22</span>참고 · 세 단계 흐름</button></div>
           </div>
         </li>
 
@@ -999,6 +1059,39 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl class="why"><dt>왜?</dt><dd>계획된 시수와 실제 진행된 시수의 차이를 기준일자별로 확인해 교육과정 운영 시수를 제때 조정하려는 것입니다.</dd></dl>
     </div>
 <div class="memo"><h4>어떤 표를 언제 여는가</h4><ul><li>시수배정현황조회 — 학년도·학기 단위로 과목별 시수 배정이 편제대로 되었는지 볼 때 엶. <b><span class="btn">{시간표과목배정현황}</span>으로 월별 전체 시간표 과목 배정현황을 확인할 수 있음.</b></li><li>교사별시수누계조회 — 교사 개인의 수업 시수를 기간별·월별·날짜별로 집계할 때 엶. '창의적체험활동' 포함 여부를 선택함.</li><li>과목별/강의실별시수누계조회 — 강의실별/반별/개설강좌별로 시수 누계를 볼 때 엶.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>세 메뉴 모두 '학년도'는 설정된 교무학년도를 포함하여 5개 학년도를 선택할 수 있음.</li><li>'학기'는 '1학기', '2학기'를 선택할 수 있음.</li><li>학과가 설치된 특수목적고등학교, 특성화고등학교, 직업계열 학과가 설치된 일반고등학교에서는 시수배정현황조회의 조회 조건에 '계열'이 나타남.</li><li><b>과목별/강의실별시수누계조회의 '67/5/67'은 '기간계/누계/계획'을 의미하며, '기간계'는 조회 기간 시수 합계를, '누계'는 조회 학기 시작일부터 조회일까지 시수 합계를, '계획'은 전체시간표 기준으로 조회 학기 전체 시수 합계를 나타냄.</b><br><span class="fnote">각주 · 화면의 시수 칸에는 세 숫자가 <b>67/5/67</b>처럼 빗금으로 이어져 한 칸에 표시됩니다. 앞에서부터 <b>기간계 / 누계 / 계획</b> 순서이며, '67/5/67'은 원문 화면 캡처에 찍혀 있던 예시 값이지 정해진 숫자가 아닙니다. 우리 학교 화면에서는 다른 숫자가 나타납니다.</span></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+<article class="task" id="t22" data-num="22" data-stage="참고" data-when="수시조회" data-who="교육과정업무담당자">
+  <div class="gutter"><b>22</b><span class="gstage" title="참고 · Section_01·04·05를 잇는 흐름">참</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag opt">참고 · 절차 아님</span><span class="tag">Section_01 · 04 · 05</span></div>
+    <h3>교육과정 등록에서 과목개설까지, 세 단계가 어떻게 이어지는가</h3>
+    <p class="src"><button type="button" class="srcbtn sub" data-page="1" title="원문 p.120 열기">원문 p.120 선행·후행처리</button></p>
+    <p class="desc">이 카드는 나이스 조작 절차가 아니라 <strong>Section_01 · 04 · 05가 어떻게 맞물리는지 보여 주는 참고 자료</strong>입니다. 세 단계는 같은 '교육과정'을 다루지만 <strong>담는 단위가 다릅니다.</strong> 입학년도로 한 번, 학년도로 한 번, 개설과목으로 한 번 등록하는 셈이라 처음에는 같은 일을 세 번 하는 것처럼 보입니다.</p>
+
+    <div class="memo"><h4>세 단계는 무엇이 다른가</h4>
+    <div class="flowscroll"><svg xmlns="http://www.w3.org/2000/svg" class="flowmap" viewBox="0 0 900 322" role="img" aria-label="입학생 학교교육과정 관리(입학년도 단위)에서 학교교육과정 편성(학년도·학년·학기 단위)을 거쳐 과목개설 관리(개설과목 단위)로 이어지는 세 단계 흐름"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z"/></marker></defs><g class="hd"><rect class="hdbg" x="8" y="6" width="268" height="30" rx="7"/><text class="hdtag" x="20" y="26" text-anchor="start">STAGE 1 · Section_01</text><text class="hdsec" x="264" y="26" text-anchor="end">pp.65–77</text></g><text class="ttl" x="20" y="60" text-anchor="start">입학생 학교교육과정 관리</text><g class="unit"><rect class="unitbg" x="8" y="72" width="268" height="42" rx="6"/><text class="unitlab" x="20" y="90" text-anchor="start">단위</text><text class="unitval" x="56" y="90" text-anchor="start">입학년도</text><text class="unitsub" x="20" y="106" text-anchor="start">입학생 한 무리의 3개 학년</text></g><text class="menu" x="20" y="132" text-anchor="start">[교육과정-입학생학교교육과정관리]</text><rect class="bodybg" x="8" y="142" width="268" height="128" rx="6"/><circle class="dot" cx="26" cy="160" r="2.6"/><text class="li" x="38" y="164" text-anchor="start">학교유형정보 설정</text><circle class="dot" cx="26" cy="182" r="2.6"/><text class="li" x="38" y="186" text-anchor="start">학교공통 과목 등록 · 학점 입력</text><circle class="dot" cx="26" cy="204" r="2.6"/><text class="li" x="38" y="208" text-anchor="start">선택과목군 · 선택과목 등록</text><circle class="dot" cx="26" cy="226" r="2.6"/><text class="li" x="38" y="230" text-anchor="start">창의적 체험활동 편성</text><circle class="dot" cx="26" cy="248" r="2.6"/><text class="li" x="38" y="252" text-anchor="start">검증 → 승인요청 · 제출</text><g class="out"><rect class="outbg" x="8" y="280" width="268" height="34" rx="6"/><text class="outlab" x="20" y="296" text-anchor="start">산출물</text><text class="outval" x="20" y="309" text-anchor="start">입학생이 졸업까지 이수할 3개년 설계도</text></g><g class="hd"><rect class="hdbg" x="316" y="6" width="268" height="30" rx="7"/><text class="hdtag" x="328" y="26" text-anchor="start">STAGE 2 · Section_04</text><text class="hdsec" x="572" y="26" text-anchor="end">pp.91–119</text></g><text class="ttl" x="328" y="60" text-anchor="start">학교교육과정 편성</text><g class="unit"><rect class="unitbg" x="316" y="72" width="268" height="42" rx="6"/><text class="unitlab" x="328" y="90" text-anchor="start">단위</text><text class="unitval" x="364" y="90" text-anchor="start">학년도 · 학년 · 학기</text><text class="unitsub" x="328" y="106" text-anchor="start">올해 각 학년이 실제 이수할 것</text></g><text class="menu" x="328" y="132" text-anchor="start">[교육과정-편제및과목개설관리-편제및과목개설관리]</text><rect class="bodybg" x="316" y="142" width="268" height="128" rx="6"/><circle class="dot" cx="334" cy="160" r="2.6"/><text class="li" x="346" y="164" text-anchor="start">(이전 학년도 편제 가져오기)</text><circle class="dot" cx="334" cy="182" r="2.6"/><text class="li" x="346" y="186" text-anchor="start">보통교과 · 전문교과 과목 등록</text><circle class="dot" cx="334" cy="204" r="2.6"/><text class="li" x="346" y="208" text-anchor="start">학점 입력 → 시수 자동 계산</text><circle class="dot" cx="334" cy="226" r="2.6"/><text class="li" x="346" y="230" text-anchor="start">창의적 체험활동 시수 입력</text><circle class="dot" cx="334" cy="248" r="2.6"/><text class="li" x="346" y="252" text-anchor="start">수정 → 마감 → 승인요청</text><g class="out"><rect class="outbg" x="316" y="280" width="268" height="34" rx="6"/><text class="outlab" x="328" y="296" text-anchor="start">산출물</text><text class="outval" x="328" y="309" text-anchor="start">학년·학기별 편제 및 시간배당표</text></g><g class="hd"><rect class="hdbg" x="624" y="6" width="268" height="30" rx="7"/><text class="hdtag" x="636" y="26" text-anchor="start">STAGE 3 · Section_05</text><text class="hdsec" x="880" y="26" text-anchor="end">pp.120–150</text></g><text class="ttl" x="636" y="60" text-anchor="start">과목개설 관리</text><g class="unit"><rect class="unitbg" x="624" y="72" width="268" height="42" rx="6"/><text class="unitlab" x="636" y="90" text-anchor="start">단위</text><text class="unitval" x="672" y="90" text-anchor="start">개설과목</text><text class="unitsub" x="636" y="106" text-anchor="start">실제로 운영되는 수업 한 칸</text></g><text class="menu" x="636" y="132" text-anchor="start">[교육과정-편제및과목개설관리]</text><rect class="bodybg" x="624" y="142" width="268" height="128" rx="6"/><circle class="dot" cx="642" cy="160" r="2.6"/><text class="li" x="654" y="164" text-anchor="start">선택과목군 편성 · 강의실 관리</text><circle class="dot" cx="642" cy="182" r="2.6"/><text class="li" x="654" y="186" text-anchor="start">과목개설 — 과목 + 교사 + 강의실</text><circle class="dot" cx="642" cy="204" r="2.6"/><text class="li" x="654" y="208" text-anchor="start">수강학생 편성</text><circle class="dot" cx="642" cy="226" r="2.6"/><text class="li" x="654" y="230" text-anchor="start">(이동수업 N+1 관리)</text><circle class="dot" cx="642" cy="248" r="2.6"/><text class="li" x="654" y="252" text-anchor="start">편성 결과 조회</text><g class="out"><rect class="outbg" x="624" y="280" width="268" height="34" rx="6"/><text class="outlab" x="636" y="296" text-anchor="start">산출물</text><text class="outval" x="636" y="309" text-anchor="start">누가 · 어디서 · 누구에게 가르치는가</text></g><path class="arw" d="M284 206 H310" marker-end="url(#ah)"/><text class="arwlab" x="298" y="194" text-anchor="middle">선행</text><path class="arw" d="M592 206 H618" marker-end="url(#ah)"/><text class="arwlab" x="606" y="194" text-anchor="middle">후행</text></svg></div>
+    <p class="figcap">화살표에 붙은 <b>선행 · 후행</b>은 매뉴얼이 각 Section 머리에 적어 둔 <b>￭ 선행처리 · ￭ 후행처리</b>를 그대로 옮긴 것입니다. Section_04의 선행처리가 Section_01의 <span class="btn">{학교유형정보설정}</span>이고, Section_04의 후행처리가 "과목개설 및 수강학생을 편성함"이며, Section_05의 선행처리가 "교육과정 편제를 등록함"입니다. 세 단계가 이어진다는 것은 저희가 엮은 것이 아니라 원문이 밝혀 둔 관계입니다.</p>
+    </div>
+
+    <div class="memo"><h4>왜 편제를 두 번 등록하는가</h4>
+    <p class="figcap" style="margin-bottom:8px">Section_01은 <b>입학생 한 무리가 졸업까지 이수할 3개 학년</b>을 가로로 등록합니다. Section_04는 <b>올해 학교에 함께 있는 세 학년</b>을 세로로 등록합니다. 한 해의 학교에는 서로 다른 입학년도의 교육과정이 세 벌 겹쳐 있기 때문에, 가로로 짠 설계도를 세로로 다시 세워야 그 해의 시간배당표가 나옵니다.</p>
+    <div class="flowscroll"><svg xmlns="http://www.w3.org/2000/svg" class="yearmap" viewBox="0 0 666 204" role="img" aria-label="입학년도별 교육과정이 학년도별로 겹치는 관계표. 2026학년도에는 2024학년도 입학생이 3학년, 2025학년도 입학생이 2학년, 2026학년도 입학생이 1학년으로 함께 있다"><rect class="colhi" x="501" y="4" width="160" height="168" rx="6"/><g class="yhd"><rect class="yhdbg" x="186" y="8" width="150" height="26" rx="5"/><text class="yhdt" x="261.0" y="26" text-anchor="middle">2024학년도</text></g><g class="yhd"><rect class="yhdbg" x="346" y="8" width="150" height="26" rx="5"/><text class="yhdt" x="421.0" y="26" text-anchor="middle">2025학년도</text></g><g class="yhd on"><rect class="yhdbg" x="506" y="8" width="150" height="26" rx="5"/><text class="yhdt" x="581.0" y="26" text-anchor="middle">2026학년도</text></g><text class="rowlab" x="176" y="68" text-anchor="end">2024학년도 입학생</text><g class="cell"><rect class="cellbg" x="186" y="44" width="150" height="34" rx="5"/><text class="cellt" x="261.0" y="60" text-anchor="middle">1학년</text><text class="cellsub" x="261.0" y="72" text-anchor="middle">2015 개정</text></g><g class="cell"><rect class="cellbg" x="346" y="44" width="150" height="34" rx="5"/><text class="cellt" x="421.0" y="60" text-anchor="middle">2학년</text><text class="cellsub" x="421.0" y="72" text-anchor="middle">2015 개정</text></g><g class="cell on"><rect class="cellbg" x="506" y="44" width="150" height="34" rx="5"/><text class="cellt" x="581.0" y="60" text-anchor="middle">3학년</text><text class="cellsub" x="581.0" y="72" text-anchor="middle">2015 개정</text></g><text class="rowlab" x="176" y="110" text-anchor="end">2025학년도 입학생</text><g class="cell"><rect class="cellbg" x="346" y="86" width="150" height="34" rx="5"/><text class="cellt" x="421.0" y="102" text-anchor="middle">1학년</text><text class="cellsub" x="421.0" y="114" text-anchor="middle">2022 개정</text></g><g class="cell on"><rect class="cellbg" x="506" y="86" width="150" height="34" rx="5"/><text class="cellt" x="581.0" y="102" text-anchor="middle">2학년</text><text class="cellsub" x="581.0" y="114" text-anchor="middle">2022 개정</text></g><text class="rowlab" x="176" y="152" text-anchor="end">2026학년도 입학생</text><g class="cell on"><rect class="cellbg" x="506" y="128" width="150" height="34" rx="5"/><text class="cellt" x="581.0" y="144" text-anchor="middle">1학년</text><text class="cellsub" x="581.0" y="156" text-anchor="middle">2022 개정</text></g><text class="foot" x="8" y="192" text-anchor="start">가로 한 줄 = Section_01이 등록하는 것</text><text class="foot" x="656" y="192" text-anchor="end">세로 한 줄 = Section_04가 등록하는 것</text></svg></div>
+    <p class="figcap">2026학년도 1･2학년이 2022 개정 교육과정, 3학년이 2015 개정 교육과정을 적용받는 이유가 여기 있습니다. 원문 p.66도 <b>"입학 학년도 2025년 기준 1학년은 2026년 2학년, 입학 학년도 2024년 1학년은 2026년 3학년임"</b>이라고 같은 관계를 적어 두었습니다.</p>
+    </div>
+
+    <div class="memo"><h4>과목개설에서 무엇이 하나로 묶이는가</h4>
+    <div class="flowscroll"><svg xmlns="http://www.w3.org/2000/svg" class="joinmap" viewBox="0 0 760 200" role="img" aria-label="편제 과목, 교과담당교사, 강의실, 수강학생 네 가지가 만나 개설과목 한 건이 되고, 거기에 교과시간별 출결·지필수행평가 성적·기초시간표가 붙는다"><defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z"/></marker></defs><g class="inb"><rect class="inbg" x="8" y="8" width="216" height="38" rx="6"/><text class="int" x="20" y="25" text-anchor="start">편제 과목(학점)</text><text class="insub" x="20" y="38" text-anchor="start">Section_04에서 등록한 것</text></g><path class="arw" d="M228 27 H272 V102 H300" marker-end="url(#ah2)"/><g class="inb"><rect class="inbg" x="8" y="54" width="216" height="38" rx="6"/><text class="int" x="20" y="71" text-anchor="start">교과담당교사</text><text class="insub" x="20" y="84" text-anchor="start">[과목개설]에서 연결</text></g><path class="arw" d="M228 73 H272 V102 H300" marker-end="url(#ah2)"/><g class="inb"><rect class="inbg" x="8" y="100" width="216" height="38" rx="6"/><text class="int" x="20" y="117" text-anchor="start">강의실</text><text class="insub" x="20" y="130" text-anchor="start">[강의실관리]에서 등록</text></g><path class="arw" d="M228 119 H272 V102 H300" marker-end="url(#ah2)"/><g class="inb"><rect class="inbg" x="8" y="146" width="216" height="38" rx="6"/><text class="int" x="20" y="163" text-anchor="start">수강학생</text><text class="insub" x="20" y="176" text-anchor="start">[수강생편성]에서 편성</text></g><path class="arw" d="M228 165 H272 V102 H300" marker-end="url(#ah2)"/><g class="mid"><rect class="midbg" x="300" y="76" width="176" height="52" rx="7"/><text class="midt" x="388" y="98" text-anchor="middle">개설과목 1건</text><text class="midsub" x="388" y="114" text-anchor="middle">성적·출결이 붙는 자리</text></g><path class="arw" d="M476 102 H520" marker-end="url(#ah2)"/><path class="arw thin" d="M520 102 V63 H548" marker-end="url(#ah2)"/><g class="outb"><rect class="outbg2" x="548" y="46" width="200" height="34" rx="6"/><text class="outt" x="560" y="67" text-anchor="start">교과시간별 출결</text></g><path class="arw thin" d="M520 102 V109 H548" marker-end="url(#ah2)"/><g class="outb"><rect class="outbg2" x="548" y="92" width="200" height="34" rx="6"/><text class="outt" x="560" y="113" text-anchor="start">지필 · 수행평가 성적</text></g><path class="arw thin" d="M520 102 V155 H548" marker-end="url(#ah2)"/><g class="outb"><rect class="outbg2" x="548" y="138" width="200" height="34" rx="6"/><text class="outt" x="560" y="159" text-anchor="start">기초시간표 작성</text></g></svg></div>
+    <p class="figcap">Section_05가 하는 일은 <b>편제 과목에 교사 · 강의실 · 수강학생을 붙여 개설과목 한 건을 만드는 것</b>입니다. 이 네 가지가 다 붙어야 비로소 성적과 출결이 앉을 자리가 생깁니다. 그래서 수강학생이 미편성이면 <code>[성적-지필평가]</code>와 <code>[수행평가]</code>에 학생이 아예 조회되지 않고, 개설과목에 수강생 편성 같은 후속 업무가 이미 진행되면 <span class="btn">{삭제}</span>가 막힙니다.</p>
+    </div>
+
+    <div class="memo"><h4>순서를 지켜야 하는 이유</h4><ul>
+      <li><b>Section_01의 <span class="btn">{학교유형정보설정}</span>을 저장하기 전에는 Section_04의 편제 등록을 시작하지 않습니다.</b> 학교유형이 정해져야 선택할 수 있는 교과(군)과 과목 목록이 달라집니다(원문 p.91 · p.93).</li>
+      <li><b>Section_04의 편제가 없으면 Section_05의 과목개설에서 고를 과목이 없습니다.</b> 과목개설 창의 '편제명･과목(학점)'은 Section_04에서 등록한 편제를 그대로 불러옵니다(원문 p.120 선행처리 · p.125).</li>
+      <li><b>과목개설과 수강생 편성이 끝나야 시간표를 짤 수 있습니다.</b> Section_05의 후행처리가 <code>[교육과정-시간표관리]</code>에서 기초시간표를 작성하는 것입니다(원문 p.120).</li>
+      <li>거꾸로 되돌릴 때도 순서가 있습니다. 편제를 고치려면 그 과목에 걸린 성적과 학교생활기록부 반영을 먼저 지워야 하고, 개설과목을 지우려면 수강생 편성이 아직 없어야 합니다(원문 p.117 · p.125).</li>
+    </ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 
