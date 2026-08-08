@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<!-- 고정분할점수와 추정분할점수를 체험하며 이해하는 인터랙티브 문서 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>분할점수 이해하기 · 고정 vs 추정</title>
+<meta name="description" content="고정분할점수와 추정분할점수의 차이를 슬라이더로 체험하고, 나이스 앙고프 산출 절차를 익히는 문서.">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --mono:var(--sans);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  padding:0 0 60px;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+.wrap{max-width:760px;margin:0 auto;padding:0 24px}
+p{margin:0 0 14px;font-size:15.5px;color:var(--ink)}
+p:last-child{margin-bottom:0}
+strong{font-weight:700}
+
+/* ── 히어로 ── */
+.hero{padding:56px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 16px}
+.hero h1{font-weight:800;font-size:clamp(26px,5vw,38px);line-height:1.24;letter-spacing:-.02em;margin:0 0 14px}
+.hero-lede{max-width:56ch;font-size:15.5px;color:var(--ink-soft);font-weight:500;margin:0 0 26px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule);margin-bottom:44px}
+.meta-strip div{padding:14px 24px 14px 0;margin-right:24px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0;margin-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:14.5px;font-weight:600;font-variant-numeric:tabular-nums}
+
+/* ── 섹션 공통 ── */
+.section{margin:0 0 46px;scroll-margin-top:20px}
+.section-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:10px;margin-bottom:18px}
+.section-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);text-transform:uppercase}
+.section-head h2{font-size:19px;font-weight:700;margin:0;letter-spacing:-.01em}
+
+/* 강조 */
+.highlight{background:var(--dropout-deep);font-weight:600;padding:1px 6px;display:inline}
+.small-note{font-size:12.5px;color:var(--ink-soft);margin-top:10px}
+.menu-path{
+  font-family:var(--mono);background:var(--sheet);border:1px solid var(--rule);
+  padding:1px 7px;font-weight:600;font-size:13px;display:inline-block;color:var(--ink);
+}
+
+/* ── 카드(sheet) ── */
+.card{
+  background:var(--sheet);border:1.5px solid var(--ink);padding:22px 24px;
+  box-shadow:3px 3px 0 var(--shadow);margin-bottom:18px;
+}
+
+/* ── 비교 그리드 ── */
+.vs-grid{display:flex;gap:14px;flex-wrap:wrap}
+.vs-item{flex:1;min-width:250px}
+.vs-item .vs-name{
+  font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  color:var(--mark);text-transform:uppercase;margin-bottom:10px;display:block;
+}
+.vs-item.pink .vs-name{color:var(--ink-soft)}
+.vs-item ul{margin:0;padding-left:18px;font-size:14.5px}
+.vs-item li{margin-bottom:7px;color:var(--ink)}
+
+/* ── Step 절차 ── */
+.step-block{
+  display:flex; gap:16px; padding:16px 0; border-top:1px solid var(--rule-soft);
+}
+.step-block:first-child{border-top:none;padding-top:0}
+.step-num{
+  font-family:var(--mono);font-size:20px;font-weight:800;color:var(--mark);
+  min-width:34px;line-height:1.3;font-variant-numeric:tabular-nums;
+}
+.step-body h3{margin:0 0 6px;font-size:15px;font-weight:700;letter-spacing:-.01em}
+.step-body p{font-size:14.5px}
+
+/* ── 슬라이더 ── */
+input[type="range"]{
+  -webkit-appearance:none; appearance:none; width:100%; height:4px;
+  background:var(--rule); outline:none; margin:14px 0 6px; cursor:pointer;
+}
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none; width:18px; height:18px; border-radius:50%;
+  background:var(--mark); border:2px solid var(--sheet); cursor:pointer;
+  box-shadow:0 0 0 1.5px var(--ink);
+}
+input[type="range"]::-moz-range-thumb{
+  width:16px; height:16px; border-radius:50%; background:var(--mark);
+  border:2px solid var(--sheet); cursor:pointer; box-shadow:0 0 0 1.5px var(--ink);
+}
+.slider-label{
+  font-family:var(--mono); font-weight:700; font-size:12.5px; letter-spacing:.03em;
+  text-transform:uppercase; color:var(--ink-soft); margin-bottom:2px;
+}
+.slider-label b{color:var(--ink); text-transform:none; letter-spacing:0; font-family:var(--sans); font-size:14px}
+.slider-ends{display:flex; justify-content:space-between; font-size:11.5px; font-family:var(--mono); color:var(--ink-soft)}
+
+/* ── 점수자(ruler) ── */
+.ruler-wrap{margin:22px 0 6px}
+.ruler-label{font-family:var(--mono); font-weight:700; font-size:11.5px; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:8px; text-transform:uppercase}
+.ruler{
+  position:relative; height:38px; border:1.5px solid var(--ink); background:var(--sheet);
+  display:flex; overflow:hidden;
+}
+.band{height:100%; position:relative; border-right:1px solid var(--rule-soft)}
+.band:last-child{border-right:none}
+.band span{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-family:var(--mono); font-weight:700; font-size:12px; color:var(--ink);
+}
+.b-A{background:var(--mark); }
+.b-A span{color:#fff}
+.b-B{background:#DD8FA0}
+.b-C{background:var(--dropout-deep)}
+.b-D{background:var(--dropout)}
+.b-E{background:var(--rule-soft)}
+.b-F{background:var(--rule)}
+.marker{
+  position:absolute; top:-10px; bottom:-6px; width:0;
+  border-left:2px solid var(--ink); z-index:5;
+}
+.marker::after{
+  content:''; position:absolute; left:-3px; top:-3px; width:6px; height:6px;
+  background:var(--ink); border-radius:50%;
+}
+.marker-zone{position:relative; height:0}
+.student-flag{
+  position:absolute; transform:translateX(-50%); background:var(--ink); color:#fff;
+  font-family:var(--mono); font-weight:700; font-size:11px; padding:2px 8px;
+  white-space:nowrap; z-index:6;
+}
+
+/* ── 실시간 결과 ── */
+.result-line{
+  border-left:3px solid var(--mark); background:var(--paper); padding:12px 16px;
+  font-size:14.5px; margin-top:16px;
+}
+.grade-chip{
+  display:inline-block; font-family:var(--mono); font-weight:700; font-size:13px;
+  padding:1px 9px; color:#fff; background:var(--ink);
+}
+
+/* ── 탭 ── */
+.tabs{display:flex; gap:0; flex-wrap:wrap; border:1.5px solid var(--ink); margin-bottom:16px; width:fit-content}
+.tab-btn{
+  border:none; border-right:1.5px solid var(--ink); background:var(--sheet);
+  font-family:var(--mono); font-weight:700; font-size:13px; letter-spacing:.02em;
+  padding:8px 16px; cursor:pointer; color:var(--ink-soft);
+}
+.tab-btn:last-child{border-right:none}
+.tab-btn.active{background:var(--ink); color:#fff}
+
+/* ── 항목 행 ── */
+.item-row{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  border-top:1px solid var(--rule-soft); padding:12px 0;
+}
+.item-row:first-child{border-top:none}
+.item-name{font-weight:700; font-size:13.5px; min-width:100px}
+.item-name .pt{display:block; font-family:var(--mono); font-weight:400; font-size:11.5px; color:var(--ink-soft); margin-top:2px}
+.item-slider{flex:1; min-width:150px}
+.item-slider input[type=range]{margin:0}
+.item-calc{font-family:var(--mono); font-size:12.5px; min-width:150px; text-align:right; font-weight:600}
+
+.big-total{
+  border:1.5px solid var(--ink); background:var(--ink); color:#fff; padding:14px 18px;
+  font-weight:700; font-size:15px; margin-top:6px;
+}
+.big-total span{font-family:var(--mono); font-size:19px; font-weight:800}
+
+table.data-table{width:100%; border-collapse:collapse; margin-top:18px; font-size:13.5px}
+table.data-table th, table.data-table td{border-bottom:1px solid var(--rule-soft); padding:9px 8px; text-align:center}
+table.data-table th{font-family:var(--mono); font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); font-weight:600; border-bottom:1.5px solid var(--ink)}
+table.data-table tr.current{background:var(--dropout)}
+
+.warn{
+  border:1.5px solid var(--mark); background:var(--sheet); padding:11px 14px;
+  font-size:13.5px; margin-top:14px; display:none; color:var(--ink);
+}
+.warn b{color:var(--mark)}
+
+/* ── 하단 링크 ── */
+.link-btn{
+  display:inline-block; text-decoration:none; color:var(--ink); font-weight:700;
+  font-family:var(--mono); font-size:13px; letter-spacing:.04em;
+  padding:11px 22px; border:1.5px solid var(--ink); background:var(--sheet);
+  transition:background .12s, color .12s;
+}
+.link-btn:hover{background:var(--ink); color:#fff}
+.btn-wrapper{text-align:center; margin-top:8px}
+
+footer{margin:64px 0 0; border-top:1.5px solid var(--ink); padding-top:20px}
+footer p{margin:0; font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-soft)}
+
+@media (max-width:560px){
+  .wrap{padding:0 18px}
+  .card{padding:18px 16px}
+  .item-calc{text-align:left; width:100%}
+  .meta-strip div{padding-right:16px; margin-right:16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section class="hero">
+    <p class="eyebrow">NEIS · 성취평가제 · 분할점수</p>
+    <h1>분할점수, 고정이냐 추정이냐<br>슬라이더로 체감해 본다</h1>
+    <p class="hero-lede">시험 난이도가 그대로 성취도로 옮겨붙는 <b>고정분할점수</b>와, 학교가 매번 산출하는 <b>추정분할점수</b>의 차이를 직접 조작하며 확인하고, 나이스가 실제로 쓰는 <b>앙고프 산출 방식</b>까지 체험한다.</p>
+    <dl class="meta-strip">
+      <div><dt>체험</dt><dd>2개</dd></div>
+      <div><dt>산출 절차</dt><dd>6단계</dd></div>
+      <div><dt>방식</dt><dd>Angoff</dd></div>
+    </dl>
+  </section>
+
+  <!-- 1. 분할점수란 -->
+  <section class="section" id="s1">
+    <div class="section-head">
+      <span class="section-no">01</span>
+      <h2>분할점수가 뭐예요?</h2>
+    </div>
+    <div class="card">
+      <p><strong>분할점수</strong>는 학생의 성취도를 <span class="highlight">A / B / C / D / E</span>로 나누는 커트라인 점수다. "80점 이상이면 B"라고 할 때, 그 80점이 바로 B의 분할점수다.</p>
+      <p>이 커트라인을 정하는 방법이 두 가지다. 점수를 미리 못 박아 두는 <strong>고정분할점수</strong>, 시험 난이도에 맞춰 학교가 직접 산출하는 <strong>추정분할점수</strong>. 아래에서 하나씩 비교해 본다.</p>
+    </div>
+  </section>
+
+  <!-- 2. 고정 vs 추정 -->
+  <section class="section" id="s2">
+    <div class="section-head">
+      <span class="section-no">02</span>
+      <h2>고정 vs 추정, 한눈에</h2>
+    </div>
+    <div class="card">
+      <div class="vs-grid">
+        <div class="vs-item">
+          <span class="vs-name">고정분할점수</span>
+          <ul>
+            <li>커트라인이 <strong>90 / 80 / 70 / 60 / 40점</strong>으로 항상 고정</li>
+            <li>산출 절차가 없어 <strong>간단</strong></li>
+            <li>시험이 어렵게 나오면 실력이 같아도 <strong>성취도가 낮게</strong> 나올 수 있음</li>
+          </ul>
+        </div>
+        <div class="vs-item pink">
+          <span class="vs-name">추정분할점수</span>
+          <ul>
+            <li>커트라인을 <strong>시험마다 학교가 산출</strong> (평가 시행 전에)</li>
+            <li>문항 난이도를 반영해 <strong>실력과 성취도가 잘 대응</strong></li>
+            <li>교과협의회 협의와 나이스 입력 절차가 필요</li>
+          </ul>
+        </div>
+      </div>
+      <p style="margin-top:16px;">핵심 차이는 하나다. <span class="highlight">시험 난이도를 커트라인에 반영하느냐, 안 하느냐.</span></p>
+    </div>
+  </section>
+
+  <!-- 3. 난이도 시뮬레이터 -->
+  <section class="section" id="s3">
+    <div class="section-head">
+      <span class="section-no">03</span>
+      <h2>체험 1 · 난이도가 성취도를 흔든다</h2>
+    </div>
+    <div class="card">
+      <p><strong>B 수준 실력</strong>을 가진 학생이 있다. 실력은 그대로인데 시험 난이도만 바꿔본다. 슬라이더를 움직이면 두 방식에서 성취도가 어떻게 달라지는지 바로 보인다.</p>
+
+      <div class="slider-label">시험 난이도 · <b id="diffLabel">보통</b></div>
+      <input type="range" id="diffSlider" min="0" max="100" value="50">
+      <div class="slider-ends"><span>아주 쉬움</span><span>아주 어려움</span></div>
+
+      <div class="ruler-wrap">
+        <div class="ruler-label">고정분할점수 — 커트라인이 안 움직임</div>
+        <div class="marker-zone"><div class="student-flag" id="flagFixed" style="top:-28px;">학생 점수</div></div>
+        <div class="ruler" id="rulerFixed"></div>
+      </div>
+
+      <div class="ruler-wrap" style="margin-top:30px;">
+        <div class="ruler-label">추정분할점수 — 커트라인이 난이도를 따라 움직임</div>
+        <div class="marker-zone"><div class="student-flag" id="flagEst" style="top:-28px;">학생 점수</div></div>
+        <div class="ruler" id="rulerEst"></div>
+      </div>
+
+      <div class="result-line" id="simResult"></div>
+      <p class="small-note">* 이해를 돕기 위한 가상 수치다. 실제 추정분할점수는 아래 앙고프 방식으로 산출한다.</p>
+    </div>
+  </section>
+
+  <!-- 4. 앙고프 시뮬레이터 -->
+  <section class="section" id="s4">
+    <div class="section-head">
+      <span class="section-no">04</span>
+      <h2>체험 2 · 나이스가 계산하는 방식, 앙고프</h2>
+    </div>
+    <div class="card">
+      <p>나이스는 <strong>앙고프(Angoff) 방법</strong>으로 추정분할점수를 계산한다. 원리는 한 문장이다.</p>
+      <p><span class="highlight">각 성취수준의 경계선에 턱걸이한 학생이, 이 문항을 맞힐 확률은 몇 %일까.</span></p>
+      <p>교사가 문항마다 이 <strong>예상정답률</strong>을 추정하면, 나이스가 <strong>배점 × 예상정답률</strong>을 전부 더해 그 수준의 분할점수를 만든다. 아래에서 성취수준 탭을 고르고 문항별 슬라이더를 움직이면 분할점수가 실시간으로 계산된다.</p>
+
+      <div class="tabs" id="levelTabs"></div>
+      <p style="font-weight:600; font-size:13.5px; color:var(--ink-soft);" id="tabDesc"></p>
+      <div id="itemRows"></div>
+      <div class="big-total" id="angoffTotal"></div>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>성취도</th><th>고정분할점수</th><th>내가 산출한 추정분할점수</th></tr>
+        </thead>
+        <tbody id="cutTableBody"></tbody>
+      </table>
+      <div class="warn" id="orderWarn"><b>주의.</b> 상위 성취수준의 분할점수가 하위 수준보다 낮아졌다. 실제 산출에서는 A &gt; B &gt; C &gt; D &gt; E 순서가 지켜져야 한다. 예상정답률을 다시 조정해 본다.</div>
+      <p class="small-note">* 실제 나이스에서는 여러 교사가 각자 추정한 뒤 평균을 내고 협의를 거쳐 라운드를 반복한다. 여기서는 원리를 익히도록 한 명 기준으로 단순화했다.</p>
+    </div>
+  </section>
+
+  <!-- 5. 나이스 절차 -->
+  <section class="section" id="s5">
+    <div class="section-head">
+      <span class="section-no">05</span>
+      <h2>나이스에서 산출하는 과정</h2>
+    </div>
+    <div class="card">
+      <div class="step-block">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h3>학기 초, 방식 결정</h3>
+          <p>교과협의회에서 과목별로 고정/추정 방식을 정하고, <strong>학업성적관리위원회 심의</strong>를 거쳐 학교장이 최종 결정한다. 추정분할점수를 쓰는 과목은 평가 시행 전에 학생·학부모에게 공지한다.</p>
+        </div>
+      </div>
+      <div class="step-block">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h3>문항정보표 준비</h3>
+          <p><span class="menu-path">[성적-지필평가-문항정보표관리]</span>에서 문항별 배점, 난이도, 성취기준을 입력한다. 이 배점이 앙고프 계산의 재료가 된다. 협의 때는 문항별 <strong>목표 성취수준</strong>을 함께 메모해 두면 예상정답률 추정이 훨씬 수월하다.</p>
+        </div>
+      </div>
+      <div class="step-block">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h3>산출 등록과 라운드 생성</h3>
+          <p><span class="menu-path">[성적-추정분할점수관리-추정분할점수산출관리]</span>에서 고사와 과목을 선택하고 산출을 등록한다. 평가단계는 최소 성취수준 보장지도 적용 과목이면 <strong>'5수준+미도달'</strong>, 아니면 '5수준'을 선택한다. 참여 교사를 지정하면 <strong>라운드</strong>가 만들어진다.</p>
+        </div>
+      </div>
+      <div class="step-block">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <h3>예상정답률 입력</h3>
+          <p>참여 교사가 각자, 성취수준 경계마다 문항별 예상정답률을 입력한다. 위 체험 2에서 해본 그 작업이다. 입력이 끝나면 나이스가 배점 × 예상정답률을 합산해 교사별·수준별 분할점수를 계산한다.</p>
+        </div>
+      </div>
+      <div class="step-block">
+        <div class="step-num">05</div>
+        <div class="step-body">
+          <h3>협의와 라운드 반복</h3>
+          <p>산출 결과를 놓고 교과협의회에서 협의한다. 교사 간 편차가 크면 기존 라운드를 복사해 <strong>새 라운드를 만들고 다시 추정</strong>한다. 추정 → 협의 → 재추정을 반복하며 합의점을 찾는 게 앙고프 방법의 핵심이다.</p>
+        </div>
+      </div>
+      <div class="step-block">
+        <div class="step-num">06</div>
+        <div class="step-body">
+          <h3>확정과 결재</h3>
+          <p>합의된 라운드를 <strong>{확정}</strong>하면 산출이 끝난다. 결과는 {추정분할점수산출결과관리}에서 확인하고, 수정이 필요하면 {확정취소} 후 다시 진행한다. 확정된 분할점수는 <strong>출력해서 학교장 결재를 받아 보관</strong>한다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 주의사항 -->
+  <section class="section" id="s6">
+    <div class="section-head">
+      <span class="section-no">06</span>
+      <h2>꼭 기억할 것</h2>
+    </div>
+    <div class="card">
+      <p><strong>반드시 평가 시행 전에 산출한다.</strong> 추정분할점수는 지필평가를 볼 때마다, 시험 전에 미리 산출해야 한다.</p>
+      <p><strong>성적 부풀리기 수단이 아니다.</strong> 미도달 방지나 과대평가를 위해 예상정답률을 임의로 낮춰 입력하면 산출 결과가 왜곡된다. 성취수준 준거와 문항 난이도를 근거로, 교사의 전문성으로 추정해야 한다.</p>
+      <p><strong>학기말 최종 분할점수는 합산이다.</strong> 지필평가와 수행평가 각각의 분할점수에 반영 비율을 곱해 환산·합산해서 만든다.</p>
+    </div>
+  </section>
+
+  <div class="btn-wrapper">
+    <a href="https://help.neis.go.kr/" target="_blank" class="link-btn">나이스 광장 바로가기 →</a>
+  </div>
+
+  <footer>
+    <p>분할점수 이해하기 · 고정 vs 추정 · 나이스 학업성적관리</p>
+  </footer>
+</div>
+
+<script>
+  // ---------- 공통 데이터 ----------
+  const FIXED_CUTS = { A: 90, B: 80, C: 70, D: 60, E: 40 };
+  const GRADE_COLORS = { A: 'b-A', B: 'b-B', C: 'b-C', D: 'b-D', E: 'b-E', '미도달': 'b-F' };
+
+  // ---------- 체험 1: 난이도 시뮬레이터 ----------
+  const diffSlider = document.getElementById('diffSlider');
+  const diffLabel = document.getElementById('diffLabel');
+  const rulerFixed = document.getElementById('rulerFixed');
+  const rulerEst = document.getElementById('rulerEst');
+  const simResult = document.getElementById('simResult');
+  const flagFixed = document.getElementById('flagFixed');
+  const flagEst = document.getElementById('flagEst');
+
+  function cutsToBands(cuts) {
+    return [
+      { name: '미도달', from: 0, to: cuts.E },
+      { name: 'E', from: cuts.E, to: cuts.D },
+      { name: 'D', from: cuts.D, to: cuts.C },
+      { name: 'C', from: cuts.C, to: cuts.B },
+      { name: 'B', from: cuts.B, to: cuts.A },
+      { name: 'A', from: cuts.A, to: 100 }
+    ];
+  }
+
+  function renderRuler(el, cuts, score) {
+    const bands = cutsToBands(cuts);
+    el.innerHTML = '';
+    bands.forEach(b => {
+      const div = document.createElement('div');
+      div.className = 'band ' + GRADE_COLORS[b.name];
+      div.style.width = (b.to - b.from) + '%';
+      const w = b.to - b.from;
+      div.innerHTML = w >= 8 ? '<span>' + b.name + '</span>' : '';
+      el.appendChild(div);
+    });
+    const marker = document.createElement('div');
+    marker.className = 'marker';
+    marker.style.left = score + '%';
+    el.appendChild(marker);
+  }
+
+  function gradeOf(score, cuts) {
+    if (score >= cuts.A) return 'A';
+    if (score >= cuts.B) return 'B';
+    if (score >= cuts.C) return 'C';
+    if (score >= cuts.D) return 'D';
+    if (score >= cuts.E) return 'E';
+    return '미도달';
+  }
+
+  function chipStyle(g) {
+    const bg = { A: '#C4102E', B: '#DD8FA0', C: '#B9D2B6', D: '#DFEBDD', E: '#E2E5DC', '미도달': '#C8CCC1' }[g];
+    const fg = (g === 'A') ? '#fff' : '#15191A';
+    return 'background:' + bg + ';color:' + fg + ';';
+  }
+
+  function updateSim() {
+    const d = Number(diffSlider.value);
+    const shift = (d - 50) * 0.5;
+    diffLabel.textContent = d < 20 ? '아주 쉬움' : d < 40 ? '쉬움' : d < 60 ? '보통' : d < 80 ? '어려움' : '아주 어려움';
+
+    const score = Math.max(5, Math.min(99, 84 - shift * 1.1));
+    const estCuts = {
+      A: Math.max(50, Math.min(97, FIXED_CUTS.A - shift)),
+      B: Math.max(42, Math.min(88, FIXED_CUTS.B - shift)),
+      C: Math.max(34, Math.min(78, FIXED_CUTS.C - shift)),
+      D: Math.max(26, Math.min(68, FIXED_CUTS.D - shift)),
+      E: Math.max(12, Math.min(46, FIXED_CUTS.E - shift * 0.8))
+    };
+
+    renderRuler(rulerFixed, FIXED_CUTS, score);
+    renderRuler(rulerEst, estCuts, score);
+
+    const gF = gradeOf(score, FIXED_CUTS);
+    const gE = gradeOf(score, estCuts);
+    const s = Math.round(score * 10) / 10;
+    flagFixed.style.left = score + '%';
+    flagFixed.textContent = s + '점';
+    flagEst.style.left = score + '%';
+    flagEst.textContent = s + '점';
+
+    let msg = '같은 실력, 점수는 <strong>' + s + '점</strong>. 고정 방식 성취도는 <span class="grade-chip" style="' + chipStyle(gF) + '">' + gF + '</span>, 추정 방식은 <span class="grade-chip" style="' + chipStyle(gE) + '">' + gE + '</span>이다. ';
+    msg += gF === gE
+      ? '지금 난이도에서는 두 방식의 결과가 같다. 슬라이더를 더 움직여 본다.'
+      : '난이도 때문에 성취도가 갈렸다. 추정 방식은 커트라인이 난이도를 따라가서 <strong>실력을 그대로</strong> 보여준다.';
+    simResult.innerHTML = msg;
+  }
+  diffSlider.addEventListener('input', updateSim);
+  updateSim();
+
+  // ---------- 체험 2: 앙고프 시뮬레이터 ----------
+  const ITEMS = [
+    { name: '1번 (선택형)', points: 10 },
+    { name: '2번 (선택형)', points: 15 },
+    { name: '3번 (선택형)', points: 20 },
+    { name: '4번 (서답형)', points: 25 },
+    { name: '5번 (서답형)', points: 30 }
+  ];
+  const LEVELS = ['A', 'B', 'C', 'D', 'E'];
+  const LEVEL_DESC = {
+    A: 'A 턱걸이 학생(A 수준의 최소 능력자)이 각 문항을 맞힐 확률을 추정한다.',
+    B: 'B 턱걸이 학생이 각 문항을 맞힐 확률을 추정한다.',
+    C: 'C 턱걸이 학생이 각 문항을 맞힐 확률을 추정한다.',
+    D: 'D 턱걸이 학생이 각 문항을 맞힐 확률을 추정한다.',
+    E: 'E 턱걸이 학생(최소 성취수준 경계)이 각 문항을 맞힐 확률을 추정한다.'
+  };
+  const rates = {
+    A: [95, 90, 85, 80, 70],
+    B: [90, 85, 75, 65, 55],
+    C: [85, 75, 65, 55, 40],
+    D: [75, 65, 55, 40, 30],
+    E: [60, 45, 35, 25, 15]
+  };
+  let currentLevel = 'A';
+
+  const levelTabs = document.getElementById('levelTabs');
+  const tabDesc = document.getElementById('tabDesc');
+  const itemRows = document.getElementById('itemRows');
+  const angoffTotal = document.getElementById('angoffTotal');
+  const cutTableBody = document.getElementById('cutTableBody');
+  const orderWarn = document.getElementById('orderWarn');
+
+  function cutFor(level) {
+    return ITEMS.reduce((sum, it, i) => sum + it.points * rates[level][i] / 100, 0);
+  }
+
+  function renderTabs() {
+    levelTabs.innerHTML = '';
+    LEVELS.forEach(lv => {
+      const b = document.createElement('button');
+      b.className = 'tab-btn' + (lv === currentLevel ? ' active' : '');
+      b.textContent = lv + ' 경계';
+      b.onclick = () => { currentLevel = lv; renderTabs(); renderItems(); };
+      levelTabs.appendChild(b);
+    });
+    tabDesc.textContent = LEVEL_DESC[currentLevel];
+  }
+
+  function renderItems() {
+    itemRows.innerHTML = '';
+    ITEMS.forEach((it, i) => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML =
+        '<div class="item-name">' + it.name + '<span class="pt">배점 ' + it.points + '점</span></div>' +
+        '<div class="item-slider"><input type="range" min="0" max="100" value="' + rates[currentLevel][i] + '" data-idx="' + i + '"></div>' +
+        '<div class="item-calc" id="calc' + i + '"></div>';
+      itemRows.appendChild(row);
+    });
+    itemRows.querySelectorAll('input[type=range]').forEach(sl => {
+      sl.addEventListener('input', e => {
+        rates[currentLevel][Number(e.target.dataset.idx)] = Number(e.target.value);
+        updateAngoff();
+      });
+    });
+    updateAngoff();
+  }
+
+  function updateAngoff() {
+    ITEMS.forEach((it, i) => {
+      const r = rates[currentLevel][i];
+      document.getElementById('calc' + i).innerHTML =
+        it.points + '점 × ' + r + '% = <strong>' + (Math.round(it.points * r) / 100).toFixed(1) + '점</strong>';
+    });
+    const total = cutFor(currentLevel);
+    angoffTotal.innerHTML = currentLevel + ' 분할점수 = 기대점수의 합 = <span>' + total.toFixed(1) + '점</span>';
+
+    cutTableBody.innerHTML = '';
+    let prev = Infinity, broken = false;
+    LEVELS.forEach(lv => {
+      const c = cutFor(lv);
+      if (c > prev) broken = true;
+      prev = c;
+      const tr = document.createElement('tr');
+      if (lv === currentLevel) tr.className = 'current';
+      tr.innerHTML = '<td><span class="grade-chip" style="' + chipStyle(lv) + '">' + lv + '</span></td>' +
+        '<td>' + FIXED_CUTS[lv] + '점</td>' +
+        '<td><strong>' + c.toFixed(1) + '점</strong></td>';
+      cutTableBody.appendChild(tr);
+    });
+    orderWarn.style.display = broken ? 'block' : 'none';
+  }
+
+  renderTabs();
+  renderItems();
+</script>
+</body>
+</html>
