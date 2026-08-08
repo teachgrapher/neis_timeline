@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<!-- 추정분할점수 산출 업무를 시간순 타임라인에 배치하고 버튼으로 카드까지 이동하는 단일 페이지 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>추정분할점수 산출 · 시간순 타임라인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EEF0E9;
+  --sheet:#FFFFFF;
+  --ink:#15191A;
+  --ink-soft:#5C6360;
+  --mark:#C4102E;
+  --dropout:#DFEBDD;
+  --dropout-deep:#B9D2B6;
+  --rule:#C8CCC1;
+  --rule-soft:#E2E5DC;
+  --shadow:rgba(21,25,26,.08);
+  --sans:"Pretendard","Pretendard Variable",system-ui,-apple-system,sans-serif;
+  --serif:var(--sans);
+  --mono:var(--sans);
+  --topbar-h:56px;
+  --ticker-h:42px;
+  --offset:calc(var(--topbar-h) + var(--ticker-h) + 18px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 고정바 ── */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(238,240,233,.95);backdrop-filter:saturate(160%) blur(8px);border-bottom:1.5px solid var(--ink)}
+.topbar .bar{height:var(--topbar-h);display:flex;align-items:center;gap:14px}
+.topbar b{font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.topbar .sub{color:var(--ink-soft);font-size:12.5px;font-weight:500;padding-left:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.topbar .up{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .up:hover{color:var(--mark);border-color:var(--mark)}
+.topbar .home{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.topbar .home:hover{color:var(--mark);border-color:var(--mark)}
+
+/* ── 이웃 문서 이동 ── */
+.docnav{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;margin:52px 0 0;padding-top:22px;border-top:1.5px solid var(--ink)}
+.docnav a{
+  display:block;padding:12px 14px;background:var(--sheet);border:1px solid var(--rule);
+  text-decoration:none;color:var(--ink);font-size:14px;font-weight:600;line-height:1.45;
+  transition:border-color .12s,color .12s;
+}
+.docnav a:hover{border-color:var(--mark);color:var(--mark)}
+.docnav a:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.docnav a span{display:block;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:3px}
+.docnav a:hover span{color:var(--mark)}
+.docnav .next{text-align:right}
+.docnav .hub{display:flex;align-items:center;font-size:13px;background:none;border-style:dashed;color:var(--ink-soft)}
+.docnav .gap{border:0}
+@media (max-width:640px){
+  .topbar .up{display:none}
+  .docnav{grid-template-columns:1fr;gap:8px;margin-top:38px}
+  .docnav .next{text-align:left}
+  .docnav .hub{justify-content:center}
+}
+
+/* ── 진행 티커 ── */
+.ticker{border-top:1px solid var(--rule-soft);background:rgba(247,249,245,.92)}
+.ticker .bar{height:var(--ticker-h);display:flex;align-items:center;gap:12px}
+.tick-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.tick-list::-webkit-scrollbar{display:none}
+.tick-list li.sep{width:1px;height:14px;background:var(--rule);margin:0 5px;flex:none}
+.tick{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:26px;padding:3px 0;border:1px solid transparent;background:none;color:var(--ink-soft);
+  cursor:pointer;line-height:1.4;
+}
+.tick:hover{color:var(--ink);border-color:var(--rule)}
+.tick[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tick:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tick-now{margin-left:auto;font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34%}
+.tick-now b{color:var(--ink);font-weight:600}
+
+/* ── 히어로 ── */
+.hero{padding:52px 0 0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mark);font-weight:600;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(32px,5.6vw,54px);line-height:1.16;letter-spacing:-.03em;margin:0 0 20px}
+.hero h1 em{font-style:normal;display:block;color:var(--ink-soft);font-size:.34em;letter-spacing:-.01em;margin-top:16px;font-weight:500;line-height:1.55}
+.hero-lede{max-width:58ch;font-size:16px;color:var(--ink-soft);font-weight:500;margin:0 0 34px}
+.hero-lede b{font-weight:700;color:var(--ink)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:0;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule)}
+.meta-strip div{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid var(--rule-soft)}
+.meta-strip div:last-child{border-right:0}
+.meta-strip dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin:0 0 3px}
+.meta-strip dd{margin:0;font-size:15px;font-weight:500}
+
+/* ── 타임라인 ── */
+.tl{margin:52px 0 0;scroll-margin-top:var(--offset)}
+.tl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:12px}
+.tl-head h2{font-family:var(--serif);font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.tl-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tl-track{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));list-style:none;margin:0;padding:34px 0 44px;min-width:100%}
+.tl-phase{position:relative;min-width:0}
+.tl-line{position:relative;height:1.5px;background:var(--ink)}
+.tl-phase.cond .tl-line{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px)}
+.tl-line::before{
+  content:"";position:absolute;left:0;top:-5.5px;width:11px;height:11px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.tl-phase:last-child .tl-line::after{
+  content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--ink);
+  border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+}
+.tl-body{padding:16px 20px 0 0}
+.tl-no{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mark);margin:0}
+.tl-phase h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:4px 0 3px;letter-spacing:-.01em;line-height:1.35}
+.tl-sub{margin:0 0 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.tl-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tl-btn{
+  display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:baseline;width:100%;text-align:left;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;line-height:1.45;
+  padding:8px 10px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;
+}
+.tl-btn span{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dropout-deep);font-variant-numeric:tabular-nums}
+.tl-btn:hover{border-color:var(--ink);background:#FAFBF8}
+.tl-btn:hover span{color:var(--mark)}
+.tl-btn[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tl-btn[aria-current="true"] span{color:#fff}
+.tl-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.tl-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding:12px 0 0;margin:0 0 56px}
+.tl-legend i{font-style:normal;color:var(--ink);font-weight:600}
+
+/* ── 업무 카드 ── */
+main{max-width:900px;margin:0 auto}
+.task{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 var(--shadow);
+  display:grid;grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 26px;scroll-margin-top:var(--offset);
+}
+.gutter{border-right:1px solid var(--rule-soft);padding:22px 0;text-align:center;background:#FAFBF8}
+.gutter b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gstage{
+  display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 6px;cursor:help;
+}
+
+.body{padding:22px 28px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--ink-soft)}
+.tag.now{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag.opt{background:var(--dropout);border-color:var(--dropout-deep);color:#2E4A2C}
+.task h3{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.35;margin:0 0 12px;letter-spacing:-.01em}
+.desc{margin:0 0 20px;font-size:15.5px;max-width:70ch}
+.desc strong{font-weight:600;background:linear-gradient(transparent 62%,var(--dropout) 62%)}
+
+.w6{border-top:1.5px solid var(--ink);margin:0 0 18px}
+.w6 dl{display:grid;grid-template-columns:110px minmax(0,1fr);margin:0;border-bottom:1px solid var(--rule-soft)}
+.w6 dl:last-child{border-bottom:0}
+.w6 dt{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:11px 12px;color:var(--ink-soft);background:var(--dropout);border-right:1px solid var(--dropout-deep)}
+.w6 dd{margin:0;padding:11px 0 11px 16px;font-size:15px}
+.w6 dl.why dt{background:var(--mark);color:#fff;border-right-color:var(--mark)}
+.w6 dl.why dd{font-weight:500}
+code{font-family:var(--mono);font-size:.86em;background:#F1F3EE;border:1px solid var(--rule-soft);padding:1px 5px;white-space:nowrap}
+.btn{font-family:var(--mono);font-size:.86em;font-weight:600;border-bottom:2px solid var(--dropout-deep)}
+
+.memo{border-left:3px solid var(--dropout-deep);background:#F7F9F5;padding:14px 18px}
+.memo h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-soft)}
+.memo ul{margin:0;padding-left:17px}
+.memo li{font-size:14.5px;line-height:1.7;margin-bottom:5px;color:#3A403D}
+.memo li:last-child{margin-bottom:0}
+.memo li b{font-weight:600;color:var(--mark)}
+
+.cardnav{margin:18px 0 0;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.cardnav a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.cardnav a:hover{color:var(--mark);border-color:var(--mark)}
+
+footer{max-width:900px;margin:60px auto 0;border-top:1.5px solid var(--ink);padding:26px 0 80px;font-size:13.5px;color:var(--ink-soft)}
+footer p{margin:0 0 6px;max-width:70ch}
+footer a{color:var(--ink)}
+
+@media (max-width:900px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{grid-template-columns:1fr;padding:26px 0 34px}
+  .tl-phase{padding-left:24px;border-left:1.5px solid var(--ink);padding-bottom:26px}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl-line{position:absolute;left:-6.5px;top:4px;width:11px;height:11px;background:var(--paper);border:1.5px solid var(--ink);border-radius:50%}
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+}
+@media (max-width:640px){
+  :root{--topbar-h:50px;--ticker-h:40px}
+  .topbar .sub,.tick-now{display:none}
+  .topbar b{font-size:15px}
+  .wrap{padding:0 18px}
+  .hero{padding-top:34px}
+  .task{grid-template-columns:1fr}
+  .gutter{border-right:0;border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;gap:12px;padding:12px 18px;text-align:left}
+  .gutter b{font-size:17px}
+  .gstage{margin-top:0;margin-left:auto}
+  .body{padding:18px 18px 20px}
+  .w6 dl{grid-template-columns:1fr}
+  .w6 dt{border-right:0;padding:8px 12px}
+  .w6 dd{padding:9px 0 13px}
+  .meta-strip div{border-right:0;margin-right:0;width:100%;padding:10px 0;border-bottom:1px solid var(--rule-soft)}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.ticker,.tl-scroll,.cardnav,.docnav{display:none}
+  .task{break-inside:avoid;box-shadow:none}
+}
+
+/* ── 원문 출처 칩 ── */
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.srcbtn{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);
+  border-radius:999px;cursor:pointer;line-height:1.5;
+}
+.srcbtn::before{content:"▤ ";color:var(--mark)}
+.srcbtn:hover{background:var(--ink);color:#fff}
+.srcbtn:hover::before{color:#fff}
+.srcbtn.sub{border-color:var(--rule);color:var(--ink-soft);font-weight:500}
+.srcbtn.sub::before{content:""}
+.srcbtn.sub:hover{background:var(--dropout);color:var(--ink);border-color:var(--ink)}
+.srcbtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+
+/* ── 원문 PDF 패널 (오른쪽 고정, 카드와 나란히) ── */
+:root{--pdfw:clamp(380px,46vw,760px)}
+.pdfmodal[hidden]{display:none}
+.pdfmodal{position:fixed;top:0;right:0;bottom:0;width:var(--pdfw);z-index:200;
+  background:var(--sheet);border-left:1.5px solid var(--ink);box-shadow:-14px 0 36px var(--shadow);
+  display:flex;flex-direction:column}
+body.pdfopen{padding-right:var(--pdfw)}
+.pdfbox{flex:1;display:flex;flex-direction:column;min-height:0}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--ink);flex:none}
+.pdfbar b{font-size:14px;font-weight:700;white-space:nowrap}
+.pdfbar .pdfsub{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .spacer{margin-left:auto}
+.pdfbar a,.pdfbar button{font-family:var(--sans);font-size:12.5px;font-weight:600;
+  border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:5px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.pdfbar a:hover,.pdfbar button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pdfframe{flex:1;width:100%;border:0;background:var(--paper);min-height:0}
+.pdfnote{margin:0;padding:8px 14px;border-top:1px solid var(--rule-soft);
+  font-size:11.5px;color:var(--ink-soft);background:rgba(247,249,245,.9);flex:none}
+@media print{.pdfmodal{display:none!important}body.pdfopen{padding-right:0}}
+@media (max-width:900px){
+  /* 좁은 화면에서는 나란히 볼 수 없으므로 전체를 덮는다 */
+  .pdfmodal{width:100%;border-left:0}
+  body.pdfopen{padding-right:0;overflow:hidden}
+  .pdfbar .pdfsub{display:none}
+}
+
+/* ══ 전역 상단바 · 왼쪽 세로 타임라인 (v2-sitebar-rail) ══ */
+:root{
+  --sitebar-h:50px;
+  --sitenav-h:38px;
+  --railw:264px;
+  --chrome-h:calc(var(--sitebar-h) + var(--sitenav-h) + var(--topbar-h));
+  --offset:calc(var(--chrome-h) + var(--ticker-h) + 18px);
+}
+
+/* 문서 제목 막대는 전역 막대 아래에 붙는다 */
+.topbar{top:calc(var(--sitebar-h) + var(--sitenav-h))}
+
+/* ── 전역 상단바 ── */
+.sitebar{position:sticky;top:0;z-index:80;background:rgba(238,240,233,.96);backdrop-filter:saturate(160%) blur(8px);border-bottom:1px solid var(--rule)}
+.sitebar .bar{height:var(--sitebar-h);display:flex;align-items:center;gap:14px}
+.sitebar .dot{width:8px;height:8px;border-radius:50%;background:var(--mark);flex:none}
+.sitebar .brand{font-size:15.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;color:var(--ink);text-decoration:none}
+.sitebar .brand:hover{color:var(--mark)}
+.sitebar .hint{margin-left:auto;font-size:11.5px;font-weight:500;color:var(--ink-soft);white-space:nowrap}
+.searchbox{position:relative;flex:1;max-width:520px;margin-left:6px}
+.searchbox input{
+  width:100%;height:32px;padding:0 66px 0 12px;
+  font-family:var(--sans);font-size:14px;font-weight:500;color:var(--ink);
+  background:var(--sheet);border:1.5px solid var(--ink);border-radius:0;
+}
+.searchbox input::placeholder{color:var(--ink-soft);font-weight:400}
+.searchbox input:focus{outline:2px solid var(--mark);outline-offset:1px}
+.searchbox .kbd{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.06em;
+  color:var(--ink-soft);border:1px solid var(--rule);padding:1px 5px;pointer-events:none;
+}
+.searchbox input:not(:placeholder-shown) ~ .kbd{display:none}
+
+/* ── 전역 Part 네비 ── */
+.sitenav{position:sticky;top:var(--sitebar-h);z-index:79;border-bottom:1.5px solid var(--ink);background:rgba(247,249,245,.95);backdrop-filter:saturate(160%) blur(8px)}
+.sitenav .bar{height:var(--sitenav-h);display:flex;align-items:center}
+.snav-list{display:flex;align-items:center;gap:3px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.snav-list::-webkit-scrollbar{display:none}
+.snav-btn{
+  display:inline-block;font-size:12px;font-weight:600;padding:3px 8px;line-height:1.5;
+  border:1px solid transparent;color:var(--ink-soft);text-decoration:none;white-space:nowrap;
+}
+.snav-btn:hover{color:var(--ink);border-color:var(--rule)}
+.snav-btn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.snav-btn[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.snav-btn.tag{color:var(--mark);border-color:var(--rule);letter-spacing:.08em;margin-left:6px}
+.snav-btn.tag:hover{color:#fff;background:var(--mark);border-color:var(--mark)}
+
+/* ── 넓은 화면: 타임라인을 왼쪽 고정 레일로 ── */
+@media (min-width:1080px){
+  :root{--offset:calc(var(--chrome-h) + 18px)}
+
+  /* 본문 전체를 레일 폭만큼 오른쪽으로 민다. 전역 막대는 화면 전체를 덮되 속 내용은 같은 자리에 둔다 */
+  body{padding-left:var(--railw)}
+  .sitebar,.sitenav{margin-left:calc(-1 * var(--railw));padding-left:var(--railw)}
+
+  /* 레일이 숫자 티커와 '타임라인 ↑'의 역할을 대신한다 */
+  .ticker{display:none}
+  .topbar .up{display:none}
+  .cardnav{display:none}
+
+  .tl{
+    position:fixed;left:0;top:var(--chrome-h);bottom:0;width:var(--railw);z-index:50;
+    margin:0;padding:0;overflow-y:auto;overscroll-behavior:contain;
+    background:#F4F6F0;border-right:1.5px solid var(--ink);
+  }
+  .tl-head{
+    display:block;position:sticky;top:0;z-index:2;
+    padding:11px 16px 9px;background:#F4F6F0;border-bottom:1px solid var(--rule);
+  }
+  .tl-head h2{font-size:14px}
+  .tl-head p{display:none}
+  .tl-scroll{overflow:visible;padding:0}
+  .tl-track{display:block;padding:16px 14px 0;min-width:0}
+  .tl-phase{position:relative;min-width:0;padding:0 0 18px 15px;border-left:1.5px solid var(--ink)}
+  .tl-phase.cond{border-left-style:dashed}
+  .tl-phase:last-child{border-left-color:transparent;padding-bottom:10px}
+  .tl-line{
+    position:absolute;left:-6.5px;top:5px;width:11px;height:11px;border-radius:50%;
+    background:var(--paper);border:1.5px solid var(--ink);
+  }
+  .tl-phase.cond .tl-line{background:var(--paper)}
+  .tl-line::before,.tl-line::after,.tl-phase:last-child .tl-line::after{display:none}
+  .tl-body{padding:0}
+  .tl-no{font-size:10px;letter-spacing:.12em}
+  .tl-phase h3{font-size:13.5px;margin:3px 0 8px}
+  .tl-sub{display:none}
+  .tl-btns{gap:5px}
+  .tl-btn{grid-template-columns:22px minmax(0,1fr);gap:6px;font-size:12.5px;padding:6px 8px}
+  .tl-legend{
+    display:block;margin:0;padding:12px 16px 22px;font-size:11.5px;line-height:1.6;
+    border-top:1px solid var(--rule);
+  }
+  .tl-legend span{display:block}
+}
+
+@media (max-width:640px){
+  :root{--sitebar-h:46px;--sitenav-h:36px}
+  .sitebar .brand,.sitebar .hint{display:none}
+  .searchbox{max-width:none;margin-left:0}
+}
+@media print{
+  .sitebar,.sitenav{display:none}
+  body{padding-left:0!important}
+  .tl{position:static!important;display:none}
+}
+/* == handout:begin == */
+/* ══ 연수자료 뽑기 ══ */
+:root{--hobar-h:46px}
+
+/* 상단바 메뉴 버튼 */
+.hobtn{
+  margin-left:auto;font-family:var(--sans);font-size:12.5px;font-weight:600;
+  padding:5px 12px;border:1.5px solid var(--ink);background:var(--sheet);color:var(--ink);
+  cursor:pointer;white-space:nowrap;
+}
+.hobtn:hover{background:var(--ink);color:#fff}
+.hobtn:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.sitebar .hint{margin-left:14px}
+
+/* 고르는 중에 뜨는 막대 */
+.hobar{display:none}
+body.hoselect .hobar{
+  display:block;position:sticky;top:calc(var(--sitebar-h) + var(--sitenav-h));z-index:78;
+  background:var(--ink);color:#fff;
+}
+body.hoselect .topbar{top:calc(var(--sitebar-h) + var(--sitenav-h) + var(--hobar-h))}
+body.hoselect{--chrome-h:calc(var(--sitebar-h) + var(--sitenav-h) + var(--hobar-h) + var(--topbar-h))}
+.hobar .bar{height:var(--hobar-h);display:flex;align-items:center;gap:10px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.hobar .bar::-webkit-scrollbar{display:none}
+.hobar b{font-size:13px;font-weight:700;white-space:nowrap}
+.hobar .hocount{font-family:var(--mono);font-size:12px;color:#C8CCC1;white-space:nowrap;font-variant-numeric:tabular-nums}
+.hobar label{display:flex;align-items:center;gap:4px;font-size:12px;color:#DFEBDD;white-space:nowrap;cursor:pointer}
+.hobar button{
+  font-family:var(--sans);font-size:12px;font-weight:600;white-space:nowrap;
+  padding:4px 10px;border:1px solid #5C6360;background:none;color:#fff;cursor:pointer;
+}
+.hobar button:hover{background:#fff;color:var(--ink);border-color:#fff}
+.hobar .go{margin-left:auto;background:var(--mark);border-color:var(--mark)}
+.hobar .go:hover{background:#fff;color:var(--mark)}
+.hobar .go[disabled]{opacity:.4;cursor:default;background:none;border-color:#5C6360;color:#C8CCC1}
+
+/* 카드마다 붙는 선택칸 */
+.hopick{display:none}
+body.hoselect .hopick{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  margin:10px 0 0;font-family:var(--mono);font-size:10.5px;font-weight:700;
+  color:var(--ink-soft);cursor:pointer;
+}
+body.hoselect .hopick input{width:15px;height:15px;accent-color:var(--mark);cursor:pointer}
+body.hoselect .task{transition:box-shadow .12s}
+body.hoselect .task.hoon{box-shadow:0 0 0 2px var(--mark)}
+body.hoselect .task.hoon .gutter{background:var(--dropout)}
+@media (max-width:640px){
+  body.hoselect .hopick{margin:0 0 0 auto}
+}
+
+/* 인쇄용 조각은 화면에서 감춘다 */
+.pcover,.pstrip{display:none}
+
+@media print{
+  @page{size:A4;margin:13mm 14mm 15mm}
+  body{print-color-adjust:exact;-webkit-print-color-adjust:exact;font-size:10.5pt}
+  .sitebar,.sitenav,.hobar,.hopick,.tl{display:none!important}
+  main{max-width:none;margin:0}
+
+  /* 고른 카드만 남긴다. 뽑기를 거치지 않은 보통 인쇄는 종전 그대로다 */
+  body.hoready .task:not(.hoon){display:none}
+  body.hoready .pcover,body.hoready .pstrip{display:block}
+  body.hoready footer{display:none}
+  .pbrk{break-before:page}
+
+  /* 표지 */
+  .pcover{padding:0 0 6mm}
+  .pcover .pc-eyebrow{font-family:var(--mono);font-size:9pt;letter-spacing:.14em;color:var(--mark);font-weight:700;margin:0 0 6mm}
+  .pcover h1{font-size:26pt;font-weight:800;letter-spacing:-.02em;line-height:1.2;margin:0 0 4mm}
+  .pcover .pc-sub{font-size:11pt;color:var(--ink-soft);margin:0 0 8mm}
+  .pcover .pc-meta{border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule);padding:3mm 0;margin:0 0 8mm;font-size:9.5pt}
+  .pcover .pc-meta div{margin:0 0 1.5mm}
+  .pcover .pc-meta b{font-family:var(--mono);font-size:8.5pt;letter-spacing:.1em;color:var(--ink-soft);margin-right:5mm}
+  .pcover h2{font-size:12pt;margin:0 0 3mm;padding-bottom:2mm;border-bottom:1.5px solid var(--ink)}
+  .pcover ol{list-style:none;margin:0;padding:0;columns:2;column-gap:10mm}
+  .pcover li{font-size:9.5pt;line-height:1.7;break-inside:avoid;display:flex;gap:3mm}
+  .pcover li i{font-style:normal;font-family:var(--mono);font-weight:700;color:var(--mark)}
+  .pcover .pc-foot{margin:8mm 0 0;padding-top:3mm;border-top:1px solid var(--rule);font-size:8.5pt;color:var(--ink-soft);line-height:1.6}
+
+  /* 카드 위 가로 타임라인 */
+  .pstrip{margin:0 0 5mm;padding:0 0 3mm;border-bottom:1.5px solid var(--ink);break-after:avoid}
+  .pstrip .ps-cap{font-family:var(--mono);font-size:7.5pt;letter-spacing:.12em;color:var(--ink-soft);margin:0 0 2.5mm}
+  .pstrip .ps-row{display:grid;gap:0 4mm}
+  .ps-p{position:relative;border-top:1.2px solid var(--ink);padding:2.5mm 0 0}
+  .ps-p.cond{border-top-style:dashed}
+  .ps-p::before{content:"";position:absolute;left:0;top:-3.2px;width:6px;height:6px;border-radius:50%;background:#fff;border:1.2px solid var(--ink)}
+  .ps-p .ps-no{font-family:var(--mono);font-size:6.5pt;font-weight:700;letter-spacing:.1em;color:var(--mark);margin:0}
+  .ps-p .ps-h{font-size:7.5pt;font-weight:700;line-height:1.3;margin:.5mm 0 1.5mm;letter-spacing:-.01em}
+  .ps-p ul{display:flex;flex-wrap:wrap;gap:1mm;list-style:none;margin:0;padding:0}
+  .ps-p li{font-family:var(--mono);font-size:6.5pt;font-weight:700;padding:0 1.2mm;border:.8px solid var(--rule);color:var(--ink-soft)}
+  .ps-p li.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* 카드를 종이에 맞춘다 */
+  .task{border:0;box-shadow:none;grid-template-columns:60px minmax(0,1fr);break-inside:auto}
+  .gutter{padding:0;background:none;border-right:1px solid var(--rule);text-align:left}
+  .gutter b{font-size:16pt}
+  .body{padding:0 0 0 6mm}
+  .task h3{font-size:15pt;line-height:1.3;margin:0 0 3mm;break-after:avoid}
+  .desc{font-size:10pt;margin:0 0 4mm}
+  .tags{margin-bottom:3mm}
+  .tag{font-size:7.5pt;padding:1px 5px}
+  .w6{margin:0 0 4mm;break-inside:avoid}
+  .w6 dl{grid-template-columns:88px minmax(0,1fr)}
+  .w6 dt{font-size:8.5pt;padding:2mm 3mm}
+  .w6 dd{font-size:9.5pt;padding:2mm 0 2mm 4mm}
+  .memo{break-inside:avoid;padding:3mm 4mm}
+  .memo h4{font-size:8pt;margin-bottom:2mm}
+  .memo li{font-size:9pt;line-height:1.6}
+  .src{margin:0 0 3mm}
+  .srcbtn{border:0;padding:0;margin-right:4mm;background:none;font-size:8.5pt;color:var(--ink-soft);border-radius:0}
+  .srcbtn::before{content:""}
+  code{font-size:8.5pt;white-space:normal}
+}
+/* == handout:end == */
+/* == walllink:begin == */
+.wall-link{
+  flex:none;font-size:12px;font-weight:700;white-space:nowrap;margin-left:12px;
+  padding:3px 9px;border:1px solid var(--ink);color:var(--ink);text-decoration:none;
+}
+.wall-link:hover{background:var(--ink);color:#fff}
+.wall-link:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.sitenav .bar{gap:0}
+/* == walllink:end == */
+/* == refblock:begin == */
+.refnote{margin:0 0 14px;font-size:11.5px;color:var(--ink-soft);letter-spacing:.01em}
+.refh{
+  margin:20px 0 8px;padding-top:12px;border-top:1px solid var(--rule-soft);
+  font-family:var(--mono);font-size:11px;letter-spacing:.09em;font-weight:600;color:var(--ink-soft);
+}
+.refh:first-of-type{margin-top:0;padding-top:0;border-top:0}
+.refp{margin:0 0 12px;font-size:13.5px;line-height:1.75;color:var(--ink)}
+.refp b{font-weight:700}
+
+.refscroll{overflow-x:auto;margin:6px 0 14px}
+.cutmap{display:block;width:100%;min-width:640px;height:auto;font-family:var(--sans)}
+.cutmap .hdbg{fill:var(--sheet);stroke:var(--rule)}
+.cutmap .hd.hi .hdbg{fill:var(--ink);stroke:var(--ink)}
+.cutmap .hdt{fill:var(--ink);font-size:13px;font-weight:700}
+.cutmap .hd.hi .hdt{fill:#fff}
+.cutmap .hdsub{fill:var(--ink-soft);font-size:10.5px}
+.cutmap .col{fill:var(--ink);font-family:var(--mono);font-size:11.5px;font-weight:600}
+.cutmap .track{fill:var(--sheet);stroke:var(--rule)}
+.cutmap .zone{fill:var(--dropout);stroke:none}
+.cutmap .cut{stroke:var(--ink-soft);stroke-width:1;stroke-dasharray:2 2}
+.cutmap .cutlab{fill:var(--ink);font-size:10px;font-weight:700}
+.cutmap .cutnum{fill:var(--ink-soft);font-family:var(--mono);font-size:9.5px}
+.cutmap .dot{fill:var(--mark);stroke:#fff;stroke-width:1.5}
+.cutmap .sc{fill:var(--ink);font-size:10.5px;font-weight:600}
+.cutmap .resbg{fill:var(--sheet);stroke:var(--rule);stroke-width:1.4}
+.cutmap .res.diff .resbg{fill:var(--mark);stroke:var(--mark)}
+.cutmap .rest{fill:var(--ink);font-size:14px;font-weight:700}
+.cutmap .res.diff .rest{fill:#fff}
+.cutmap .foot{fill:var(--ink);font-size:11.5px}
+.cutmap .foot2{fill:var(--ink-soft);font-size:10.5px}
+
+.reftbl-wrap{overflow-x:auto;margin:6px 0 14px}
+.reftbl{width:100%;min-width:480px;border-collapse:collapse;font-size:12.5px;background:var(--sheet)}
+.reftbl caption{
+  caption-side:top;text-align:left;padding:0 0 6px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--ink-soft);
+}
+.reftbl th,.reftbl td{border:1px solid var(--rule);padding:6px 9px;line-height:1.55;vertical-align:top}
+.reftbl thead th{background:var(--dropout);font-weight:700;text-align:center;white-space:nowrap}
+.reftbl tbody th{background:#FAFBF8;font-weight:600;text-align:center;white-space:nowrap}
+.reftbl.calc td{text-align:center}
+.reftbl tr.sum th{background:var(--ink);color:#fff;text-align:right}
+.reftbl tr.sum td{background:var(--dropout);font-weight:700;text-align:center}
+
+.refsteps{margin:0 0 14px;padding-left:18px}
+.refsteps li{margin:0 0 7px;font-size:13px;line-height:1.7}
+.refsteps li b{font-weight:700}
+
+.refwarn{border:1.5px solid var(--ink);padding:11px 14px;margin:4px 0 0}
+.refwarn>b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.09em;margin:0 0 7px}
+.refwarn ul{margin:0;padding-left:16px}
+.refwarn li{margin:0 0 6px;font-size:12.5px;line-height:1.7}
+.refwarn li:last-child{margin-bottom:0}
+
+@media (max-width:640px){.refp{font-size:13px}.refsteps li{font-size:12.5px}}
+@media print{.refscroll,.reftbl-wrap{overflow:visible}.cutmap,.reftbl{min-width:0}}
+/* == refblock:end == */
+</style>
+</head>
+<body>
+
+<header class="sitebar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <a class="brand" href="../index.html">나이스 업무 타임라인</a>
+    <div class="searchbox">
+      <input id="siteq" type="search" autocomplete="off" spellcheck="false"
+             placeholder="업무카드 검색 · 예: 전입, 마감, 승인요청, 학교생활기록부"
+             aria-label="업무카드 검색">
+      <span class="kbd">Ctrl K</span>
+    </div>
+    <!-- handout:begin --><button type="button" class="hobtn" id="hobtn">연수자료 뽑기</button><!-- handout:end -->
+    <p class="hint">Enter를 누르면 전체 색인에서 찾습니다</p>
+  </div>
+</header>
+
+<nav class="sitenav" aria-label="Part 바로가기">
+  <div class="wrap bar">
+    <ol class="snav-list" id="siteticks"></ol>
+    <!-- walllink:begin --><a class="wall-link" href="../cards.html">업무카드 모아보기 →</a><!-- walllink:end -->
+  </div>
+</nav>
+<!-- handout:begin -->
+<div class="hobar" id="hobar" aria-label="연수자료 뽑기">
+  <div class="wrap bar">
+    <b>연수자료 뽑기</b>
+    <span class="hocount" id="hocount">0장 선택</span>
+    <button type="button" id="hoall">전체 선택</button>
+    <button type="button" id="honone">해제</button>
+    <label><input type="checkbox" id="hocover" checked>표지·목차</label>
+    <label><input type="checkbox" id="hostrip" checked>카드마다 타임라인</label>
+    <button type="button" id="hoclose">닫기</button>
+    <button type="button" class="go" id="hogo" disabled>인쇄 · PDF 저장</button>
+  </div>
+</div>
+<!-- handout:end -->
+
+
+<div class="topbar">
+  <div class="wrap bar">
+    <span class="dot" aria-hidden="true"></span>
+    <b>추정분할점수 산출</b>
+    <span class="sub">업무 13개 · 시간순 타임라인</span>
+    <a class="home" href="../index.html">← 전체 색인</a>
+    <a class="up" href="#timeline">타임라인 ↑</a>
+  </div>
+  <div class="ticker">
+    <div class="wrap bar">
+      <ol class="tick-list" id="ticks" aria-label="업무 바로가기"></ol>
+      <p class="tick-now" id="ticknow"></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Part 6 성적 · Section_04 · pp. 816–829</p>
+    <h1>추정분할점수 산출
+      <em>업무 13개를 손대는 시점 순서로</em>
+    </h1>
+    <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
+    <dl class="meta-strip">
+<div><dt>업무시기</dt><dd>정기시험과 수행평가 실시 전</dd></div>
+      <div><dt>업무담당</dt><dd>교과담당교사</dd></div>
+      <div><dt>메뉴경로</dt><dd>[성적-추정분할점수-추정분할점수관리]</dd></div>
+      <div><dt>선행조건</dt><dd>[성적-정기시험/수행선행작업-성취평가기준관리]에서 과목별 성취기준과 [성적-정기시험-문항정보표관리]에서 문항정보표에 성취기준, 난이도, 배점 등을 등록함.</dd></div>
+    </dl>
+  </header>
+
+  <section class="tl" id="timeline" aria-label="업무 타임라인">
+    <div class="tl-head">
+      <h2>업무 타임라인</h2>
+      <p>왼쪽에서 오른쪽으로 갈수록 나중에 하는 일입니다. 번호는 원문 업무 번호입니다.</p>
+    </div>
+    <div class="tl-scroll">
+      <ol class="tl-track">
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">01</p>
+            <h3>고사 전 분할점수 입력</h3>
+            <p class="tl-sub">성취기준 등록과 문항정보표 마감이 끝난 뒤 · 정기시험·수행 실시 전</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 예상정답률 입력"><span>01</span>예상정답률 입력</button><button type="button" class="tl-btn" data-go="t2" title="02 입력내용 조회"><span>02</span>입력내용 조회</button><button type="button" class="tl-btn" data-go="t7" title="07 수행 분할점수 입력"><span>07</span>수행 분할점수 입력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">02</p>
+            <h3>라운드 확정과 결재</h3>
+            <p class="tl-sub">동일교과 전 교사의 예상정답률 입력마감 완료 후</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t4" title="04 라운드 확정 상신"><span>04</span>라운드 확정 상신</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">03</p>
+            <h3>문항 오류·재시험 발생 시</h3>
+            <p class="tl-sub">조건부 · 확정 이후 되돌리기가 필요할 때만</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t5" title="05 확정 라운드 취소"><span>05</span>확정 라운드 취소</button><button type="button" class="tl-btn" data-go="t3" title="03 입력마감 취소"><span>03</span>입력마감 취소</button><button type="button" class="tl-btn" data-go="t6" title="06 분할점수 변경 확인"><span>06</span>분할점수 변경 확인</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">04</p>
+            <h3>학기말 최종 산출</h3>
+            <p class="tl-sub">정기시험 라운드 확정과 수행 분할점수 입력을 모두 마친 뒤</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t8" title="08 학기말 산출"><span>08</span>학기말 산출</button><button type="button" class="tl-btn" data-go="t9" title="09 승인요청·마감"><span>09</span>승인요청·마감</button></div>
+          </div>
+        </li>
+        <li class="tl-phase">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">05</p>
+            <h3>성적산출 선행작업 반영</h3>
+            <p class="tl-sub">학기말 추정분할점수 산출 후 · 성적산출 전</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t11" title="11 산출결과 가져오기"><span>11</span>산출결과 가져오기</button><button type="button" class="tl-btn" data-go="t12" title="12 대표학과 결과복사"><span>12</span>대표학과 결과복사</button><button type="button" class="tl-btn" data-go="t13" title="13 전과목 확인·출력"><span>13</span>전과목 확인·출력</button></div>
+          </div>
+        </li>
+        <li class="tl-phase cond">
+          <div class="tl-line"></div>
+          <div class="tl-body">
+            <p class="tl-no">06</p>
+            <h3>학기말 값 수정이 필요할 때</h3>
+            <p class="tl-sub">조건부 · 문항정보표나 예상정답률을 다시 고쳐야 할 때만</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t10" title="10 산출·마감 취소"><span>10</span>산출·마감 취소</button></div>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+    <p class="tl-legend">
+      <span><i>실선</i> 모든 학교가 거치는 구간</span>
+      <span><i>점선</i> 해당하는 경우에만 하는 구간</span>
+      <span><i>카드 좌측 글자</i> 원문 STAGE 표기</span>
+    </p>
+  </section>
+
+  <main>
+<article class="task" id="t1" data-num="1" data-stage="A" data-when="평가전입력" data-who="교과담당교사">
+  <div class="gutter"><b>01</b><span class="gstage" title="원문 STAGE A · 정기시험 예상정답률">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">정기시험 실시 전</span><span class="tag">문항정보표 마감 필요</span><span class="tag opt">2회 이상 라운드 권장</span></div>
+    <h3>라운드 등록과 최소능력자 예상정답률 입력·마감</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.818–819 열기">원문 p.818–819</button></p>
+    <p class="desc">추정 분할점수를 이용해서 성취율을 산출하는 과목이라면 교과담당교사가 고사·학년·과목·라운드 단위로 최소능력자 예상정답률을 직접 입력한다. <strong>[교과담임-성적-정기시험-문항정보표관리]에서 해당 고사의 과목에 대한 문항정보표가 마감되어 있어야만 최소능력자 예상정답률 입력이 가능함.</strong> '성취기준', '난이도', '배점' 등을 입력하지 않고 <span class="btn">{마감}</span>한 경우에는 정기시험에 대한 추정 분할점수를 산출할 수 없다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>정기시험과 수행평가 실시 전, [성적-정기시험/수행선행작업-성취평가기준관리]의 과목별 성취기준과 [성적-정기시험-문항정보표관리]의 문항정보표 등록·마감이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-정기시험추정분할점수산출관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-분할점수-분할점수관리-정기시험추정분할점수산출관리]</code>에서 '학년도', '학기' 확인 후 '고사', '학년', '과목', '라운드'를 선택하고 <span class="btn">{조회}</span>함 → <span class="btn">{예상정답률입력}</span> 탭에서 '최소능력자 예상정답률(%)'을 입력하고 <span class="btn">{저장}</span> 및 <span class="btn">{입력마감}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>성취도를 매기는 기준선을 교사들의 전문적 판단으로 미리 합의해 두어, 고사 결과가 나온 뒤 임의로 등급 경계가 흔들리지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>입력 조건과 제약</h4><ul><li><b>'최소능력자 예상정답률(%)'은 5% 단위로 입력 가능함. 단, 'E 단계'는 5% 단위를 벗어나서(예: 49% 등) 입력 가능함.</b></li><li>2026학년도 기준으로 평가단계는 5수준+미도달만 선택 가능함. 2015 개정 교육과정을 적용받는 2026학년도 3학년 과목에서 '5수준(A-E)+미도달'을 선택하는 경우 E/미도달 추정 분할점수가 산출되나 확인용도로만 제공되며, E등급의 성취율은 0으로 고정 반영됨.</li><li><b>예상정답률 제약조건을 충족하지 못하는 경우 적색 글자로 표시되며, 라운드 확정이 불가능함.</b> 최소능력자 예상정답률은 상위수준의 예상정답률보다 높을 수 없음. 난이도별 최소 정답률은 낮은 난이도가 높은 난이도보다 정답률이 낮을 수 없음.</li><li>상위 성취수준에 해당되는 최소능력자 예상정답률과 차하위 성취수준에 해당되는 최소능력자 예상정답률 간의 차이가 20% 이상인 경우 차하위 정답률 칸의 색상이 적색으로 표시됨(예시: A 95, B 65인 경우).</li><li><span class="btn">{예상정답률입력}</span> 탭에서 조회되는 '문항구분', '난이도', '해당문항번호', '문항수', '배점합'의 정보는 <code>[성적-정기시험-문항정보표관리]</code>에서 입력한 정기시험 과목의 내용임.</li><li>정기시험 추정 분할점수는 소수점 둘째 자리까지 산출됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>라운드 운영</h4><ul><li><span class="btn">{라운드등록}</span>하면 '라운드 번호'가 추가되고 '복사대상라운드'에서 이전에 등록한 라운드를 선택하고 <span class="btn">{등록}</span>하면 선택한 라운드의 내용이 복사되고 수정할 수 있음.</li><li>나이스에서는 라운드를 1회만 진행해도 추정분할점수를 확정할 수 있으나, <b>2회 이상 라운드 실시를 권장함.</b></li><li>분할점수 산출 시 1, 2라운드를 합산하여 산출하는 것이 아닌 해당 라운드 중에 최종 확정한 라운드에 한해 학기말 분할점수에 활용하도록 되어 있음.</li><li><span class="btn">{라운드삭제}</span>에서 불필요한 라운드를 삭제할 수 있음.</li><li><b>추정분할점수 확정 시 동일교과 수업에 참여하는 모든 교사가 예상정답율 입력 후 마감이 되어야만 <span class="btn">{확정}</span>이 가능함.</b> 다만 현재는 한시적으로 모든 교사가 예상정답률을 등록하지 않아도 업무 처리가 가능함.</li></ul></div>
+  <div class="memo" style="margin-top:12px"><h4>참고 · 고정분할점수와 추정분할점수</h4>
+<p class="refnote">이 업무가 왜 필요한지 이해하기 위한 참고 자료다. 나이스 매뉴얼 원문에는 없다.</p>
+
+<h5 class="refh">분할점수란</h5>
+<p class="refp">분할점수는 학생의 성취도를 <b>A·B·C·D·E</b>로 나누는 커트라인 점수다.
+"80점 이상이면 B"라고 할 때 그 80점이 B의 분할점수다.
+커트라인을 정하는 방법이 두 가지인데, 점수를 미리 못 박아 두는 <b>고정분할점수</b>와
+시험 난이도에 맞춰 학교가 직접 산출하는 <b>추정분할점수</b>다.
+<b>핵심 차이는 하나다. 시험 난이도를 커트라인에 반영하느냐 아니냐.</b></p>
+
+<div class="reftbl-wrap"><table class="reftbl">
+<thead><tr><th></th><th>고정분할점수</th><th>추정분할점수</th></tr></thead>
+<tbody>
+<tr><th>커트라인</th><td>90 / 80 / 70 / 60 / 40점으로 늘 같음</td><td>정기시험마다 학교가 산출(평가 시행 전)</td></tr>
+<tr><th>절차</th><td>산출 절차가 없어 간단함</td><td>교과협의회 협의와 나이스 입력 절차가 필요함</td></tr>
+<tr><th>난이도 반영</th><td>반영하지 않음</td><td>문항 난이도를 반영함</td></tr>
+<tr><th>한계·장점</th><td>시험이 어렵게 출제되면 실력이 같아도 성취도가 낮게 나올 수 있음</td><td>실력과 성취도가 잘 대응함</td></tr>
+</tbody></table></div>
+
+<h5 class="refh">난이도가 성취도를 흔든다</h5>
+<div class="refscroll"><svg xmlns="http://www.w3.org/2000/svg" class="cutmap" viewBox="0 0 660 288" role="img" aria-label="같은 실력의 학생이라도 고정분할점수에서는 쉬운 시험에서 B, 어려운 시험에서 D가 되지만, 추정분할점수는 커트라인이 난이도를 따라 움직여 두 경우 모두 B가 된다"><text class="col" x="211" y="22" text-anchor="middle">쉬운 시험</text><text class="col" x="487" y="22" text-anchor="middle">어려운 시험</text><g class="hd"><rect class="hdbg" x="8" y="44" width="96" height="24" rx="5"/><text class="hdt" x="56" y="61" text-anchor="middle">고정분할점수</text></g><text class="hdsub" x="56" y="84" text-anchor="middle">커트라인이</text><text class="hdsub" x="56" y="97" text-anchor="middle">늘 같다</text><rect class="track" x="116" y="46" width="190" height="22" rx="4"/><rect class="zone" x="268.0" y="46" width="38.0" height="22" rx="4"/><line class="cut" x1="230.0" y1="44" x2="230.0" y2="70"/><text class="cutlab" x="230.0" y="40" text-anchor="middle">D</text><text class="cutnum" x="230.0" y="81" text-anchor="middle">60</text><line class="cut" x1="249.0" y1="44" x2="249.0" y2="70"/><text class="cutlab" x="249.0" y="40" text-anchor="middle">C</text><text class="cutnum" x="249.0" y="81" text-anchor="middle">70</text><line class="cut" x1="268.0" y1="44" x2="268.0" y2="70"/><text class="cutlab" x="268.0" y="40" text-anchor="middle">B</text><text class="cutnum" x="268.0" y="81" text-anchor="middle">80</text><line class="cut" x1="287.0" y1="44" x2="287.0" y2="70"/><text class="cutlab" x="287.0" y="40" text-anchor="middle">A</text><text class="cutnum" x="287.0" y="81" text-anchor="middle">90</text><circle class="dot" cx="281.3" cy="57" r="5.5"/><text class="sc" x="281.3" y="98" text-anchor="middle">학생 87점</text><g class="res same"><rect class="resbg" x="314" y="44" width="50" height="26" rx="5"/><text class="rest" x="339" y="61" text-anchor="middle">B</text></g><rect class="track" x="392" y="46" width="190" height="22" rx="4"/><rect class="zone" x="544.0" y="46" width="38.0" height="22" rx="4"/><line class="cut" x1="506.0" y1="44" x2="506.0" y2="70"/><text class="cutlab" x="506.0" y="40" text-anchor="middle">D</text><text class="cutnum" x="506.0" y="81" text-anchor="middle">60</text><line class="cut" x1="525.0" y1="44" x2="525.0" y2="70"/><text class="cutlab" x="525.0" y="40" text-anchor="middle">C</text><text class="cutnum" x="525.0" y="81" text-anchor="middle">70</text><line class="cut" x1="544.0" y1="44" x2="544.0" y2="70"/><text class="cutlab" x="544.0" y="40" text-anchor="middle">B</text><text class="cutnum" x="544.0" y="81" text-anchor="middle">80</text><line class="cut" x1="563.0" y1="44" x2="563.0" y2="70"/><text class="cutlab" x="563.0" y="40" text-anchor="middle">A</text><text class="cutnum" x="563.0" y="81" text-anchor="middle">90</text><circle class="dot" cx="517.4" cy="57" r="5.5"/><text class="sc" x="517.4" y="98" text-anchor="middle">학생 66점</text><g class="res diff"><rect class="resbg" x="590" y="44" width="50" height="26" rx="5"/><text class="rest" x="615" y="61" text-anchor="middle">D</text></g><g class="hd hi"><rect class="hdbg" x="8" y="158" width="96" height="24" rx="5"/><text class="hdt" x="56" y="175" text-anchor="middle">추정분할점수</text></g><text class="hdsub" x="56" y="198" text-anchor="middle">커트라인이</text><text class="hdsub" x="56" y="211" text-anchor="middle">난이도를 따라간다</text><rect class="track" x="116" y="160" width="190" height="22" rx="4"/><rect class="zone" x="277.5" y="160" width="28.5" height="22" rx="4"/><line class="cut" x1="247.1" y1="158" x2="247.1" y2="184"/><text class="cutlab" x="247.1" y="154" text-anchor="middle">D</text><text class="cutnum" x="247.1" y="195" text-anchor="middle">69</text><line class="cut" x1="262.3" y1="158" x2="262.3" y2="184"/><text class="cutlab" x="262.3" y="154" text-anchor="middle">C</text><text class="cutnum" x="262.3" y="195" text-anchor="middle">77</text><line class="cut" x1="277.5" y1="158" x2="277.5" y2="184"/><text class="cutlab" x="277.5" y="154" text-anchor="middle">B</text><text class="cutnum" x="277.5" y="195" text-anchor="middle">85</text><line class="cut" x1="292.7" y1="158" x2="292.7" y2="184"/><text class="cutlab" x="292.7" y="154" text-anchor="middle">A</text><text class="cutnum" x="292.7" y="195" text-anchor="middle">93</text><circle class="dot" cx="281.3" cy="171" r="5.5"/><text class="sc" x="281.3" y="212" text-anchor="middle">학생 87점</text><g class="res same"><rect class="resbg" x="314" y="158" width="50" height="26" rx="5"/><text class="rest" x="339" y="175" text-anchor="middle">B</text></g><rect class="track" x="392" y="160" width="190" height="22" rx="4"/><rect class="zone" x="513.6" y="160" width="68.4" height="22" rx="4"/><line class="cut" x1="475.6" y1="158" x2="475.6" y2="184"/><text class="cutlab" x="475.6" y="154" text-anchor="middle">D</text><text class="cutnum" x="475.6" y="195" text-anchor="middle">44</text><line class="cut" x1="494.6" y1="158" x2="494.6" y2="184"/><text class="cutlab" x="494.6" y="154" text-anchor="middle">C</text><text class="cutnum" x="494.6" y="195" text-anchor="middle">54</text><line class="cut" x1="513.6" y1="158" x2="513.6" y2="184"/><text class="cutlab" x="513.6" y="154" text-anchor="middle">B</text><text class="cutnum" x="513.6" y="195" text-anchor="middle">64</text><line class="cut" x1="536.4" y1="158" x2="536.4" y2="184"/><text class="cutlab" x="536.4" y="154" text-anchor="middle">A</text><text class="cutnum" x="536.4" y="195" text-anchor="middle">76</text><circle class="dot" cx="517.4" cy="171" r="5.5"/><text class="sc" x="517.4" y="212" text-anchor="middle">학생 66점</text><g class="res same"><rect class="resbg" x="590" y="158" width="50" height="26" rx="5"/><text class="rest" x="615" y="175" text-anchor="middle">B</text></g><text class="foot" x="8" y="244" text-anchor="start">같은 실력의 학생인데 고정분할점수에서는 성취도가 B에서 D로 떨어진다.</text><text class="foot" x="8" y="260" text-anchor="start">추정분할점수는 커트라인이 함께 움직여 두 경우 모두 B를 지킨다.</text><text class="foot2" x="8" y="278" text-anchor="start">* 개념을 보이기 위한 가상 수치다. 실제 추정분할점수는 아래 앙고프 방식으로 산출한다.</text></svg></div>
+
+<h5 class="refh">나이스가 계산하는 방식 · 앙고프(Angoff)</h5>
+<p class="refp">나이스는 앙고프 방법으로 추정분할점수를 계산한다. 원리는 한 문장이다.
+<b>"그 성취수준의 경계에 턱걸이한 학생이 이 문항을 맞힐 확률은 몇 %일까?"</b>
+교사가 문항마다 이 예상정답률을 추정하면, 나이스가 <b>배점 × 예상정답률</b>을 모두 더해
+그 수준의 분할점수를 만든다. 업무 1에서 입력하는 '최소능력자 예상정답률(%)'이 바로 이 값이다.</p>
+
+<div class="reftbl-wrap"><table class="reftbl calc">
+<caption>B 수준 분할점수를 구하는 예 · 4문항 각 25점, 만점 100점</caption>
+<thead><tr><th>문항</th><th>배점</th><th>난이도</th><th>최소능력자 예상정답률</th><th>배점 × 예상정답률</th></tr></thead>
+<tbody>
+<tr><th>1번</th><td>25</td><td>쉬움</td><td>95%</td><td>23.75</td></tr>
+<tr><th>2번</th><td>25</td><td>보통</td><td>85%</td><td>21.25</td></tr>
+<tr><th>3번</th><td>25</td><td>보통</td><td>80%</td><td>20.00</td></tr>
+<tr><th>4번</th><td>25</td><td>어려움</td><td>60%</td><td>15.00</td></tr>
+<tr class="sum"><th colspan="4">B 수준의 추정분할점수</th><td>80.00</td></tr>
+</tbody></table></div>
+<p class="refp">정기시험 추정 분할점수가 소수점 둘째 자리까지 산출되는 이유가 여기 있다.
+실제로는 여러 교사가 각자 추정한 뒤 협의하고, 편차가 크면 라운드를 새로 만들어 다시 추정한다.
+<b>추정 → 협의 → 재추정을 되풀이하며 합의점을 찾는 것이 앙고프 방법의 핵심</b>이라
+매뉴얼도 2회 이상 라운드를 권장한다.</p>
+
+<h5 class="refh">이 문서의 업무와 이어 보기</h5>
+<ul class="refsteps">
+<li><b>학기 초, 방식 결정</b> — 교과협의회에서 과목별로 고정·추정 방식을 정하고 학업성적관리위원회 심의를 거쳐 학교장이 결정한다. 추정분할점수를 쓰는 과목은 평가 시행 전에 학생·학부모에게 공지한다.</li>
+<li><b>문항정보표 준비</b> — <code>[교과담임-성적-정기시험-문항정보표관리]</code>에서 문항별 배점·난이도·성취기준을 입력하고 마감한다. 이 배점이 앙고프 계산의 재료가 된다.</li>
+<li><b>예상정답률 입력과 라운드</b> — 업무 1. 참여 교사가 각자 성취수준 경계마다 문항별 예상정답률을 입력한다.</li>
+<li><b>협의와 라운드 반복</b> — 업무 2에서 다른 교사의 입력 값과 분포를 확인하고, 편차가 크면 <span class="btn">{라운드등록}</span>으로 새 라운드를 만들어 다시 추정한다.</li>
+<li><b>라운드 확정</b> — 업무 4. 합의된 라운드 하나를 골라 승인요청하고 결재를 받는다.</li>
+<li><b>수행평가 분할점수</b> — 업무 7. 수행평가는 라운드를 돌리지 않고 교과별 평가계획에서 정한 분할점수를 그대로 입력한다.</li>
+<li><b>학기말 최종 산출</b> — 업무 8. 정기시험과 수행평가 분할점수에 반영비율을 곱해 환산·합산한 값이 학기말 최종 추정 분할점수다.</li>
+</ul>
+
+<div class="refwarn"><b>꼭 기억할 것</b><ul>
+<li><b>반드시 평가 시행 전에 산출한다.</b> 추정분할점수는 정기시험을 볼 때마다 시험 전에 미리 산출해야 한다.</li>
+<li><b>성적 부풀리기 수단이 아니다.</b> 미도달을 막거나 과대평가하려고 예상정답률을 임의로 낮춰 입력하면 산출 결과가 왜곡된다. 성취수준 준거와 문항 난이도를 근거로 교사의 전문성으로 추정해야 한다.</li>
+<li><b>학기말 최종 분할점수는 합산이다.</b> 정기시험과 수행평가 각각의 분할점수에 반영비율을 곱해 환산·합산해서 만든다.</li>
+</ul></div>
+</div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t2" data-num="2" data-stage="A" data-when="평가전입력" data-who="교과담당교사">
+  <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 정기시험 예상정답률">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">예상정답률 입력 중·마감 전후</span><span class="tag">조회 전용</span></div>
+    <h3>교사별·문항범주별·예상분할점수 조회로 입력 내용 확인</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.819–820 열기">원문 p.819–820</button></p>
+    <p class="desc">동일 교과를 여러 교사가 담당하는 과목이라면 라운드를 확정하기 전에 다른 교사의 입력 값과 산출될 분할점수 분포를 미리 확인한다. <strong>세 탭은 모두 조회 기능이므로 입력 값이 바뀌지 않으며, 절차는 탭을 선택하고 <span class="btn">{조회}</span>하는 것으로 같다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>정기시험 예상정답률 입력 중이거나 <span class="btn">{입력마감}</span> 이후 라운드 확정 전</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-정기시험추정분할점수산출관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '고사', '학년', '과목', '라운드'를 선택하고 <span class="btn">{조회}</span>함 → <span class="btn">{교사별입력정보조회}</span> · <span class="btn">{문항범주별조회}</span> · <span class="btn">{예상분할점수조회}</span> 탭 중 필요한 탭을 선택하여 <span class="btn">{조회}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교사 간 판단 차이와 성취수준별 분포를 확정 전에 눈으로 맞춰 보고, 한쪽으로 치우친 분할점수로 확정되는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>어떤 탭을 언제 여는가</h4><ul><li><span class="btn">{교사별입력정보조회}</span> 탭 — 다른 교사가 입력한 정기시험의 정답률이 나타나고 교사명을 입력하여 특정 교사의 입력 내용을 <span class="btn">{조회}</span>할 수 있음. <b>동일교과 모든 교사의 입력·마감 여부를 확인할 때 사용함.</b></li><li><span class="btn">{문항범주별조회}</span> 탭 — 정기시험 문항유형(난이도)에 따른 각 성취수준의 '평균', '표준편차', '최솟값', '최댓값'을 조회할 수 있음.</li><li><span class="btn">{예상분할점수조회}</span> 탭 — 해당 정기시험 예상분할점수 성취수준의 '평균', '표준편차', '최솟값', '최댓값'을 조회할 수 있음. <b>라운드를 확정하기 전 최종 확인용으로 사용함.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t7" data-num="7" data-stage="C" data-when="평가전입력" data-who="교과담당교사">
+  <div class="gutter"><b>07</b><span class="gstage" title="원문 STAGE C · 수행 분할점수">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">정기시험과 수행평가 실시 전</span><span class="tag opt">전체영역 또는 영역별 중 택일</span></div>
+    <h3>수행평가 추정분할점수 입력(전체영역 / 영역별)</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="9" title="원문 p.824–825 열기">원문 p.824–825</button></p>
+    <p class="desc">수행평가 추정분할점수는 정기시험처럼 라운드를 돌려 산출하는 것이 아니라 <strong>교과별 평가계획에서 설정한 성취수준별 분할점수를 그대로 입력</strong>하는 업무입니다. '전체영역'과 '영역별' 중 하나를 선택하여 입력합니다. 학기말 추정분할점수 산출 전에 마쳐 두어야 합니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>정기시험과 수행평가 실시 전, 과목별 성취기준 등록이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-수행평가추정분할점수산출관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-분할점수-분할점수관리-수행평가추정분할점수산출관리]</code>에서 '학년도', '학기' 확인 후 '학년', '과목'을 선택하고 <span class="btn">{조회}</span> → '수행평가 추정분할점수'에서 '전체영역'을 선택 후 '성취수준별 추정분할점수'를 입력하고 <span class="btn">{저장}</span> → 영역별로 설정하는 경우에는 '수행평가 추정분할점수'에서 '영역별'을 선택 후 '성취수준별 분할점수'를 입력하여 <span class="btn">{저장}</span>.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교과별 평가계획에서 합의한 성취수준 기준을 수행평가에도 그대로 적용해, 학기말 최종 추정 분할점수가 계획과 어긋나지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>수행평가 분할점수는 <b>'전체영역' 혹은 '영역별' 중 하나를 선택</b>하여 수행평가에 대한 추정분할점수를 설정함.</li><li>수행평가에 대한 추정분할점수는 <b>교과별 평가계획에서 설정한 성취수준별 분할점수</b>를 설정함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t4" data-num="4" data-stage="B" data-when="라운드확정" data-who="교과담당교사">
+  <div class="gutter"><b>04</b><span class="gstage" title="원문 STAGE B · 정기시험 확정">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">예상정답률 입력마감 후</span><span class="tag">결재 완료 시 자동 확정</span></div>
+    <h3>정기시험 추정분할점수 라운드 확정 승인요청·상신</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.818–819 열기">원문 p.818–819</button></p>
+    <p class="desc">라운드별로 입력한 예상정답률 가운데 최종적으로 사용할 라운드 하나를 골라 확정하는 단계입니다. <strong>동일교과 수업에 참여하는 모든 교사가 예상정답율 입력 후 마감이 되어야만 <span class="btn">{확정}</span>이 가능함</strong>. 나이스에서는 라운드를 1회만 진행해도 추정분할점수를 확정할 수 있으나, 2회 이상 라운드 실시를 권장함.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>정기시험 실시 전, 문항정보표 마감과 최소능력자 예상정답률 입력마감이 끝난 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-정기시험추정분할점수산출관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{추정분할점수산출결과관리}</span>에서 '정기시험추정분할점수-산출결과관리' 창에서 적용할 '라운드' 선택 후 <span class="btn">{승인요청}</span>하고 <span class="btn">{확인}</span>함 → '기안문서상신' 창에서 '내용', '결재선', 산출된 추정 분할점수 자료 확인 후 <span class="btn">{상신}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>여러 라운드 가운데 학교가 실제로 쓸 분할점수 기준 하나를 공식 결재로 못 박아 학기말 최종 분할점수의 근거로 삼으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>정기시험 추정 분할점수의 라운드 회차 확정은 '정기시험추정분할점수-산출결과관리' 창에서 <span class="btn">{승인요청}</span>해야 하며, <b>결재 완료 이후 해당 회차의 라운드가 자동 확정됨</b>.</li><li>분할점수 산출 시 1, 2라운드를 합산하여 산출하는 것이 아닌 해당 라운드 중에 <b>최종 확정한 라운드에 한해</b> 학기말 분할점수에 활용하도록 되어 있음.</li><li><b>확정한 라운드가 최종 학기말 분할점수로 산출됨.</b></li><li><span class="btn">{라운드삭제}</span>에서 불필요한 라운드를 삭제할 수 있음.</li><li>2026학년도 기준으로 평가단계는 5수준+미도달만 선택 가능함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 과목에서 '5수준(A-E)+미도달'을 선택하는 경우 E/미도달 추정 분할점수가 산출되나 확인용도로만 제공되며, <b>E 등급의 성취율은 0으로 고정 반영됨</b>.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t5" data-num="5" data-stage="B" data-when="수시확인" data-who="교과담당교사">
+  <div class="gutter"><b>05</b><span class="gstage" title="원문 STAGE B · 정기시험 확정">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">확정 이후 수정이 필요할 때</span><span class="tag opt">업무승인 과정 필요</span></div>
+    <h3>확정한 라운드 취소</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.819 열기">원문 p.819</button></p>
+    <p class="desc">확정 후 예상정답률이나 라운드 선택을 되돌려야 할 때만 하는 업무입니다. <strong>확정한 라운드를 취소하려면 [승인사항-상신함]에서 해당 과목의 '정기시험 추정분할점수산출 마감' 문서를 <span class="btn">{기결문서취소}</span>로 업무승인과정을 거쳐 결재를 완료해야 함</strong>. 결재가 완료되면 확정한 라운드가 취소됩니다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>라운드 확정 결재 완료 이후, 예상정답률·라운드 수정이 필요한 시점</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-정기시험추정분할점수산출관리]</code>, <code>[승인사항-상신함]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{추정분할점수산출결과관리}</span>를 클릭하여 '정기시험-추정분할점수산출결과관리' 창에서 <span class="btn">{확정취소}</span>함 → 또는 <code>[승인사항-상신함]</code>에서 해당 과목의 '정기시험 추정분할점수산출 마감' 문서를 <span class="btn">{기결문서취소}</span>로 업무승인과정을 거쳐 결재를 완료함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>잘못 고른 라운드가 그대로 학기말 최종 분할점수로 굳는 것을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>확정한 라운드를 취소하려면 <span class="btn">{추정분할점수산출결과관리}</span>를 클릭하여 '정기시험-추정분할점수산출결과관리' 창에서 <span class="btn">{확정취소}</span>함.</li><li>확정한 라운드를 취소하려면 <code>[승인사항-상신함]</code>에서 해당 과목의 '정기시험 추정분할점수산출 마감' 문서를 <span class="btn">{기결문서취소}</span>로 업무승인과정을 거쳐 <b>결재를 완료하면</b> 확정한 라운드가 취소됨.</li><li><span class="btn">{라운드삭제}</span>에서 불필요한 라운드를 삭제할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t3" data-num="3" data-stage="A" data-when="수시확인" data-who="교과담당교사">
+  <div class="gutter"><b>03</b><span class="gstage" title="원문 STAGE A · 정기시험 예상정답률">A</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">입력마감 이후, 문항오류·재시험 발생 시</span><span class="tag opt">사유 선택 필수</span></div>
+    <h3>정기시험 예상정답률 입력마감 취소</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.819 열기">원문 p.819</button></p>
+    <p class="desc">문항 오류로 고사별 만점이 바뀌거나 전면 재시험을 치른 경우에만 해당한다. <strong><span class="btn">{입력마감}</span> 이후 <span class="btn">{입력마감취소}</span> 버튼이 생성되며, <span class="btn">{입력마감취소}</span>하는 경우 '정기시험 추정분할점수 입력마감 취소사유' 창에서 '취소사유구분', '마감취소사유'를 선택 및 입력해야 함.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>정기시험 예상정답률 <span class="btn">{입력마감}</span> 이후 문항 오류나 재시험으로 예상정답률을 다시 입력해야 할 때</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-정기시험추정분할점수산출관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'고사', '학년', '과목', '라운드'를 선택하고 <span class="btn">{조회}</span>함 → <span class="btn">{입력마감취소}</span>함 → '정기시험 추정분할점수 입력마감 취소사유' 창에서 '취소사유구분', '마감취소사유'를 선택 및 입력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>고사 여건이 달라졌을 때 예전 기준선을 그대로 두지 않고 다시 판단하되, 취소 사유를 남겨 성적 기준 변경의 근거를 확인할 수 있게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>'취소사유구분'에서 '문항오류로 인한 고사별 만점변동' 혹은 '전면 재시험' 중 하나를 선택함.</b></li><li>이미 라운드를 확정한 상태라면 <span class="btn">{추정분할점수산출결과관리}</span>를 클릭하여 '정기시험-추정분할점수산출결과관리' 창에서 <span class="btn">{확정취소}</span>함.</li><li><b>확정한 라운드를 취소하려면 [승인사항-상신함]에서 해당 과목의 '정기시험 추정분할점수산출 마감' 문서를 <span class="btn">{기결문서취소}</span>로 업무승인과정을 거쳐 결재를 완료해야 확정한 라운드가 취소됨.</b></li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t6" data-num="6" data-stage="B" data-when="수시확인" data-who="교과담당교사">
+  <div class="gutter"><b>06</b><span class="gstage" title="원문 STAGE B · 정기시험 확정">B</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">문항정보표 수정 직후</span><span class="tag opt">문항 오류·재시험 발생 시</span></div>
+    <h3>문항정보표 수정 시 추정분할점수 변경 확인</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="6" title="원문 p.821–822 열기">원문 p.821–822</button></p>
+    <p class="desc">문항 오류 등으로 확정 후에 문항정보표를 고친 경우에만 확인하는 업무입니다. 정기시험 추정분할점수 확정 이후에도 문항정보표 수정이 가능하고, 난이도·배점·정답·복수구분이 바뀌면 산출된 추정분할점수는 자동으로 변경됩니다. 단 <strong>학기말 추정분할점수까지 산출된 경우에는 학기말 추정분할점수 산출 취소 후 재산출해야 정기시험추정분할점수의 변경된 기준으로 처리됨</strong>.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>정기시험 추정분할점수 산출 확정 후 문항정보표를 수정한 시점</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-정기시험추정분할점수산출관리]</code>, <code>[교과담임-성적-정기시험-문항정보표관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교과담임-성적-정기시험-문항정보표관리]</code>에서 '난이도', '배점', '정답', '복수구분' 등을 수정함 → <code>[성적-분할점수-분할점수관리-정기시험추정분할점수산출관리]</code>에서 변경된 정보에 맞춰 자동 변경된 추정분할점수를 확인함 → 학기말 추정분할점수까지 산출된 경우에는 학기말 추정분할점수 산출 취소 후 재산출함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>고친 문항 기준과 확정된 분할점수가 어긋난 채로 성취도가 매겨지는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>자동 변경이 적용되는 경우</h4><ul><li>정기시험 추정분할점수 산출 확정 후, 문항정보표(난이도, 배점, 정답, 복수구분)가 수정된 경우 <b>변경된 정보에 맞춰 산출된 추정분할점수는 자동으로 변경됨</b>.</li><li>정기시험 추정분할점수 산출 확정 후, 문항정보표를 수정한 경우.</li><li>정기시험 및 학기말 추정분할점수 산출 확정 후, 문항정보표를 수정한 경우.</li><li>문항정보표 마감 및 정기시험 성적산출 완료 후 문항정보표를 수정한 경우(정기시험 추정분할점수 미확정 상태).</li><li>학기말 추정분할점수 산출 확정 및 정기시험 성적 산출 완료 후, 문항정보표를 수정한 경우.</li></ul></div><div class="memo" style="margin-top:12px"><h4>수정 전에 챙길 것</h4><ul><li>정기시험 추정분할점수 확정 이후에 문항정보표 수정이 가능함. 문항정보표 내 과목만점, 난이도, 배점 등이 변경된 경우에는 기존 확정된 분할점수가 문항정보표의 변경된 기준으로 자동 변경됨.</li><li><b>학기말 추정분할점수까지 산출된 경우에는 학기말 추정분할점수 산출 취소 후 재산출하셔야</b> 정기시험추정분할점수의 변경된 기준으로 처리됨.</li><li>학기말 추정 분할점수의 산출 및 <span class="btn">{승인요청}</span> 후 결재가 완료되면 문항정보표에서 <span class="btn">{마감취소}</span>하여 수정 가능함.</li><li><span class="btn">{입력마감}</span> 이후 <span class="btn">{입력마감취소}</span> 버튼이 생성되며, <span class="btn">{입력마감취소}</span>하는 경우 '정기시험 추정분할점수 입력마감 취소사유' 창에서 '취소사유구분', '마감취소사유'를 선택 및 입력해야 함. '취소사유구분'에서 <b>'문항오류로 인한 고사별 만점변동' 혹은 '전면 재시험' 중 하나를 선택</b>함.</li><li>문항 오류 등으로 정기시험 과목의 만점이 100점이 아닌 경우에도 학기말 최종 추정 분할점수 산출이 가능함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t8" data-num="8" data-stage="D" data-when="학기말산출" data-who="교과담당교사">
+  <div class="gutter"><b>08</b><span class="gstage" title="원문 STAGE D · 학기말 산출">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">정기시험·수행 추정분할점수 확정 후</span><span class="tag">학년별(학과별) 단위</span></div>
+    <h3>학기말 추정분할점수 산출</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="11" title="원문 p.826 열기">원문 p.826</button></p>
+    <p class="desc">정기시험 추정분할점수 라운드 확정과 수행평가 추정분할점수 입력을 마친 과목이 대상이다. <strong>정기시험 추정분할점수의 라운드가 확정되어 있어야 학기말최종추정분할점수가 산출된다.</strong> 학과별로 산출이 가능하므로 학기말 성적을 학과별로 분리 산출하는 경우에는 각각의 학과에서 산출한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>정기시험과 수행평가 실시 전, 정기시험 추정분할점수 라운드 확정과 수행평가 추정분할점수 입력을 마친 뒤</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-학기말추정분할점수산출]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-분할점수-분할점수관리-학기말추정분할점수산출]</code>에서 '학년도', '학기' 확인 후 '학년', '과목'을 선택하고 <span class="btn">{조회}</span> → <span class="btn">{추정분할점수산출결과}</span> 화면에서 '학기말최종추정분할점수'를 확인 → <span class="btn">{추정분할점수산출}</span>하여 <span class="btn">{확인}</span> 후 <span class="btn">{확인}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>정기시험과 수행평가로 나뉘어 있던 성취수준 기준을 한 학기 성취도 판정에 쓸 하나의 기준선으로 모으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>산출된 학기말 최종 추정 분할점수는 <b>학년별(학과별) 단위로 마감</b>되며, <span class="btn">{승인요청}</span> 후 결재가 완료되면 <span class="btn">{마감}</span> 버튼이 활성화됨.</li><li>추정분할점수는 학과별로 산출이 가능하여 학기말 성적을 학과별로 분리 산출하는 경우에는 각각의 학과에서 분할점수를 산출하여 처리할 수 있음.</li><li>문항 오류 등으로 정기시험 과목의 만점이 100점이 아닌 경우에도 학기말 최종 추정 분할점수 산출이 가능함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 과목에서 [정기시험추정분할점수산출관리]의 '평가단계' 5수준(A-E)을 선택하는 경우, <code>[교과담임-성적-분할점수-분할점수관리-학기말추정분할점수산출]</code>에서 산출된 '학기말최종추정분할점수'가 적용됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t9" data-num="9" data-stage="D" data-when="학기말산출" data-who="교과담당교사">
+  <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE D · 학기말 산출">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말 추정분할점수 산출 직후</span></div>
+    <h3>학기말 추정분할점수 승인요청·상신 후 마감</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="11" title="원문 p.826 열기">원문 p.826</button></p>
+    <p class="desc">학기말최종추정분할점수를 산출한 과목이 대상이다. 산출만으로는 끝나지 않고 결재를 거쳐야 확정된다. <strong><span class="btn">{승인요청}</span> 후 결재가 완료되어야 <span class="btn">{마감}</span> 버튼이 활성화된다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말 추정분할점수 산출을 마친 직후</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-학기말추정분할점수산출]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{승인요청}</span>하여 '기안문서상신' 창에서 '내용', '결재선', 상신할 문서 선택 후 <span class="btn">{상신}</span> → 결재가 완료되면 <span class="btn">{마감}</span>하여 <span class="btn">{확인}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>학년(학과) 단위로 쓸 성취도 판정 기준을 학교 결재로 공식화해 이후 성적산출에서 흔들리지 않게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>산출된 학기말 최종 추정 분할점수는 학년별(학과별) 단위로 마감되며, <b><span class="btn">{승인요청}</span> 후 결재가 완료되면 <span class="btn">{마감}</span> 버튼이 활성화</b>되어 <span class="btn">{마감}</span>함.</li><li>학기말 추정 분할점수의 산출 및 <span class="btn">{승인요청}</span> 후 결재가 완료되면 문항정보표에서 <span class="btn">{마감취소}</span>하여 수정 가능함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t11" data-num="11" data-stage="E" data-when="성적산출반영" data-who="교과담당교사 성적처리담당교사">
+  <div class="gutter"><b>11</b><span class="gstage" title="원문 STAGE E · 성적산출 반영">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말 추정분할점수 산출 후</span><span class="tag">2025학년부터 수기입력 제한</span></div>
+    <h3>분할점수산출결과에 학기말 최종 추정 분할점수 가져오기</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="12" title="원문 p.827 열기">원문 p.827</button></p>
+    <p class="desc">학기말 최종 추정 분할점수를 산출한 과목은 성적산출 선행작업에 그 값을 옮겨야 성취율이 반영된다. <strong>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]에서 2025학년부터 수기 입력이 제한되며</strong>, <span class="btn">{산출결과가져오기}</span>로만 입력할 수 있다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, [교과담임-성적-분할점수-분할점수관리-학기말추정분할점수산출]에서 학기말 최종 추정 분할점수를 산출한 뒤.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사, 성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>, <code>[교과담임-성적-분할점수-분할점수관리-학기말추정분할점수산출]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>에서 <span class="btn">{산출결과가져오기}</span> → ‘분할점수 산출결과가져오기’ 창에서 해당 과목의 학기말 최종 추정 분할점수를 선택 → <span class="btn">{저장}</span>하여 입력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교과에서 협의로 정한 추정 분할점수가 학기말 성적의 성취율 산출에 실제로 쓰이게 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]에서 2025학년부터 수기 입력이 제한되며, <b><span class="btn">{산출결과가져오기}</span>하여 해당 과목의 학기말 최종 추정 분할점수를 선택 및 <span class="btn">{저장}</span>하여 입력해야 함.</b></li><li>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]에서 과목별로 산출결과를 <span class="btn">{산출결과가져오기}</span>하여 입력된 정보가 있을 경우 ‘분할점수 산출결과에서 사용됨’이라는 안내문구가 나타나며, <b><span class="btn">{추정분할점수산출취소}</span>할 수 없음.</b></li><li>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]에서 해당 과목의 성취율을 <span class="btn">{삭제}</span> 후 취소가 가능함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 과목에서 [정기시험추정분할점수산출관리]의 ‘평가단계’ 5수준(A-E)을 선택하는 경우, [교과담임-성적-분할점수-분할점수관리-학기말추정분할점수산출]에서 산출된 ‘학기말최종추정분할점수’가 적용됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t12" data-num="12" data-stage="E" data-when="성적산출반영" data-who="교과담당교사">
+  <div class="gutter"><b>12</b><span class="gstage" title="원문 STAGE E · 성적산출 반영">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">학기말 성적산출 전</span><span class="tag opt">학과별 통합산출 과목 한정</span><span class="tag opt">권장 경로</span></div>
+    <h3>통합산출 과목의 대표학과 분할점수 산출결과복사</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="13" title="원문 p.828 열기">원문 p.828</button></p>
+    <p class="desc">학과가 여러 개인 학교에서 학기말 성적을 학과별로 통합산출하는 과목에만 해당한다. 추정분할점수는 학과별로 산출이 가능하므로 학과별로 분리 산출하는 경우에는 각각의 학과에서 산출하면 되지만, <strong>학기말 성적산출 시 통합산출하는 과목의 분할점수는 동일해야 성적산출이 가능하다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 대표학과에서 학기말 최종 추정 분할점수를 산출한 뒤 성적산출 전.</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>추정분할점수 산출 시 대표학과에 대해서만 분할점수를 산출함 → 다른 학과에서는 <code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>에서 <span class="btn">{산출결과복사}</span>로 대표 학과의 분할점수를 가져와 처리함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>통합산출 과목의 학과별 분할점수를 어긋나지 않게 맞춰 학기말 성적이 막히지 않도록 하려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>추정분할점수는 학과별로 산출이 가능하여 학기말 성적을 학과별로 분리 산출하는 경우에는 각각의 학과에서 분할점수를 산출하여 처리할 수 있음.</li><li>학과별로 성적을 통합산출하는 과목의 경우에는 추정분할점수 산출 시 <b>대표학과에 대해서만 분할점수를 산출하고</b>, 다른 학과에서는 <span class="btn">{산출결과복사}</span>로 대표 학과의 분할점수를 가져오기 하여 처리하는 것을 권장함.</li><li><b>학기말 성적산출 시 통합산출하는 과목의 분할점수는 동일해야 성적산출이 가능함.</b></li><li>문항 오류 등으로 정기시험 과목의 만점이 100점이 아닌 경우에도 학기말 최종 추정 분할점수 산출이 가능함.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t13" data-num="13" data-stage="E" data-when="수시확인" data-who="성적처리담당교사">
+  <div class="gutter"><b>13</b><span class="gstage" title="원문 STAGE E · 성적산출 반영">E</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">가정통신문 등 안내 준비 시</span><span class="tag opt">전 교과목 자료 권한 필요</span></div>
+    <h3>전과목 학기말 추정분할점수 확인·출력</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="14" title="원문 p.829 열기">원문 p.829</button></p>
+    <p class="desc">성적처리 담당교사가 가정통신문 등으로 전체 교과의 분할점수를 안내해야 할 때 쓴다. [성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]는 학기말에만 확인되므로, 다른 교과 분할점수는 학기말추정분할점수산출 메뉴의 <span class="btn">{전과목출력}</span>으로 본다. <strong>해당 교사에게 분할점수를 확인하기 위한 모든 교과목 권한이 부여되어 있어야 조회할 수 있다.</strong></p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말 추정분할점수가 산출된 뒤, 전체 교과 분할점수를 확인해야 할 때.</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-학기말추정분할점수산출관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>해당 학년의 과목별 자료 권한 부여에 따라 <span class="btn">{전과목출력}</span> → ‘학기말 추정분할점수 조회-전체교과목’ 창에서 과목별 학기말 추정 분할점수를 확인 → 저장 또는 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교과별로 흩어진 분할점수를 한자리에서 확인해 학생·학부모 안내 자료를 정확하게 만들려고.</dd></dl>
+    </div>
+<div class="memo"><h4>실무 메모</h4><ul><li>성적처리 담당교사의 경우 [성적-분할점수-분할점수관리-학기말추정분할점수산출관리] 메뉴에 있는 <span class="btn">{전과목 출력}</span> 기능을 통해 확인이 가능함.</li><li>이때 <b>해당 교사에게는 분할점수를 확인하기 위한 모든 교과목 권한이 부여되어 있어야 조회할 수 있음.</b></li><li><span class="btn">{전과목출력}</span>으로 해당 학년의 과목별 자료 권한 부여에 따라 <span class="btn">{전과목출력}</span>하여 ‘학기말 추정분할점수 조회-전체교과목’ 창에서 과목별 학기말 추정 분할점수를 확인하여 저장 또는 출력할 수 있음.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t10" data-num="10" data-stage="D" data-when="수시확인" data-who="교과담당교사">
+  <div class="gutter"><b>10</b><span class="gstage" title="원문 STAGE D · 학기말 산출">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">문항정보표·예상정답률 수정이 필요할 때</span><span class="tag opt">필요 시</span></div>
+    <h3>학기말 추정분할점수 산출취소와 마감취소</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="12" title="원문 p.827 열기">원문 p.827</button></p>
+    <p class="desc">산출 또는 마감을 마친 뒤 문항정보표나 예상정답률을 고쳐야 하는 경우에만 하는 업무다. <strong>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]에서 <span class="btn">{산출결과가져오기}</span>로 입력된 정보가 있으면 '분할점수 산출결과에서 사용됨' 안내문구가 나타나며 <span class="btn">{추정분할점수산출취소}</span>를 할 수 없다.</strong> 이때는 해당 과목의 성취율을 <span class="btn">{삭제}</span>한 후에 취소가 가능하다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말 추정분할점수 산출 또는 마감 이후, 문항정보표나 예상정답률 수정이 필요한 때</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-학기말추정분할점수산출]</code>, <code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>, <code>[승인사항-상신함]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>산출 결과를 되돌릴 때는 <span class="btn">{추정분할점수산출취소}</span>함 → 이미 마감한 경우 <code>[승인사항-상신함]</code>에서 해당 과목의 '학기말 추정분할점수산출 마감' 문서를 <span class="btn">{기결문서취소}</span>로 업무승인과정을 거쳐 결재를 완료하면 <span class="btn">{마감취소}</span>가 <span class="btn">{마감}</span>으로 변경됨.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>문항정보표나 예상정답률이 잘못된 채 확정된 기준으로 성취도가 판정되는 것을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>산출취소가 막히는 경우</h4><ul><li><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>에서 과목별로 산출결과를 <span class="btn">{산출결과가져오기}</span>하여 입력된 정보가 있을 경우 '분할점수 산출결과에서 사용됨'이라는 안내문구가 나타나며, <b><span class="btn">{추정분할점수산출취소}</span>할 수 없음</b>.</li><li><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>에서 해당 과목의 성취율을 <span class="btn">{삭제}</span> 후 취소가 가능함.</li><li><span class="btn">{추정분할점수산출}</span> 이후 문항정보표나 예상정답율에 대한 수정이 필요한 경우 <span class="btn">{추정분할점수산출취소}</span>를 통해 산출된 결과 취소할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>마감취소 절차</h4><ul><li><span class="btn">{마감}</span>하면 <span class="btn">{마감취소}</span> 버튼이 생성되며, <code>[승인사항-상신함]</code>에서 해당 과목의 '학기말 추정분할점수산출 마감' 문서를 <b><span class="btn">{기결문서취소}</span>로 업무승인과정을 거쳐 결재를 완료해야</b> <span class="btn">{마감취소}</span>가 <span class="btn">{마감}</span>으로 변경됨.</li><li>학기말 추정 분할점수의 산출 및 <span class="btn">{승인요청}</span> 후 결재가 완료되면 문항정보표에서 <span class="btn">{마감취소}</span>하여 수정 가능함.</li><li>정기시험 추정분할점수 확정 이후에도 문항정보표 수정이 가능하나, <b>학기말 추정분할점수까지 산출된 경우에는 학기말 추정분할점수 산출 취소 후 재산출해야</b> 정기시험추정분할점수의 변경된 기준으로 처리됨.</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+
+
+    <nav class="docnav" aria-label="이웃 문서 이동">
+      <a class="prev" href="나이스_수행평가_성적처리_타임라인_v1.html"><span>← 이전</span>수행평가 성적처리</a>
+      <a class="hub" href="../index.html">전체 색인 · Part 6 성적</a>
+      <a class="next" href="나이스_학기말_성적처리_타임라인_v1.html"><span>다음 →</span>학기말 성적처리</a>
+    </nav>
+
+    <footer>
+<p><strong>출처</strong> · 나이스 사용자 매뉴얼 Part 6 성적, Section_04 추정분할점수 산출 (816–829쪽)</p>
+<p>매뉴얼 원문의 메뉴명·버튼명·조건은 그대로 유지하고, 화면 순서를 업무 순서로 재배열했습니다.</p>
+<p>추가 질의는 <a href="https://help.neis.go.kr/" target="_blank" rel="noopener">나이스 광장</a>에서 확인할 수 있습니다.</p>
+      <p>카드 내용과 업무 번호는 원본 업무정리 그대로이며, 배치 순서만 업무 성격별에서 시간순으로 바꿨습니다.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// 타임라인 버튼 → 카드 이동
+var tlBtns = [].slice.call(document.querySelectorAll('.tl-btn'));
+function goTo(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+tlBtns.forEach(function(b){ b.addEventListener('click', function(){ goTo(b.dataset.go); }); });
+
+// 상단 티커 · 타임라인 버튼에서 생성
+var ticks = document.getElementById('ticks');
+var nowBox = document.getElementById('ticknow');
+var tickBtns = {};
+var prevPhase = null;
+tlBtns.forEach(function(b){
+  var phase = b.closest('.tl-phase');
+  if(prevPhase && phase !== prevPhase){
+    var sep = document.createElement('li');
+    sep.className = 'sep';
+    ticks.appendChild(sep);
+  }
+  prevPhase = phase;
+  var li = document.createElement('li');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tick';
+  btn.textContent = b.querySelector('span').textContent;
+  btn.title = b.getAttribute('title') || b.textContent.trim();
+  btn.addEventListener('click', function(){ goTo(b.dataset.go); });
+  li.appendChild(btn);
+  ticks.appendChild(li);
+  tickBtns[b.dataset.go] = btn;
+});
+
+// 현재 보고 있는 카드 표시
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var id = e.target.id;
+    tlBtns.forEach(function(b){ b.setAttribute('aria-current', String(b.dataset.go === id)); });
+    Object.keys(tickBtns).forEach(function(k){ tickBtns[k].setAttribute('aria-current', String(k === id)); });
+    var t = e.target.querySelector('h3');
+    nowBox.innerHTML = '지금 <b>' + String(e.target.dataset.num).replace(/^(\d)$/,'0$1') + ' ' + (t ? t.textContent : '') + '</b>';
+  });
+},{rootMargin:'-18% 0px -68% 0px'});
+document.querySelectorAll('.task').forEach(function(t){ io.observe(t); });
+</script>
+<script>
+// 허브 검색을 거쳐 들어왔다면 '전체 색인' 링크가 그 검색 결과로 되돌리게 한다
+(function(){
+  var p = new URLSearchParams(location.search), keep = [];
+  ['q','who'].forEach(function(k){
+    var v = p.get(k);
+    if(v) keep.push(k + '=' + encodeURIComponent(v));
+  });
+  if(!keep.length) return;
+  document.querySelectorAll('a.home,a.hub').forEach(function(a){
+    a.href = '../index.html#' + keep.join('&');
+  });
+})();
+</script>
+
+<div class="pdfmodal" id="pdfmodal" hidden="" role="dialog" aria-modal="false" aria-label="원문 PDF 보기">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <b id="pdftitle">원문</b>
+      <span class="pdfsub"></span>
+      <span class="spacer"></span>
+      <a id="pdfnew" href="#" target="_blank" rel="noopener">새 탭에서 열기</a>
+      <button type="button" id="pdfclose">닫기 (Esc)</button>
+    </div>
+    <iframe class="pdfframe" id="pdfframe" title="원문 PDF"></iframe>
+    <p class="pdfnote">화면이 비어 있으면 <b>새 탭에서 열기</b>를 누르세요. 원본 PDF(part6_4.pdf)가 이 HTML 파일과 같은 폴더에 있어야 합니다.</p>
+  </div>
+</div>
+
+
+<script>
+// 카드의 원문 쪽 칩을 누르면 오른쪽 패널에 원본 PDF의 해당 쪽을 띄우는 스크립트
+(function(){
+  var PDF = 'part6_4.pdf';
+  var modal = document.getElementById('pdfmodal');
+  var titleEl = document.getElementById('pdftitle');
+  var newTab = document.getElementById('pdfnew');
+  var lastFocus = null;
+
+  function url(page){ return encodeURI(PDF) + '#page=' + page + '&view=FitH'; }
+
+  // 같은 iframe의 src를 연달아 바꾸면 앞선 이동이 뒤 이동을 취소해 화면이 비는 일이 생긴다.
+  // 매번 새 iframe으로 갈아 끼우면 이동이 한 번뿐이라 그 경쟁이 없다.
+  function swapFrame(src){
+    var old = document.getElementById('pdfframe');
+    var f = document.createElement('iframe');
+    f.className = 'pdfframe';
+    f.id = 'pdfframe';
+    f.title = '원문 PDF';
+    if(src) f.src = src;
+    old.parentNode.replaceChild(f, old);
+  }
+
+  function open(page, text, card){
+    lastFocus = document.activeElement;
+    titleEl.textContent = text;
+    newTab.href = url(page);
+    modal.hidden = false;
+    document.body.classList.add('pdfopen');
+    swapFrame(url(page));
+    // 패널이 열리며 본문 폭이 줄어드는 만큼 카드 위치가 밀리므로 다시 맞춰 준다
+    if(card) setTimeout(function(){ card.scrollIntoView({block:'start'}); }, 60);
+  }
+
+  function close(){
+    modal.hidden = true;
+    swapFrame(null);
+    document.body.classList.remove('pdfopen');
+    if(lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.srcbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      open(b.dataset.page, b.textContent.replace(/^\+\s*/, '참고 '), b.closest('article'));
+    });
+  });
+
+  document.getElementById('pdfclose').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !modal.hidden) close();
+  });
+})();
+</script>
+<script src="../manifest.js"></script>
+<script>
+// 전역 상단바(Part 이동·검색)를 만들고, 왼쪽 세로 타임라인이 현재 카드를 따라가게 한다
+(function(){
+'use strict';
+var HUB = '../index.html';
+
+/* Part 네비 · manifest.js 목록으로 만든다 */
+var list = document.getElementById('siteticks');
+var here = decodeURIComponent((location.pathname.split('/').pop() || ''));
+(window.NEIS_PARTS || []).forEach(function(p){
+  var mine = (p.docs || []).some(function(d){ return d.f === here; });
+  var li = document.createElement('li');
+  var a = document.createElement('a');
+  a.className = 'snav-btn' + (p.tag ? ' tag' : '');
+  a.href = HUB + '#' + (p.id || ('part' + p.no));
+  a.textContent = p.tag ? p.tag : ('Part ' + p.no + ' ' + p.label);
+  if(mine) a.setAttribute('aria-current', 'true');
+  li.appendChild(a);
+  list.appendChild(li);
+});
+
+/* 검색 · 색인은 허브에만 있으므로 낱말을 들고 허브로 넘어간다 */
+var q = document.getElementById('siteq');
+q.addEventListener('keydown', function(e){
+  if(e.key === 'Enter' && q.value.trim()) location.href = HUB + '#q=' + encodeURIComponent(q.value.trim());
+});
+document.addEventListener('keydown', function(e){
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'){ e.preventDefault(); q.focus(); q.select(); }
+  if(e.key === 'Escape' && document.activeElement === q){ q.value = ''; q.blur(); }
+});
+
+/* 세로 레일 · 지금 보는 카드의 버튼이 레일 밖으로 밀려나지 않게 따라 내린다 */
+var rail = document.querySelector('.tl');
+var track = document.querySelector('.tl-track');
+if(!rail || !track) return;
+function follow(btn){
+  if(getComputedStyle(rail).position !== 'fixed') return;
+  var b = btn.getBoundingClientRect(), r = rail.getBoundingClientRect();
+  if(b.top < r.top + 56) rail.scrollTop += b.top - r.top - 56;
+  else if(b.bottom > r.bottom - 16) rail.scrollTop += b.bottom - r.bottom + 16;
+}
+new MutationObserver(function(ms){
+  ms.forEach(function(m){
+    if(m.target.getAttribute('aria-current') === 'true') follow(m.target);
+  });
+}).observe(track, {subtree:true, attributes:true, attributeFilter:['aria-current']});
+})();
+</script>
+<!-- handout:begin -->
+<script>
+// 업무카드를 골라 표지·가로 타임라인이 붙은 A4 연수자료로 인쇄하는 기능
+(function(){
+'use strict';
+var body = document.body;
+var cards = [].slice.call(document.querySelectorAll('article.task'));
+if(!cards.length) return;
+
+var countEl = document.getElementById('hocount');
+var goBtn = document.getElementById('hogo');
+var coverOpt = document.getElementById('hocover');
+var stripOpt = document.getElementById('hostrip');
+var picked = {};
+
+/* 카드마다 선택칸을 붙인다 */
+cards.forEach(function(card){
+  var lab = document.createElement('label');
+  lab.className = 'hopick';
+  var box = document.createElement('input');
+  box.type = 'checkbox';
+  box.setAttribute('aria-label', (card.querySelector('h3') || {}).textContent || card.id);
+  var txt = document.createElement('span');
+  txt.textContent = '선택';
+  lab.appendChild(box); lab.appendChild(txt);
+  (card.querySelector('.gutter') || card).appendChild(lab);
+  box.addEventListener('change', function(){ set(card, box.checked); });
+  card._hobox = box;
+});
+
+function set(card, on){
+  if(on) picked[card.id] = true; else delete picked[card.id];
+  card.classList.toggle('hoon', on);
+  if(card._hobox.checked !== on) card._hobox.checked = on;
+  paint();
+}
+function chosen(){ return cards.filter(function(c){ return picked[c.id]; }); }
+function paint(){
+  var n = chosen().length;
+  countEl.textContent = n + '장 선택';
+  goBtn.disabled = !n;
+}
+
+/* 단계 정보는 화면 타임라인에서 그대로 읽어 온다 */
+var phases = [].slice.call(document.querySelectorAll('.tl-phase')).map(function(ph){
+  return {
+    no: (ph.querySelector('.tl-no') || {}).textContent || '',
+    title: (ph.querySelector('h3') || {}).textContent || '',
+    cond: ph.classList.contains('cond'),
+    items: [].slice.call(ph.querySelectorAll('.tl-btn')).map(function(b){
+      return { id: b.dataset.go, n: (b.querySelector('span') || {}).textContent || '' };
+    })
+  };
+});
+
+function makeStrip(cardId){
+  var box = document.createElement('div');
+  box.className = 'pstrip';
+  var cap = document.createElement('p');
+  cap.className = 'ps-cap';
+  cap.textContent = '업무 타임라인 · 왼쪽에서 오른쪽으로 갈수록 나중에 하는 일';
+  var row = document.createElement('div');
+  row.className = 'ps-row';
+  row.style.gridTemplateColumns = 'repeat(' + phases.length + ',1fr)';
+  phases.forEach(function(p){
+    var cell = document.createElement('div');
+    cell.className = 'ps-p' + (p.cond ? ' cond' : '');
+    var no = document.createElement('p'); no.className = 'ps-no'; no.textContent = p.no;
+    var h = document.createElement('p'); h.className = 'ps-h'; h.textContent = p.title;
+    var ul = document.createElement('ul');
+    p.items.forEach(function(it){
+      var li = document.createElement('li');
+      li.textContent = it.n;
+      if(it.id === cardId) li.className = 'on';
+      ul.appendChild(li);
+    });
+    cell.appendChild(no); cell.appendChild(h); cell.appendChild(ul);
+    row.appendChild(cell);
+  });
+  box.appendChild(cap); box.appendChild(row);
+  return box;
+}
+
+function txt(sel){ var e = document.querySelector(sel); return e ? e.textContent.trim() : ''; }
+
+function makeCover(list){
+  var box = document.createElement('div');
+  box.className = 'pcover';
+  var d = new Date();
+  var stamp = d.getFullYear() + '. ' + (d.getMonth() + 1) + '. ' + d.getDate() + '.';
+
+  var meta = '';
+  document.querySelectorAll('.meta-strip div').forEach(function(v){
+    var dt = v.querySelector('dt'), dd = v.querySelector('dd');
+    if(dt && dd) meta += '<div><b>' + dt.textContent.trim() + '</b>' + dd.textContent.trim() + '</div>';
+  });
+
+  var items = list.map(function(c){
+    return '<li><i>' + (c.dataset.num || '').replace(/^(\d)$/, '0$1') + '</i><span>'
+         + ((c.querySelector('h3') || {}).textContent || '').trim() + '</span></li>';
+  }).join('');
+
+  box.innerHTML =
+      '<p class="pc-eyebrow">' + (txt('.eyebrow') || '나이스 업무 타임라인') + '</p>'
+    + '<h1>' + (txt('.topbar b') || document.title) + '</h1>'
+    + '<p class="pc-sub">업무카드 ' + list.length + '장 · 시간순 · ' + stamp + '</p>'
+    + '<div class="pc-meta">' + meta + '</div>'
+    + '<h2>담은 업무</h2><ol>' + items + '</ol>'
+    + '<p class="pc-foot">' + txt('footer p') + '</p>';
+  return box;
+}
+
+/* 인쇄 직전에 표지와 타임라인을 끼워 넣는다 */
+function clean(){
+  document.querySelectorAll('.pcover,.pstrip').forEach(function(n){ n.remove(); });
+  cards.forEach(function(c){ c.classList.remove('pbrk'); });
+}
+function build(){
+  clean();
+  var list = chosen();
+  if(!list.length) return false;
+  var main = document.querySelector('main') || body;
+  if(coverOpt.checked) main.insertBefore(makeCover(list), main.firstChild);
+  list.forEach(function(card, i){
+    var first = (i === 0) && !coverOpt.checked;
+    if(stripOpt.checked){
+      var s = makeStrip(card.id);
+      if(!first) s.classList.add('pbrk');
+      card.parentNode.insertBefore(s, card);
+    }else if(!first){
+      card.classList.add('pbrk');
+    }
+  });
+  return true;
+}
+
+/* 막대 조작 */
+document.getElementById('hobtn').addEventListener('click', function(){
+  body.classList.add('hoselect');
+});
+document.getElementById('hoclose').addEventListener('click', function(){
+  body.classList.remove('hoselect');
+});
+document.getElementById('hoall').addEventListener('click', function(){
+  cards.forEach(function(c){ set(c, true); });
+});
+document.getElementById('honone').addEventListener('click', function(){
+  cards.forEach(function(c){ set(c, false); });
+});
+goBtn.addEventListener('click', function(){
+  if(!build()) return;
+  body.classList.add('hoready');
+  window.print();
+});
+window.addEventListener('afterprint', function(){
+  body.classList.remove('hoready');
+  clean();
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && body.classList.contains('hoselect') && document.activeElement.id !== 'siteq'){
+    body.classList.remove('hoselect');
+  }
+});
+})();
+</script>
+<!-- handout:end --></body>
+</html>
