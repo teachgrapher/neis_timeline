@@ -272,7 +272,8 @@ var picked = [];       // 고른 역할. 비어 있으면 전체
 var facetOpen = false;
 
 /* ── 파일명에서 표시용 제목 만들기 ── */
-function labelOf(file){
+function labelOf(file, doc){
+  if (doc && doc.label) return doc.label;   // 매니페스트가 제목을 지정하면 그것을 쓴다
   return file.replace(/\.html$/i,'')
              .replace(/^나이스[_ ]/,'')
              .replace(/[_ ]타임라인[_ ]v\d+$/,'')
@@ -310,7 +311,7 @@ function renderParts(){
            + secId + '">' + esc(tickText) + '</button></li>';
 
     var items = p.docs.map(function(d){
-      var label = esc(labelOf(d.f));
+      var label = esc(labelOf(d.f, d));
       if(!d.ready){
         return '<li><div class="doc off"><p class="dt">' + label + '</p>'
              + '<p class="dm">준비 중</p></div></li>';
@@ -358,7 +359,7 @@ function textOf(node){
 
 function parseDoc(html, part, file){
   var dom   = new DOMParser().parseFromString(html, 'text/html');
-  var title = textOf(dom.querySelector('title')).replace(/\s*·\s*시간순 타임라인\s*$/,'') || labelOf(file);
+  var title = textOf(dom.querySelector('title')).replace(/\s*·\s*시간순 타임라인\s*$/,'') || labelOf(file, null);
   var eyeb  = textOf(dom.querySelector('.eyebrow'));
   var cards = dom.querySelectorAll('article.task');
   var url   = urlOf(file);
