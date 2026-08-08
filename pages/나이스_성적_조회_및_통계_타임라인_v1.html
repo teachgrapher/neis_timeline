@@ -491,6 +491,18 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
 .wall-link:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
 .sitenav .bar{gap:0}
 /* == walllink:end == */
+/* == p6s6:begin == */
+.fnote{
+  display:block;margin:2px 0 0;padding:7px 10px;
+  background:var(--dropout);border-left:2.5px solid var(--dropout-deep);
+  font-size:12px;line-height:1.65;color:var(--ink-soft);
+}
+.fnote b{color:var(--ink);font-weight:600}
+.memo li .fnote b{color:var(--ink)}
+.memo li .fnote .wrong{color:var(--ink-soft);font-weight:600}
+.memo li .fnote .wrong b{color:var(--ink-soft)}
+@media print{.fnote{background:none;border-left:1px solid var(--rule)}}
+/* == p6s6:end == */
 </style>
 </head>
 <body>
@@ -575,8 +587,8 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
           <div class="tl-body">
             <p class="tl-no">01</p>
             <h3>고사 점수 입력 직후</h3>
-            <p class="tl-sub">학기말 산출 전 · 지필·수행 점수 입력 완료가 선행조건</p>
-            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t2" title="02 지필·수행 일람표"><span>02</span>지필·수행 일람표</button><button type="button" class="tl-btn" data-go="t7" title="07 고사별 비교"><span>07</span>고사별 비교</button><button type="button" class="tl-btn" data-go="t8" title="08 우수·부진자 명단"><span>08</span>우수·부진자 명단</button></div>
+            <p class="tl-sub">학기말 산출 전 · 정기시험·수행 점수 입력 완료가 선행조건</p>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t2" title="02 정기시험·수행 일람표"><span>02</span>정기시험·수행 일람표</button><button type="button" class="tl-btn" data-go="t7" title="07 고사별 비교"><span>07</span>고사별 비교</button><button type="button" class="tl-btn" data-go="t8" title="08 우수·부진자 명단"><span>08</span>우수·부진자 명단</button></div>
           </div>
         </li>
         <li class="tl-phase">
@@ -638,18 +650,18 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
 <article class="task" id="t2" data-num="2" data-stage="A" data-when="성적입력후" data-who="교과담당교사">
   <div class="gutter"><b>02</b><span class="gstage" title="원문 STAGE A · 과목 성적 점검">A</span></div>
   <div class="body">
-    <div class="tags"><span class="tag now">지필·수행 점수 입력 후</span><span class="tag opt">수행평가만 보기 선택</span></div>
-    <h3>지필/수행 성적일람표 조회 및 출력</h3>
+    <div class="tags"><span class="tag now">정기시험·수행 점수 입력 후</span><span class="tag opt">수행평가만 보기 선택</span></div>
+    <h3>정기시험/수행 성적일람표 조회 및 출력</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="10" title="원문 p.904–905 열기">원문 p.904–905</button></p>
-    <p class="desc">교과담당교사가 학기말 산출 전에 지필평가와 수행평가 점수를 강의실별로 확인하는 표입니다. <strong>기본 조회 조건은 '받은 점수기준'이며 '환산점 기준'을 선택하면 학생의 점수가 지필평가 및 수행평가 반영비율로 환산되어 조회됩니다.</strong> '수행평가만 보기'로 수행평가 영역만 따로 볼 수도 있습니다.</p>
+    <p class="desc">교과담당교사가 학기말 산출 전에 정기시험과 수행평가 점수를 강의실별로 확인하는 표입니다. <strong>기본 조회 조건은 '받은 점수기준'이며 '환산점 기준'을 선택하면 학생의 점수가 정기시험 및 수행평가 반영비율로 환산되어 조회됩니다.</strong> '수행평가만 보기'로 수행평가 영역만 따로 볼 수도 있습니다.</p>
     <div class="w6">
-      <dl><dt>언제?</dt><dd>학기말, 지필평가와 수행평가 점수 입력이 끝난 뒤.</dd></dl>
+      <dl><dt>언제?</dt><dd>학기말, 정기시험과 수행평가 점수 입력이 끝난 뒤.</dd></dl>
       <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
-      <dl><dt>어디서?</dt><dd><code>[성적-성적조회/통계-학기말성적조회-지필/수행성적일람표]</code></dd></dl>
-      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 → '학년', '과목', '강의실' 및 '기준 점수('환산점 기준' 또는 '받은 점수기준')'를 선택 → <span class="btn">{조회}</span> → '지필/수행성적일람표' 창에서 내용 확인한 후 저장 또는 출력.</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적조회/통계-학기말성적조회-정기시험/수행성적일람표]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 → '학년', '과목', '강의실' 및 '기준 점수('환산점 기준' 또는 '받은 점수기준')'를 선택 → <span class="btn">{조회}</span> → '정기시험/수행성적일람표' 창에서 내용 확인한 후 저장 또는 출력.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>학기말 성적으로 합산되기 전에 원점수와 환산점을 나란히 놓고 입력 누락이나 반영비율 오류를 잡아내기 위함입니다.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li>기본 조회 조건은 <b>'받은 점수기준'</b>이며 '환산점 기준' 선택 시 학생의 점수가 지필평가 및 수행평가 반영비율로 환산되어 조회됨.</li><li>'개별출력'을 선택하여 '지필/수행성적일람표'를 조회하고 저장 또는 출력할 수 있음.</li><li>'환산점기준' 또는 '받은 점수기준'으로 '수행평가만 보기'를 선택하여 <span class="btn">{조회}</span>할 수 있으나 <b>수행평가 영역의 만점과 학기말 반영비율이 같으면 동일한 화면이 조회됨.</b></li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li>기본 조회 조건은 <b>'받은 점수기준'</b>이며 '환산점 기준' 선택 시 학생의 점수가 정기시험 및 수행평가 반영비율로 환산되어 조회됨.</li><li>'개별출력'을 선택하여 '정기시험/수행성적일람표'를 조회하고 저장 또는 출력할 수 있음.</li><li>'환산점기준' 또는 '받은 점수기준'으로 '수행평가만 보기'를 선택하여 <span class="btn">{조회}</span>할 수 있으나 <b>수행평가 영역의 만점과 학기말 반영비율이 같으면 동일한 화면이 조회됨.</b></li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t7" data-num="7" data-stage="C" data-when="성적입력후" data-who="교과담당교사">
@@ -700,7 +712,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기'를 확인하고 '학년', '산출기준', '과목', '강의실', '기준점수('환산점기준 또는 받은 점수기준')' 설정 → <span class="btn">{조회}</span> → '성적일람표' 창에서 저장 또는 출력.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>산출된 과목 성적이 의도한 반영비율대로 나왔는지 담당 교사가 직접 눈으로 확인하고, 결재·검토용 지면 자료를 남기기 위함입니다.</dd></dl>
     </div>
-<div class="memo"><h4>성적일람표 양식 변경</h4><ul><li>과목 성적 일람표 정보에 '성취도 분포비율', '수강자수'가 표기되며 <b>'과목 표준편차'는 표기되지 않음</b>(2026학년도 1･2학년부터).</li><li><b>2025학년도 전학년부터 모든 과목의 합계 점수는 소수점 셋째자리에서 반올림하여 둘째 자리로 표기함.</b></li><li>2026학년도 3학년의 성적일람표에서 석차(동석차수)와 수강자수는 같은 칸에 표시됨(2015 개정 교육과정 적용).</li></ul></div><div class="memo" style="margin-top:12px"><h4>조회·출력 옵션</h4><ul><li>학기말 성적산출이 완료된 해당 과목에 대해서 '환산점기준'으로 선택하여 조회 및 출력할 수 있음.</li><li><span class="btn">{전과목출력}</span>을 선택하면 전과목 성적 일람표를 조회 및 출력할 수 있음(단, <b>부여받은 교과목 권한에 영향을 받음</b>).</li><li>저장하면 PDF, DOC, XLS, XLS data, PPT, HWP의 형식으로 저장할 수 있음.</li><li>'개별출력'을 선택하여 해당과목의 1차 지필고사, 2차 지필고사, 학기말 성적을 수강자별로 조회 및 출력할 수 있음.</li></ul></div>
+<div class="memo"><h4>성적일람표 양식 변경</h4><ul><li>과목 성적 일람표 정보에 '성취도 분포비율', '수강자수'가 표기되며 <b>'과목 표준편차'는 표기되지 않음</b>(2026학년도 1･2학년부터).</li><li><b>2025학년도 전학년부터 모든 과목의 합계 점수는 소수점 셋째자리에서 반올림하여 둘째 자리로 표기함.</b></li><li>2026학년도 3학년의 성적일람표에서 석차(동석차수)와 수강자수는 같은 칸에 표시됨(2015 개정 교육과정 적용).</li></ul></div><div class="memo" style="margin-top:12px"><h4>조회·출력 옵션</h4><ul><li>학기말 성적산출이 완료된 해당 과목에 대해서 '환산점기준'으로 선택하여 조회 및 출력할 수 있음.</li><li><span class="btn">{전과목출력}</span>을 선택하면 전과목 성적 일람표를 조회 및 출력할 수 있음(단, <b>부여받은 교과목 권한에 영향을 받음</b>).</li><li>저장하면 PDF, DOC, XLS, XLS data, PPT, HWP의 형식으로 저장할 수 있음.</li><li>'개별출력'을 선택하여 해당과목의 1차 정기시험, 2차 정기시험, 학기말 성적을 수강자별로 조회 및 출력할 수 있음.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t3" data-num="3" data-stage="A" data-when="성적산출후" data-who="성적처리담당교사 교과담당교사">
@@ -726,7 +738,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">산출 직후</span><span class="tag opt">과목 단위</span></div>
     <h3>과목 단위 분포 통계 조회</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="22" title="원문 p.916–917 열기">원문 p.916–917</button></p>
-    <p class="desc">특정 과목의 성취도 분포와 점수 분포를 보려는 경우에 해당한다. 세 가지 표 모두 조건을 고른 뒤 {조회}하고 저장 또는 출력하는 절차가 같으므로 한 카드로 묶었다. <strong>도수분포표와 학기말점수도수분포표는 '과목'을 지정해야 조회되고, 과목별등급점수표는 해당 학년 전체 과목을 한 번에 보여준다.</strong></p>
+    <p class="desc">특정 과목의 성취도 분포와 점수 분포를 보려는 경우에 해당한다. 세 가지 표 모두 조건을 고른 뒤 <span class="btn">{조회}</span>하고 저장 또는 출력하는 절차가 같으므로 한 카드로 묶었다. <strong>도수분포표와 학기말점수도수분포표는 '과목'을 지정해야 조회되고, 과목별등급점수표는 해당 학년 전체 과목을 한 번에 보여준다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, 해당 과목의 학기말 성적산출이 끝난 뒤.</dd></dl>
       <dl><dt>누가?</dt><dd>교과담당교사, 성적처리담당교사</dd></dl>
@@ -734,7 +746,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd>해당 메뉴에서 '학년도', '학기'를 확인 → 도수분포표는 '학년', '산출기준', '과목'을 설정, 학기말점수도수분포표는 '학년', '산출기준', '과목', '급간'을 설정, 과목별등급점수표는 '학년', '조회조건('등급 출력' 또는 '성취도 출력')'을 설정 → <span class="btn">{조회}</span> → 열린 창에서 내용 확인 후 저장 또는 출력.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>우리 과목의 학생들이 어느 점수대와 성취도에 몰려 있는지 확인해 다음 학기 수업과 평가 계획을 조정하려고.</dd></dl>
     </div>
-<div class="memo"><h4>어떤 표를 언제 여는가</h4><ul><li>도수분포표 — 전체 반에 대한 해당 과목의 성취도 분포를 볼 때.</li><li>학기말점수도수분포표 — 해당 과목의 학기말 점수를 <b>'급간'</b> 단위로 끊어 볼 때.</li><li>과목별등급점수표 — 해당 학년 모든 학생의 과목별 등급 및 점수를 보고 과목별 전체 평균, 표준편차까지 확인할 때.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>과목별등급점수표에서 '등급 출력'을 선택하여 {조회}할 때, <b>석차등급을 산출하지 않는 과목은 성취도로 출력됨.</b></li><li>과목별등급점수표에서 '성취도 출력'을 선택하여 {조회}하면 성취도가 출력됨.</li></ul></div>
+<div class="memo"><h4>어떤 표를 언제 여는가</h4><ul><li>도수분포표 — 전체 반에 대한 해당 과목의 성취도 분포를 볼 때.</li><li>학기말점수도수분포표 — 해당 과목의 학기말 점수를 <b>'급간'</b> 단위로 끊어 볼 때.</li><li>과목별등급점수표 — 해당 학년 모든 학생의 과목별 등급 및 점수를 보고 과목별 전체 평균, 표준편차까지 확인할 때.</li></ul></div><div class="memo" style="margin-top:12px"><h4>실무 메모</h4><ul><li>과목별등급점수표에서 '등급 출력'을 선택하여 <span class="btn">{조회}</span>할 때, <b>석차등급을 산출하지 않는 과목은 성취도로 출력됨.</b></li><li>과목별등급점수표에서 '성취도 출력'을 선택하여 <span class="btn">{조회}</span>하면 성취도가 출력됨.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t4" data-num="4" data-stage="B" data-when="성적산출후" data-who="학급담임교사 성적처리담당교사">
@@ -747,11 +759,11 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, 학기말 성적산출이 끝난 뒤.</dd></dl>
       <dl><dt>누가?</dt><dd>학급담임교사, 성적처리담당교사</dd></dl>
-      <dl><dt>어디서?</dt><dd><code>[성적-성적조회/통계-학기말성적조회-개인별성적일일람표조회]</code></dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-성적조회/통계-학기말성적조회-개인별성적일람표조회]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{학기말}</span> 탭을 선택하고 '학년도', '학기' 확인 후 '학년', '반', '산출기준'을 선택하여 <span class="btn">{조회}</span> → 학생의 '번호' 또는 '성명'을 클릭하여 '개인별성적일람표' 창에서 내용을 확인한 후 저장 또는 출력함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>학생과 학부모에게 개인 성적을 그대로 전달할 수 있는 자료를 만들려고 한다.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li>학기말 개인별 일람표의 내용이 1페이지 이상인 경우 '양면인쇄'를 선택하여 출력할 수 있음.</li><li><b>'양면인쇄'를 선택하여 출력하는 경우 홀수쪽 '학기말 개인별 일람표'는 다음 면의 짝수쪽이 자동으로 공란으로 출력됨.</b></li><li>개별 또는 학급 전체 학생을 선택하여 '학기말 개인별 일람표'를 조회 또는 출력할 수 있음.</li><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년의 학기말 개인별 일람표는 <b>학업 성취율 40% 미만인 대상자는 성취도에 '미도달'로 표기됨.</b></li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li>학기말 개인별 일람표의 내용이 1페이지 이상인 경우 '양면인쇄'를 선택하여 출력할 수 있음.</li><li><b>'양면인쇄'를 선택하여 출력하는 경우 홀수쪽 '학기말 개인별 일람표'는 다음 면의 짝수쪽이 자동으로 공란으로 출력됨.</b></li><li>개별 또는 학급 전체 학생을 선택하여 '학기말 개인별 일람표'를 조회 또는 출력할 수 있음.</li><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년의 학기말 개인별 일람표는 <b>학업 성취율 40% 미만인 대상자는 성취도에 '미도달'로 표기됨.</b></li><li><span class="fnote">각주 · 원문 p.897 절차에는 메뉴 이름이 <span class="wrong">개인별성적일<b>일</b>람표조회</span>로 적혀 있으나, 같은 쪽의 창 이름은 <b>개인별성적일람표</b>입니다. '일일람표'는 '일람표'의 오탈자이므로 화면 메뉴에서 찾을 수 있는 표기를 따랐습니다.</span></li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t5" data-num="5" data-stage="B" data-when="성적산출후" data-who="학급담임교사 성적처리담당교사">
@@ -794,7 +806,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">산출 직후</span><span class="tag opt">학년 단위</span></div>
     <h3>학년 단위 집계 통계 조회</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="24" title="원문 p.918–919 열기">원문 p.918–919</button></p>
-    <p class="desc">학년 전체의 성적 현황을 한 장으로 보려는 경우에 해당한다. 세 가지 표 모두 '학년도', '학기' 확인 후 조건을 고르고 {조회}하는 절차가 같아 한 카드로 묶었다. <strong>과목별성적분포표는 '학년'만 설정하면 되고, 나머지 두 표는 '산출기준'을 함께 선택해야 한다.</strong></p>
+    <p class="desc">학년 전체의 성적 현황을 한 장으로 보려는 경우에 해당한다. 세 가지 표 모두 '학년도', '학기' 확인 후 조건을 고르고 <span class="btn">{조회}</span>하는 절차가 같아 한 카드로 묶었다. <strong>과목별성적분포표는 '학년'만 설정하면 되고, 나머지 두 표는 '산출기준'을 함께 선택해야 한다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, 학년 전체 과목의 학기말 성적산출이 끝난 뒤.</dd></dl>
       <dl><dt>누가?</dt><dd>성적처리담당교사</dd></dl>
