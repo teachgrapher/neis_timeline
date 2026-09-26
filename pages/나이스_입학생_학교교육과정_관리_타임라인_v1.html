@@ -831,7 +831,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">학기 중 수시</span><span class="tag opt">{자격종별편성내용} 탭은 과정평가형 운영 학교 한정</span></div>
     <h3>학생별 이수현황 조회와 출력</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="13" title="원문 p.77 열기">원문 p.77</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="13" title="원문 p.77 열기">원문 p.77</button><span class="tag">2026.5.29. 기능개선 11-1</span></p>
     <p class="desc">편성이 확정된 뒤 학생 개인의 교육과정 이수 상황을 확인할 때 쓰는 조회 업무입니다. <strong>‘이수완료 학점’은 지난 학년도(학기)에 이수한 학점으로 학교생활기록부에 반영된 교과학습발달상황 이수 학점의 합계</strong>이므로, 어느 숫자가 어디에서 오는지 구분해 보아야 합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학년초 이후 학기 중 수시, 학생이 수강생으로 편성된 뒤.</dd></dl>
@@ -841,6 +841,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl class="why"><dt>왜?</dt><dd>학생이 졸업까지 필요한 학점을 채워 가고 있는지 개인 단위로 확인해 이수 부족을 미리 잡으려고.</dd></dl>
     </div>
 <div class="memo"><h4>학점 구분 읽기</h4><ul><li>‘이수완료 학점’은 지난 학년도(학기)에 이수한 학점으로 학교생활기록부에 반영된 교과학습발달상황 이수 학점의 합계임.</li><li>‘이수 중 학점’은 당해 학년도에 수강생으로 편성된 편제 등록 기준 이수학점의 합계임.</li><li>‘이수예정 학점’은 미도래 입학 학년도 기준 편성 과목 이수학점의 합계임.</li><li><b>창의적체험활동의 소계의 경우 별도 분리하여 시수 기준으로 합산하여 최종 합계 학점으로 반환함.</b></li></ul></div><div class="memo" style="margin-top:12px"><h4>화면 활용</h4><ul><li><span class="btn">{자격종별편성내용}</span> 탭은 과정평가형을 운영하는 특성화고등학교, 산업수요 맞춤형 고등학교에서 활용함.</li><li>‘이수완료 학점’ 또는 ‘이수 중 학점’의 숫자를 클릭하면 해당 교과(군)의 이수과목과 학점을 확인할 수 있음.</li><li><span class="btn">{출력}</span>은 개인별 교육과정 이수현황을, <span class="btn">{반별출력}</span>은 학급 전체 학생의 교육과정 이수현황을 출력할 수 있음(<b>학생별로 출력됨</b>).</li></ul></div>
+<div class="memo" style="margin-top:12px"><h4>미이수 현황 탭 (2026.5.29. 기능개선, 2026학년도 1･2학년)</h4><ul><li><b>[이수현황조회]에 '미이수 현황' 탭이 추가되어 1~3학년 학기말 성적 중 최종 미이수 과목 현황을 조회할 수 있음.</b></li><li>미이수 현황은 [최소성취수준보장지도(추가학습) 이수관리] 화면 데이터와 연동해 조회함. 학년도, 학년, 과목, 미이수 학점수와 최소 성취수준 보장지도(추가학습)의 과목출석률, 학업성취율, 필요시수, 이수기준, 참여시수가 나타남.</li><li><span class="btn">{출력}</span>은 개인별 출력, <span class="btn">{반별내려받기}</span>는 반별 미이수 현황 엑셀 다운로드임.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 
