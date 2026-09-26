@@ -631,7 +631,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">영역별 평가 직후</span></div>
     <h3>일반교과 영역별 수행평가 점수 입력</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="5" title="원문 p.800 열기">원문 p.800</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="5" title="원문 p.800 열기">원문 p.800</button><span class="tag">2026.9.11. 기능개선 10-27</span></p>
     <p class="desc">일반교과 수행평가 점수를 영역 하나씩 골라 입력하는 방식이다. <strong>[교과담임-성적-정기시험/수행선행작업-수행평가영역관리]에서 등급과 구간으로 기준을 설정한 영역은 <span class="btn">{등급변환}</span>이 생성된다.</strong> 학적변동으로 점수가 없는 학생은 '영역별학적변동' 내용을 선택한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 반영비율/만점관리에서 수행평가 영역·반영비율·영역만점 입력을 마친 뒤 해당 영역 평가가 끝나면.</dd></dl>
@@ -641,6 +641,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl class="why"><dt>왜?</dt><dd>학생이 영역별로 받은 평가 결과를 나이스 성적에 반영해 학기말 성적산출의 근거로 남기려고.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li>수행평가 결시자는 최대한 추후 평가 기회를 부여하고 결시자의 처리 기준은 교과협의회를 거쳐 평가계획에 반영함.</li><li>[교과담임-성적-정기시험/수행선행작업-수행평가영역관리]에서 등급과 구간으로 기준을 설정한 영역의 경우 [교과담임-성적-수행평가-수행평가성적관리]에서 <span class="btn">{등급변환}</span>이 생성되며, '영역'별로 등급점수 또는 구간점수를 입력 후 <span class="btn">{저장}</span> 시 <b>등급 기준 값 또는 구간 기준 값으로 변환되어 저장됨</b>.</li></ul></div>
+<div class="memo" style="margin-top:12px"><h4>반영비율/만점 불일치 확인 (2026.9.11. 기능개선)</h4><ul><li>성적산출기준이 통합산출･학년별･계열별인 과목에서 영역별 반영비율/만점정보가 기준설정 학과와 다르게 등록되어 있으면 조회 시 안내메시지가 나타나고, <b>다른 학과는 <span class="btn">{저장}</span>이 비활성화됨.</b> [반영비율/만점관리]에서 기준설정 학과 자료로 맞춘 뒤 입력함.</li><li>2026학년도 3학년은 현행 방식을 유지함(3학년은 2027학년도 1학기부터 성적산출기준 적용).</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t6" data-num="6" data-stage="B" data-when="점수입력" data-who="교과담당교사">
@@ -648,7 +649,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">영역 평가가 모두 끝난 뒤</span><span class="tag opt">권장 경로</span></div>
     <h3>일반교과 전체 영역 수행평가 점수 입력</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="7" title="원문 p.802 열기">원문 p.802</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="7" title="원문 p.802 열기">원문 p.802</button><span class="tag">2026.9.11. 기능개선 10-27</span></p>
     <p class="desc">여러 영역 점수를 한 화면에서 입력하고 싶을 때 쓰는 방식이다. '영역(전체)'로 조회해도 <strong>일부 영역이나 일부 점수만 <span class="btn">{저장}</span>할 수 있다.</strong> 학생 수가 많으면 <span class="btn">{일괄파일업로드}</span>의 <span class="btn">{엑셀다운로드}</span>를 활용해 한 번에 올릴 수 있다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 반영비율/만점관리 입력이 끝나고 영역별 평가가 진행된 뒤.</dd></dl>
@@ -658,6 +659,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl class="why"><dt>왜?</dt><dd>여러 영역 점수를 한 화면에서 채워 넣어 누락된 영역 없이 수행평가 입력을 마무리하려고.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li>'영역 전체'로 <span class="btn">{조회}</span>하여 입력하는 경우에도 <b>일부 영역이나 일부 점수만 <span class="btn">{저장}</span>할 수 있음</b>.</li><li>학생이 전출 시에는 나이스 등에 전출일 현재까지의 각종 자료를 입력·확인 후 전입교로 전송함(이때, 입력의 근거가 되는 증빙서류는 원적교에서 보관함).</li><li><span class="btn">{일괄파일업로드}</span>에서 <span class="btn">{엑셀다운로드}</span>를 활용하면 전체 학생점수를 파일에 작성하여 한 번에 업로드 가능함(전출 등의 학적변동자가 있는 강의실도 업로드 가능함).</li></ul></div><div class="memo" style="margin-top:12px"><h4>입력 결과 확인 요령</h4><ul><li>[교과담임-성적-수행평가조회/통계-수행평가조회-강의실별일람표조회 전체영역]에서 <span class="btn">{조회}</span> 후 '강의실별 일람표 조회 전체영역' 창에서 다운로드한 파일로 필터기능을 활용하여 수행평가 영역별 점수만 나타나는지 확인 가능함(<b>평균, 전입생 점수 등 평가(채점) 기준에 없는 점수가 나타날 수 있음</b>).</li><li>셀 범위 선택 후 [데이터-필터] 클릭(한셀: [데이터-자동필터] 클릭) → 영역명의 버튼을 클릭하여 점수 확인.</li></ul></div>
+<div class="memo" style="margin-top:12px"><h4>반영비율/만점 불일치 확인 (2026.9.11. 기능개선)</h4><ul><li>성적산출기준이 통합산출･학년별･계열별인 과목에서 영역별 반영비율/만점정보가 기준설정 학과와 다르게 등록되어 있으면 조회 시 안내메시지가 나타나고, <b>다른 학과는 <span class="btn">{저장}</span>이 비활성화됨.</b> [반영비율/만점관리]에서 기준설정 학과 자료로 맞춘 뒤 입력함.</li><li>2026학년도 3학년은 현행 방식을 유지함(3학년은 2027학년도 1학기부터 성적산출기준 적용).</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t7" data-num="7" data-stage="C" data-when="점수입력" data-who="교과담당교사">
@@ -716,7 +718,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">학생답안 채점 전</span><span class="tag opt">OMR 시트(카드) 사용 시</span></div>
     <h3>수행평가 정답·배점 입력과 마감</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="2" title="원문 p.797 열기">원문 p.797</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="2" title="원문 p.797 열기">원문 p.797</button><span class="tag">2026.9.11. 기능개선 10-23~10-26</span></p>
     <p class="desc">영어듣기평가 또는 전문교과 Ⅱ의 능력단위별 수행평가를 OMR 시트(카드)로 처리하는 과목에 해당한다. <strong>문항별 배점과 정답을 저장한 뒤 마감까지 해야</strong> 이후 일괄채점이 진행된다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 수행평가 성적파일 업로드·이관을 마친 뒤</dd></dl>
@@ -725,6 +727,8 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교과담임-성적-수행평가-수행평가정답/배점관리]</code>에서 '학년도', '학기' 확인 → '학년', '과목', '영역'을 선택 → <span class="btn">{조회}</span> → <span class="btn">{선택형}</span> 탭에서 문항별 '배점'과 '정답'을 입력 → <span class="btn">{저장}</span> → <span class="btn">{마감}</span>함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>채점의 기준이 되는 정답과 배점을 확정해, 학생 마킹을 기계가 옳게 채점하도록 하려고.</dd></dl>
     </div>
+<div class="memo" style="margin-top:12px"><h4>성적산출기준에 따른 정답/배점 관리 (2026.9.11. 기능개선)</h4><ul><li>성적산출기준관리에서 기준을 설정･마감하지 않으면 이 메뉴의 조회･저장･삭제 버튼이 비활성화됨.</li><li>화면에 학기말 반영 영역 표기가 추가됨. <b>학기말에 반영되는 영역은 기준설정 학과에서만 저장･삭제･마감 등을 할 수 있고</b>, 마감･마감취소･삭제하면 성적산출단위에 포함된 학과에 일괄 반영됨. 다른 학과는 조회･출력 외의 버튼이 비활성화됨. 학기말에 반영하지 않는 영역은 학과마다 관리 기능을 쓸 수 있음.</li><li><span class="btn">{타학과복사}</span>는 산출단위가 '학과별'인 과목만 쓸 수 있음(학기말 미반영 영역은 산출단위와 관계없이 사용 가능).</li><li>2026학년도 3학년은 현행 방식을 유지함(3학년은 2027학년도 1학기부터 성적산출기준 적용).</li></ul></div>
+<div class="memo" style="margin-top:12px"><h4>기준설정 학과와 정답/배점이 다를 때 (2026.9.11. 기능개선)</h4><ul><li>기준설정 학과가 마감한 상태에서 정답/배점이 다르게 등록된 학과가 있으면 조회 시 안내메시지가 나타남.</li><li><b>기준설정 학과가 마감한 경우</b> — 다른 학과에서 (마감되어 있으면) <span class="btn">{마감취소}</span> → 필요하면 <span class="btn">{삭제}</span>(기준설정 복사 때 자동으로 삭제 후 복사되므로 필수는 아님) → <span class="btn">{기준설정복사}</span> → '수행평가 정답/배점 - 기준설정 복사' 창에서 <span class="btn">{복사}</span>함.</li><li><b>기준설정 학과가 아직 마감하지 않은 경우</b> — 불일치 안내메시지가 나타나지 않으며, 기준설정 학과에서 <span class="btn">{마감}</span>하고 <span class="btn">{확인}</span>하면 기준설정 학과의 정답/배점이 다른 학과로 복사됨.</li><li>수행평가 영역 정보나 만점 정보가 다른 경우는 이 메뉴에서 처리할 수 없고 [수행평가영역관리] 또는 [반영비율/만점관리]에서 처리함.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t4" data-num="4" data-stage="A" data-when="리딩후" data-who="교과담당교사">
