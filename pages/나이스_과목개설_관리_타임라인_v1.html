@@ -674,7 +674,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
           <div class="tl-body">
             <p class="tl-no">04</p>
             <h3>이동수업 편성</h3>
-            <p class="tl-sub">이동수업 실시 학교만 · 학기 초 또는 지필평가 후</p>
+            <p class="tl-sub">이동수업 실시 학교만 · 학기 초 또는 정기시험 후</p>
             <div class="tl-btns"><button type="button" class="tl-btn" data-go="t13" title="13 이동 과목군 등록"><span>13</span>이동 과목군 등록</button><button type="button" class="tl-btn" data-go="t14" title="14 해당 반 선택"><span>14</span>해당 반 선택</button><button type="button" class="tl-btn" data-go="t15" title="15 운영 차수 등록"><span>15</span>운영 차수 등록</button><button type="button" class="tl-btn" data-go="t16" title="16 이동반 편성"><span>16</span>이동반 편성</button><button type="button" class="tl-btn" data-go="t18" title="18 학생 일괄편성"><span>18</span>학생 일괄편성</button><button type="button" class="tl-btn" data-go="t17" title="17 학생 개별편성"><span>17</span>학생 개별편성</button><button type="button" class="tl-btn" data-go="t19" title="19 N+1 명렬표"><span>19</span>N+1 명렬표</button></div>
           </div>
         </li>
@@ -755,7 +755,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd>‘학년도’, ‘학기’ 확인 후 ‘계열/학년/학과’를 선택하고 <span class="btn">{조회}</span>함 → <span class="btn">{과목개설}</span>을 클릭하면 나타나는 ‘과목개설’ 창에서 ‘편제명･과목(학점)’, ‘교사명’, ‘강의실’을 각각 선택한 후 <span class="btn">{추가}</span>하여 아래의 ‘과목정보’, ‘교사정보’, ‘강의실 정보’로 이동시킨 후 <span class="btn">{저장}</span>하고 목록에서 확인함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>학생 성적과 출결이 붙을 자리를 만들기 위해 과목·교사·강의실을 하나로 묶어 두려고 합니다.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li><b>이후 수강생 편성 등의 업무가 수행되지 않은 경우</b> 개설된 과목을 선택하여 <span class="btn">{삭제}</span> 가능하며, 교사명을 클릭하면 나타나는 ‘담당교사 변경’ 창에서 해당 교과목의 교과담당교사를 변경할 수 있음.</li><li>‘시간표’에서 과목별로 <span class="btn">{조회}</span> 시 개설된 교과의 전체시간표 등록 현황을 조회할 수 있음.</li><li><span class="btn">{엑셀내려받기}</span>로 개설된 교과의 ‘개설과목명(학점)’, ‘계열/학년/학과’, ‘강의실’, ‘교사명’ 자료를 엑셀･한셀･CSV 파일로 내려받을 수 있음.</li><li><span class="btn">{자료권한재등록}</span>은 인사발령, 사용자 삭제, 교무자료권한승인관리에서 삭제된 교과담당교사의 권한이 조회되며, <span class="btn">{자료권한재등록}</span>으로 교과담당교사 권한을 부여할 수 있음.</li><li>개설된 교과목에 교과담당교사와 강의실이 편성되면 <code>[성적-지필/수행선행작업-OMR용코드관리]</code>의 <span class="btn">{과목코드관리}</span> 탭에서 과목코드를 부여할 수 있음.</li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>이후 수강생 편성 등의 업무가 수행되지 않은 경우</b> 개설된 과목을 선택하여 <span class="btn">{삭제}</span> 가능하며, 교사명을 클릭하면 나타나는 ‘담당교사 변경’ 창에서 해당 교과목의 교과담당교사를 변경할 수 있음.</li><li>‘시간표’에서 과목별로 <span class="btn">{조회}</span> 시 개설된 교과의 전체시간표 등록 현황을 조회할 수 있음.</li><li><span class="btn">{엑셀내려받기}</span>로 개설된 교과의 ‘개설과목명(학점)’, ‘계열/학년/학과’, ‘강의실’, ‘교사명’ 자료를 엑셀･한셀･CSV 파일로 내려받을 수 있음.</li><li><span class="btn">{자료권한재등록}</span>은 인사발령, 사용자 삭제, 교무자료권한승인관리에서 삭제된 교과담당교사의 권한이 조회되며, <span class="btn">{자료권한재등록}</span>으로 교과담당교사 권한을 부여할 수 있음.</li><li>개설된 교과목에 교과담당교사와 강의실이 편성되면 <code>[성적-정기시험/수행평가선행작업-OMR용코드관리]</code>의 <span class="btn">{과목코드관리}</span> 탭에서 과목코드를 부여할 수 있음.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t4" data-num="4" data-stage="B" data-when="과목개설" data-who="교육과정업무담당자">
@@ -840,7 +840,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 '학년도', '학기', '학년' 확인 및 선택 후 <span class="btn">{조회}</span> → 수강학생을 편성할 과목을 선택한 후 우측 하단의 '미편성학생'에서 편성할 학생을 <span class="btn">{조회}</span>하고 편성할 학생을 선택 후 '편성학생'에 <span class="btn">{추가}</span>하여 <span class="btn">{저장}</span>함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>학생별로 수강 과목이 갈리는 선택과목까지 성적·출결 처리 대상 명단을 빠짐없이 맞추려는 것입니다.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li>위탁기관 등에서 학기말 성적을 송부하고 재적교 종업일 이전에 복교하는 경우 교과목 시간 출결관리를 위해 <span class="btn">{출결수강생편성}</span> 탭에서 과목별 수강생을 편성함.</li><li><b>동일한 과목에는 수강학생을 이중으로 편성할 수 없으며, 능력단위는 실무과목에 편성된 학생만 편성할 수 있음.</b></li><li>타학년 또는 타교생을 수강학생으로 편성할 수 있음(공동교육과정 거점교(거점센터)의 경우 활용 가능).</li></ul></div><div class="memo" style="margin-top:12px"><h4>전입생 출결관리 예외</h4><ul><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년의 경우 전출교와 전입교 모두 2차 지필평가(기말고사)가 완료된 상태에서 전입교로 전입한 학생의 출결관리를 위해 <code>[학적-전입관리-전입관리-학적반영]</code>의 목록에서 해당 전입생 '성명'을 클릭 후 <span class="btn">{수강과목편성}</span>을 클릭하면 나타나는 '수강과목편성' 창에서 편성된 과목 목록의 '출결 수강생편성'에만 선택하고 <span class="btn">{저장}</span>함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년의 경우 전출교와 전입교 모두 학기말 성적 산출이 완료된 상태에서 전입교로 전입한 학생의 출결관리를 위해 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>의 <span class="btn">{출결수강생편성}</span> 탭에서만 수강생을 편성함.</li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li>위탁기관 등에서 학기말 성적을 송부하고 재적교 종업일 이전에 복교하는 경우 교과목 시간 출결관리를 위해 <span class="btn">{출결수강생편성}</span> 탭에서 과목별 수강생을 편성함.</li><li><b>동일한 과목에는 수강학생을 이중으로 편성할 수 없으며, 능력단위는 실무과목에 편성된 학생만 편성할 수 있음.</b></li><li>타학년 또는 타교생을 수강학생으로 편성할 수 있음(공동교육과정 거점교(거점센터)의 경우 활용 가능).</li></ul></div><div class="memo" style="margin-top:12px"><h4>전입생 출결관리 예외</h4><ul><li>2022 개정 교육과정을 적용받는 2026학년도 1･2학년의 경우 전출교와 전입교 모두 2차 정기시험(기말고사)가 완료된 상태에서 전입교로 전입한 학생의 출결관리를 위해 <code>[학적-전입관리-전입관리-학적반영]</code>의 목록에서 해당 전입생 '성명'을 클릭 후 <span class="btn">{수강과목편성}</span>을 클릭하면 나타나는 '수강과목편성' 창에서 편성된 과목 목록의 '출결 수강생편성'에만 선택하고 <span class="btn">{저장}</span>함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년의 경우 전출교와 전입교 모두 학기말 성적 산출이 완료된 상태에서 전입교로 전입한 학생의 출결관리를 위해 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>의 <span class="btn">{출결수강생편성}</span> 탭에서만 수강생을 편성함.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t11" data-num="11" data-stage="C" data-when="수강편성" data-who="교육과정업무담당자">
@@ -863,7 +863,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
 <article class="task" id="t13" data-num="13" data-stage="D" data-when="학기중" data-who="교육과정업무담당자">
   <div class="gutter"><b>13</b><span class="gstage" title="원문 STAGE D · 이동수업(N+1)">D</span></div>
   <div class="body">
-    <div class="tags"><span class="tag now">학기 초 또는 학기 중(지필평가 후)</span><span class="tag opt">이동수업 실시 학교 한정</span></div>
+    <div class="tags"><span class="tag now">학기 초 또는 학기 중(정기시험 후)</span><span class="tag opt">이동수업 실시 학교 한정</span></div>
     <h3>이동수업 과목군 등록과 적용과목 편성</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="18" title="원문 p.137 열기">원문 p.137</button></p>
     <p class="desc">개설과목 중 차수를 등록하여 수강생을 N+1로 관리해야 하는 이동수업을 실시할 경우에만 사용합니다. 예를 들어 개설과목 '수학'에 대하여 2개의 학급 학생들을 2+1개의 이동반으로 나누어 차수를 관리하며 이동수업을 하는 경우에 씁니다. <strong>이동수업은 일반과목으로 개설된 과목을 대상으로 하므로</strong> 일반과목 과목개설이 끝난 뒤에 시작합니다.</p>
@@ -900,15 +900,15 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">해당 반 선택 후, 이동수업 운영 시작 전</span><span class="tag opt">이동수업 실시 학교 한정</span></div>
     <h3>이동수업 운영 차수 등록</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="20" title="원문 p.139 열기">원문 p.139</button></p>
-    <p class="desc">이동수업을 운영할 기간을 차수로 등록하는 단계입니다. 이동수업을 하는 경우에만 사용하며, <strong>학기 초뿐만 아니라 학기 중 여러 번(지필평가 후) 이동수업 반을 차수를 다르게 편성할 수 있습니다.</strong></p>
+    <p class="desc">이동수업을 운영할 기간을 차수로 등록하는 단계입니다. 이동수업을 하는 경우에만 사용하며, <strong>학기 초뿐만 아니라 학기 중 여러 번(정기시험 후) 이동수업 반을 차수를 다르게 편성할 수 있습니다.</strong></p>
     <div class="w6">
-      <dl><dt>언제?</dt><dd>학기 초 또는 학기 중(지필평가 후), 해당 반 선택을 마친 뒤</dd></dl>
+      <dl><dt>언제?</dt><dd>학기 초 또는 학기 중(정기시험 후), 해당 반 선택을 마친 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code>에서 '학년도', '학기', '계열/학년/학과' 확인 및 선택 후 <span class="btn">{조회}</span>함 → '과목군명' 선택 후 <span class="btn">{3. 차수등록}</span>을 클릭하여 <span class="btn">{행추가}</span>함 → 이동수업을 운영할 기간의 '시작일'과 '종료일'을 입력하여 <span class="btn">{저장}</span>함.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>지필평가 뒤 반 편성을 다시 짤 때 이전 편성을 지우지 않고 기간별로 나란히 남겨 두기 위해서입니다.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>정기시험 뒤 반 편성을 다시 짤 때 이전 편성을 지우지 않고 기간별로 나란히 남겨 두기 위해서입니다.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li>이동수업을 하는 경우에만 사용하며, <b>학기 초 뿐만 아니라 학기 중 여러 번(지필평가 후) 이동수업 반을 차수를 다르게 편성할 수 있음.</b></li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li>이동수업을 하는 경우에만 사용하며, <b>학기 초 뿐만 아니라 학기 중 여러 번(정기시험 후) 이동수업 반을 차수를 다르게 편성할 수 있음.</b></li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t16" data-num="16" data-stage="D" data-when="학기중" data-who="교육과정업무담당자">
@@ -936,7 +936,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <p class="src"><button type="button" class="srcbtn" data-page="23" title="원문 p.142 열기">원문 p.142</button></p>
     <p class="desc">수준별 이동수업처럼 성적 기준으로 학생을 나눌 때 쓰는 방식입니다. 설정된 '편성기준고사'에 의해 자동으로 이동 수업반이 편성되므로 별도의 수강학생 편성이 필요 없습니다. <strong>'편성비율'이나 '편성기준점수'의 구간은 '초과'와 '이하'이므로 경계값이 일치되도록 입력해야 누락되지 않고 편성됩니다.</strong></p>
     <div class="w6">
-      <dl><dt>언제?</dt><dd>학기 초 또는 학기 중(지필평가 후), 편성기준고사의 성적이 산출된 뒤</dd></dl>
+      <dl><dt>언제?</dt><dd>학기 초 또는 학기 중(정기시험 후), 편성기준고사의 성적이 산출된 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-이동수업(N+1)학생관리]</code>에서 '학년도', '학기', '계열/학년/학과' 선택 후 <span class="btn">{조회}</span>함 → '과목군명' 선택 후 <span class="btn">{5. 수강학생편성}</span>을 클릭하여 수강학생을 편성할 '차수'를 선택함 → '편성반' 선택 후 <span class="btn">{일괄편성}</span>을 클릭하여 '이동수업 학생 일괄 편성' 창에서 '편성기준고사', '편성기준과목', '편성기준' 설정 후 '편성비율' 또는 '편성기준점수'를 입력하고 <span class="btn">{작업실행}</span>한 후 <span class="btn">{닫기}</span>하고 <span class="btn">{저장}</span>함.</dd></dl>
@@ -1002,15 +1002,15 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     <div class="tags"><span class="tag now">학적변동(전입) 발생 후</span></div>
     <h3>미편성학생 일괄 편성</h3>
     <p class="src"><button type="button" class="srcbtn" data-page="14" title="원문 p.133 열기">원문 p.133</button></p>
-    <p class="desc">학적변동(전입)으로 수강 편성에서 빠진 학생이 생겼을 때 쓰는 업무입니다. 수강학생이 미편성된 경우 <code>[성적-지필평가]</code>, <code>[수행평가]</code>에서 수강학생이 조회되지 않습니다. <strong><code>[성적-지필평가]</code>/<code>[수행평가]</code>에 성적이 등록되어 있으면 <span class="btn">{일괄등록}</span>, <span class="btn">{미편성학생일괄등록}</span>, <span class="btn">{일괄삭제}</span>를 할 수 없습니다.</strong></p>
+    <p class="desc">학적변동(전입)으로 수강 편성에서 빠진 학생이 생겼을 때 쓰는 업무입니다. 수강학생이 미편성된 경우 <code>[성적-정기시험]</code>, <code>[수행평가]</code>에서 수강학생이 조회되지 않습니다. <strong><code>[성적-정기시험]</code>/<code>[수행평가]</code>에 성적이 등록되어 있으면 <span class="btn">{일괄등록}</span>, <span class="btn">{미편성학생일괄등록}</span>, <span class="btn">{일괄삭제}</span>를 할 수 없습니다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기 중, 학적변동(전입) 처리 후 성적 등록 전</dd></dl>
       <dl><dt>누가?</dt><dd>교육과정 업무담당자</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 '학년도', '학기', '계열/학년/학과' 확인 및 선택 후 <span class="btn">{조회}</span> → <span class="btn">{미편성학생일괄등록}</span>하여 <span class="btn">{확인}</span>하면 학적변동(전입)으로 인하여 미편성된 학생을 해당 학년에 개설된 모든 과목에 대하여 수강 편성함.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>편성에서 누락된 학생이 지필·수행평가 화면에 아예 나타나지 않아 성적이 비는 일을 막으려는 것입니다.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>편성에서 누락된 학생이 정기시험·수행평가 화면에 아예 나타나지 않아 성적이 비는 일을 막으려는 것입니다.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li>수강학생이 미편성된 경우 <code>[성적-지필평가]</code>, <code>[수행평가]</code>에서 수강학생이 조회되지 않음.</li><li><b><code>[성적-지필평가]</code>/<code>[수행평가]</code>에 성적이 등록되어 있으면 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 <span class="btn">{일괄등록}</span>, <span class="btn">{미편성학생일괄등록}</span>, <span class="btn">{일괄삭제}</span>를 할 수 없음.</b></li><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 동일한 과목에는 수강학생을 이중으로 편성할 수 없으며, 능력단위는 실무과목에 편성된 학생만 편성할 수 있음.</li><li>타학년 또는 타교생을 수강학생으로 편성할 수 있음(공동교육과정 거점교(거점센터)의 경우 활용 가능).</li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li>수강학생이 미편성된 경우 <code>[성적-정기시험]</code>, <code>[수행평가]</code>에서 수강학생이 조회되지 않음.</li><li><b><code>[성적-정기시험]</code>/<code>[수행평가]</code>에 성적이 등록되어 있으면 <code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 <span class="btn">{일괄등록}</span>, <span class="btn">{미편성학생일괄등록}</span>, <span class="btn">{일괄삭제}</span>를 할 수 없음.</b></li><li><code>[교육과정-편제및과목개설관리-편제및과목개설관리-수강생편성]</code>에서 동일한 과목에는 수강학생을 이중으로 편성할 수 없으며, 능력단위는 실무과목에 편성된 학생만 편성할 수 있음.</li><li>타학년 또는 타교생을 수강학생으로 편성할 수 있음(공동교육과정 거점교(거점센터)의 경우 활용 가능).</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t5" data-num="5" data-stage="B" data-when="학기중" data-who="교육과정업무담당자">
@@ -1085,8 +1085,8 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
     </div>
 
     <div class="memo"><h4>과목개설에서 무엇이 하나로 묶이는가</h4>
-    <div class="flowscroll"><svg xmlns="http://www.w3.org/2000/svg" class="joinmap" viewBox="0 0 760 200" role="img" aria-label="편제 과목, 교과담당교사, 강의실, 수강학생 네 가지가 만나 개설과목 한 건이 되고, 거기에 교과시간별 출결·지필수행평가 성적·기초시간표가 붙는다"><defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z"/></marker></defs><g class="inb"><rect class="inbg" x="8" y="8" width="216" height="38" rx="6"/><text class="int" x="20" y="25" text-anchor="start">편제 과목(학점)</text><text class="insub" x="20" y="38" text-anchor="start">Section_04에서 등록한 것</text></g><path class="arw" d="M228 27 H272 V102 H300" marker-end="url(#ah2)"/><g class="inb"><rect class="inbg" x="8" y="54" width="216" height="38" rx="6"/><text class="int" x="20" y="71" text-anchor="start">교과담당교사</text><text class="insub" x="20" y="84" text-anchor="start">[과목개설]에서 연결</text></g><path class="arw" d="M228 73 H272 V102 H300" marker-end="url(#ah2)"/><g class="inb"><rect class="inbg" x="8" y="100" width="216" height="38" rx="6"/><text class="int" x="20" y="117" text-anchor="start">강의실</text><text class="insub" x="20" y="130" text-anchor="start">[강의실관리]에서 등록</text></g><path class="arw" d="M228 119 H272 V102 H300" marker-end="url(#ah2)"/><g class="inb"><rect class="inbg" x="8" y="146" width="216" height="38" rx="6"/><text class="int" x="20" y="163" text-anchor="start">수강학생</text><text class="insub" x="20" y="176" text-anchor="start">[수강생편성]에서 편성</text></g><path class="arw" d="M228 165 H272 V102 H300" marker-end="url(#ah2)"/><g class="mid"><rect class="midbg" x="300" y="76" width="176" height="52" rx="7"/><text class="midt" x="388" y="98" text-anchor="middle">개설과목 1건</text><text class="midsub" x="388" y="114" text-anchor="middle">성적·출결이 붙는 자리</text></g><path class="arw" d="M476 102 H520" marker-end="url(#ah2)"/><path class="arw thin" d="M520 102 V63 H548" marker-end="url(#ah2)"/><g class="outb"><rect class="outbg2" x="548" y="46" width="200" height="34" rx="6"/><text class="outt" x="560" y="67" text-anchor="start">교과시간별 출결</text></g><path class="arw thin" d="M520 102 V109 H548" marker-end="url(#ah2)"/><g class="outb"><rect class="outbg2" x="548" y="92" width="200" height="34" rx="6"/><text class="outt" x="560" y="113" text-anchor="start">지필 · 수행평가 성적</text></g><path class="arw thin" d="M520 102 V155 H548" marker-end="url(#ah2)"/><g class="outb"><rect class="outbg2" x="548" y="138" width="200" height="34" rx="6"/><text class="outt" x="560" y="159" text-anchor="start">기초시간표 작성</text></g></svg></div>
-    <p class="figcap">Section_05가 하는 일은 <b>편제 과목에 교사 · 강의실 · 수강학생을 붙여 개설과목 한 건을 만드는 것</b>입니다. 이 네 가지가 다 붙어야 비로소 성적과 출결이 앉을 자리가 생깁니다. 그래서 수강학생이 미편성이면 <code>[성적-지필평가]</code>와 <code>[수행평가]</code>에 학생이 아예 조회되지 않고, 개설과목에 수강생 편성 같은 후속 업무가 이미 진행되면 <span class="btn">{삭제}</span>가 막힙니다.</p>
+    <div class="flowscroll"><svg xmlns="http://www.w3.org/2000/svg" class="joinmap" viewBox="0 0 760 200" role="img" aria-label="편제 과목, 교과담당교사, 강의실, 수강학생 네 가지가 만나 개설과목 한 건이 되고, 거기에 교과시간별 출결·정기시험·수행평가 성적·기초시간표가 붙는다"><defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z"/></marker></defs><g class="inb"><rect class="inbg" x="8" y="8" width="216" height="38" rx="6"/><text class="int" x="20" y="25" text-anchor="start">편제 과목(학점)</text><text class="insub" x="20" y="38" text-anchor="start">Section_04에서 등록한 것</text></g><path class="arw" d="M228 27 H272 V102 H300" marker-end="url(#ah2)"/><g class="inb"><rect class="inbg" x="8" y="54" width="216" height="38" rx="6"/><text class="int" x="20" y="71" text-anchor="start">교과담당교사</text><text class="insub" x="20" y="84" text-anchor="start">[과목개설]에서 연결</text></g><path class="arw" d="M228 73 H272 V102 H300" marker-end="url(#ah2)"/><g class="inb"><rect class="inbg" x="8" y="100" width="216" height="38" rx="6"/><text class="int" x="20" y="117" text-anchor="start">강의실</text><text class="insub" x="20" y="130" text-anchor="start">[강의실관리]에서 등록</text></g><path class="arw" d="M228 119 H272 V102 H300" marker-end="url(#ah2)"/><g class="inb"><rect class="inbg" x="8" y="146" width="216" height="38" rx="6"/><text class="int" x="20" y="163" text-anchor="start">수강학생</text><text class="insub" x="20" y="176" text-anchor="start">[수강생편성]에서 편성</text></g><path class="arw" d="M228 165 H272 V102 H300" marker-end="url(#ah2)"/><g class="mid"><rect class="midbg" x="300" y="76" width="176" height="52" rx="7"/><text class="midt" x="388" y="98" text-anchor="middle">개설과목 1건</text><text class="midsub" x="388" y="114" text-anchor="middle">성적·출결이 붙는 자리</text></g><path class="arw" d="M476 102 H520" marker-end="url(#ah2)"/><path class="arw thin" d="M520 102 V63 H548" marker-end="url(#ah2)"/><g class="outb"><rect class="outbg2" x="548" y="46" width="200" height="34" rx="6"/><text class="outt" x="560" y="67" text-anchor="start">교과시간별 출결</text></g><path class="arw thin" d="M520 102 V109 H548" marker-end="url(#ah2)"/><g class="outb"><rect class="outbg2" x="548" y="92" width="200" height="34" rx="6"/><text class="outt" x="560" y="113" text-anchor="start">정기시험 · 수행평가 성적</text></g><path class="arw thin" d="M520 102 V155 H548" marker-end="url(#ah2)"/><g class="outb"><rect class="outbg2" x="548" y="138" width="200" height="34" rx="6"/><text class="outt" x="560" y="159" text-anchor="start">기초시간표 작성</text></g></svg></div>
+    <p class="figcap">Section_05가 하는 일은 <b>편제 과목에 교사 · 강의실 · 수강학생을 붙여 개설과목 한 건을 만드는 것</b>입니다. 이 네 가지가 다 붙어야 비로소 성적과 출결이 앉을 자리가 생깁니다. 그래서 수강학생이 미편성이면 <code>[성적-정기시험]</code>와 <code>[수행평가]</code>에 학생이 아예 조회되지 않고, 개설과목에 수강생 편성 같은 후속 업무가 이미 진행되면 <span class="btn">{삭제}</span>가 막힙니다.</p>
     </div>
 
     <div class="memo"><h4>순서를 지켜야 하는 이유</h4><ul>

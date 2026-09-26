@@ -610,14 +610,14 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <header class="hero">
     <p class="eyebrow">Part 6 성적 · Section_04 · pp. 816–829</p>
     <h1>추정분할점수 산출
-      <em>업무 13개를 손대는 시점 순서로</em>
+      <em>업무 15개를 손대는 시점 순서로</em>
     </h1>
     <p class="hero-lede">타임라인의 버튼을 업무카드 누르면 해당 업무 카드로 바로 이동합니다.</p>
     <dl class="meta-strip">
 <div><dt>업무시기</dt><dd>정기시험과 수행평가 실시 전</dd></div>
       <div><dt>업무담당</dt><dd>교과담당교사</dd></div>
       <div><dt>메뉴경로</dt><dd>[성적-추정분할점수-추정분할점수관리]</dd></div>
-      <div><dt>선행조건</dt><dd>[성적-정기시험/수행선행작업-성취평가기준관리]에서 과목별 성취기준과 [성적-정기시험-문항정보표관리]에서 문항정보표에 성취기준, 난이도, 배점 등을 등록함.</dd></div>
+      <div><dt>선행조건</dt><dd>[성적-정기시험/수행평가선행작업-성취평가기준관리]에서 과목별 성취기준과 [성적-정기시험-문항정보표관리]에서 문항정보표에 성취기준, 난이도, 배점 등을 등록함.</dd></div>
     </dl>
   </header>
 
@@ -634,7 +634,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
             <p class="tl-no">01</p>
             <h3>고사 전 분할점수 입력</h3>
             <p class="tl-sub">성취기준 등록과 문항정보표 마감이 끝난 뒤 · 정기시험·수행 실시 전</p>
-            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 예상정답률 입력"><span>01</span>예상정답률 입력</button><button type="button" class="tl-btn" data-go="t2" title="02 입력내용 조회"><span>02</span>입력내용 조회</button><button type="button" class="tl-btn" data-go="t7" title="07 수행 분할점수 입력"><span>07</span>수행 분할점수 입력</button></div>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t1" title="01 예상정답률 입력"><span>01</span>예상정답률 입력</button><button type="button" class="tl-btn" data-go="t2" title="02 입력내용 조회"><span>02</span>입력내용 조회</button><button type="button" class="tl-btn" data-go="t7" title="07 수행 분할점수 입력"><span>07</span>수행 분할점수 입력</button><button type="button" class="tl-btn" data-go="t14" title="14 수행 마감·승인요청"><span>14</span>수행 마감·승인요청</button></div>
           </div>
         </li>
         <li class="tl-phase">
@@ -661,7 +661,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
             <p class="tl-no">04</p>
             <h3>학기말 최종 산출</h3>
             <p class="tl-sub">정기시험 라운드 확정과 수행 분할점수 입력을 모두 마친 뒤</p>
-            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t8" title="08 학기말 산출"><span>08</span>학기말 산출</button><button type="button" class="tl-btn" data-go="t9" title="09 승인요청·마감"><span>09</span>승인요청·마감</button></div>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t8" title="08 학기말 산출"><span>08</span>학기말 산출</button><button type="button" class="tl-btn" data-go="t9" title="09 과목별 마감"><span>09</span>과목별 마감</button><button type="button" class="tl-btn" data-go="t15" title="15 학기별 마감·승인"><span>15</span>학기별 마감·승인</button></div>
           </div>
         </li>
         <li class="tl-phase">
@@ -670,7 +670,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
             <p class="tl-no">05</p>
             <h3>성적산출 선행작업 반영</h3>
             <p class="tl-sub">학기말 추정분할점수 산출 후 · 성적산출 전</p>
-            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t11" title="11 산출결과 가져오기"><span>11</span>산출결과 가져오기</button><button type="button" class="tl-btn" data-go="t12" title="12 대표학과 결과복사"><span>12</span>대표학과 결과복사</button><button type="button" class="tl-btn" data-go="t13" title="13 전과목 확인·출력"><span>13</span>전과목 확인·출력</button></div>
+            <div class="tl-btns"><button type="button" class="tl-btn" data-go="t11" title="11 산출결과 가져오기"><span>11</span>산출결과 가져오기</button><button type="button" class="tl-btn" data-go="t12" title="12 타학과 결과복사"><span>12</span>타학과 결과복사</button><button type="button" class="tl-btn" data-go="t13" title="13 전과목 확인·출력"><span>13</span>전과목 확인·출력</button></div>
           </div>
         </li>
         <li class="tl-phase cond">
@@ -698,16 +698,16 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">정기시험 실시 전</span><span class="tag">문항정보표 마감 필요</span><span class="tag opt">2회 이상 라운드 권장</span></div>
     <h3>라운드 등록과 최소능력자 예상정답률 입력·마감</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.818–819 열기">원문 p.818–819</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.818–819 열기">원문 p.818–819</button><span class="tag">2026.5.29. 기능개선 7-1~7-5</span><span class="tag">2026.9.11. 기능개선 8-1, 9-1</span></p>
     <p class="desc">추정 분할점수를 이용해서 성취율을 산출하는 과목이라면 교과담당교사가 고사·학년·과목·라운드 단위로 최소능력자 예상정답률을 직접 입력한다. <strong>[교과담임-성적-정기시험-문항정보표관리]에서 해당 고사의 과목에 대한 문항정보표가 마감되어 있어야만 최소능력자 예상정답률 입력이 가능함.</strong> '성취기준', '난이도', '배점' 등을 입력하지 않고 <span class="btn">{마감}</span>한 경우에는 정기시험에 대한 추정 분할점수를 산출할 수 없다.</p>
     <div class="w6">
-      <dl><dt>언제?</dt><dd>정기시험과 수행평가 실시 전, [성적-정기시험/수행선행작업-성취평가기준관리]의 과목별 성취기준과 [성적-정기시험-문항정보표관리]의 문항정보표 등록·마감이 끝난 뒤</dd></dl>
+      <dl><dt>언제?</dt><dd>정기시험과 수행평가 실시 전, [성적-정기시험/수행평가선행작업-성취평가기준관리]의 과목별 성취기준과 [성적-정기시험-문항정보표관리]의 문항정보표 등록·마감이 끝난 뒤</dd></dl>
       <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-정기시험추정분할점수산출관리]</code></dd></dl>
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-분할점수-분할점수관리-정기시험추정분할점수산출관리]</code>에서 '학년도', '학기' 확인 후 '고사', '학년', '과목', '라운드'를 선택하고 <span class="btn">{조회}</span>함 → <span class="btn">{예상정답률입력}</span> 탭에서 '최소능력자 예상정답률(%)'을 입력하고 <span class="btn">{저장}</span> 및 <span class="btn">{입력마감}</span>함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>성취도를 매기는 기준선을 교사들의 전문적 판단으로 미리 합의해 두어, 고사 결과가 나온 뒤 임의로 등급 경계가 흔들리지 않게 하려고.</dd></dl>
     </div>
-<div class="memo"><h4>입력 조건과 제약</h4><ul><li><b>'최소능력자 예상정답률(%)'은 5% 단위로 입력 가능함. 단, 'E 단계'는 5% 단위를 벗어나서(예: 49% 등) 입력 가능함.</b></li><li>2026학년도 기준으로 평가단계는 5수준+미도달만 선택 가능함. 2015 개정 교육과정을 적용받는 2026학년도 3학년 과목에서 '5수준(A-E)+미도달'을 선택하는 경우 E/미도달 추정 분할점수가 산출되나 확인용도로만 제공되며, E등급의 성취율은 0으로 고정 반영됨.</li><li><b>예상정답률 제약조건을 충족하지 못하는 경우 적색 글자로 표시되며, 라운드 확정이 불가능함.</b> 최소능력자 예상정답률은 상위수준의 예상정답률보다 높을 수 없음. 난이도별 최소 정답률은 낮은 난이도가 높은 난이도보다 정답률이 낮을 수 없음.</li><li>상위 성취수준에 해당되는 최소능력자 예상정답률과 차하위 성취수준에 해당되는 최소능력자 예상정답률 간의 차이가 20% 이상인 경우 차하위 정답률 칸의 색상이 적색으로 표시됨(예시: A 95, B 65인 경우).</li><li><span class="btn">{예상정답률입력}</span> 탭에서 조회되는 '문항구분', '난이도', '해당문항번호', '문항수', '배점합'의 정보는 <code>[성적-정기시험-문항정보표관리]</code>에서 입력한 정기시험 과목의 내용임.</li><li>정기시험 추정 분할점수는 소수점 둘째 자리까지 산출됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>라운드 운영</h4><ul><li><span class="btn">{라운드등록}</span>하면 '라운드 번호'가 추가되고 '복사대상라운드'에서 이전에 등록한 라운드를 선택하고 <span class="btn">{등록}</span>하면 선택한 라운드의 내용이 복사되고 수정할 수 있음.</li><li>나이스에서는 라운드를 1회만 진행해도 추정분할점수를 확정할 수 있으나, <b>2회 이상 라운드 실시를 권장함.</b></li><li>분할점수 산출 시 1, 2라운드를 합산하여 산출하는 것이 아닌 해당 라운드 중에 최종 확정한 라운드에 한해 학기말 분할점수에 활용하도록 되어 있음.</li><li><span class="btn">{라운드삭제}</span>에서 불필요한 라운드를 삭제할 수 있음.</li><li><b>추정분할점수 확정 시 동일교과 수업에 참여하는 모든 교사가 예상정답율 입력 후 마감이 되어야만 <span class="btn">{확정}</span>이 가능함.</b> 다만 현재는 한시적으로 모든 교사가 예상정답률을 등록하지 않아도 업무 처리가 가능함.</li></ul></div>
+<div class="memo"><h4>입력 조건과 제약</h4><ul><li><b>'최소능력자 예상정답률(%)'은 5% 단위로 입력 가능함. 단, 'E 단계'는 5% 단위를 벗어나서(예: 49% 등) 입력 가능함.</b></li><li><b>(2026.5.29. 기능개선) 2026학년도 1･2학년의 평가단계는 과목 구분에 따라 고정됨. 공통과목은 '5수준(A-E)+미도달'만, 선택과목은 '5수준(A-E)'만 선택할 수 있음.</b> 보통･전문교과 선택과목의 성취도 E(또는 C) 기준 성취율이 '40% 이상~60% 미만'에서 '60% 미만'으로 바뀌어 선택과목에는 미도달 단계가 없기 때문임. 공통과목은 공통국어1･2, 공통수학1･2, 기본수학1･2, 공통영어1･2, 기본영어1･2, 통합사회1･2, 한국사1･2, 통합과학1･2, 과학탐구실험1･2임.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 과목에서 '5수준(A-E)+미도달'을 선택하는 경우 E/미도달 추정 분할점수가 산출되나 확인용도로만 제공되며, E등급의 성취율은 0으로 고정 반영됨.</li><li><b>예상정답률 제약조건을 충족하지 못하는 경우 적색 글자로 표시되며, 라운드 확정이 불가능함.</b> 최소능력자 예상정답률은 상위수준의 예상정답률보다 높을 수 없음. 난이도별 최소 정답률은 낮은 난이도가 높은 난이도보다 정답률이 낮을 수 없음.</li><li>상위 성취수준에 해당되는 최소능력자 예상정답률과 차하위 성취수준에 해당되는 최소능력자 예상정답률 간의 차이가 20% 이상인 경우 차하위 정답률 칸의 색상이 적색으로 표시됨(예시: A 95, B 65인 경우).</li><li><span class="btn">{예상정답률입력}</span> 탭에서 조회되는 '문항구분', '난이도', '해당문항번호', '문항수', '배점합'의 정보는 <code>[성적-정기시험-문항정보표관리]</code>에서 입력한 정기시험 과목의 내용임.</li><li>정기시험 추정 분할점수는 소수점 둘째 자리까지 산출됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>평가단계를 잘못 등록한 경우 (2026.5.29. 기능개선)</h4><ul><li>기능개선 전에 1･2학년 정기시험･수행평가의 평가단계를 과목 구분과 다르게 등록했다면(공통과목을 '5수준', 선택과목을 '5수준+미도달') 화면 상단에 "공통과목은 [5수준(A-E)+미도달]로 산출되어야 합니다." 같은 안내문구가 나타나므로 평가단계를 고쳐야 함.</li><li>예상정답률 입력 화면에서 고치는 방법 — '평가단계'를 바꿔 선택 → <span class="btn">{저장}</span> → 안내창에서 <span class="btn">{확인}</span>함.</li><li>라운드 등록에서 고치는 방법 — <span class="btn">{라운드등록}</span> → 평가단계 변경이 필요하다는 안내창 확인 → 바른 평가단계를 선택하고 <span class="btn">{등록}</span>함.</li><li><b>평가단계를 바꾸면 해당 과목의 모든 고사･라운드와 수행평가에 반영된 추정분할점수 자료가 함께 바뀜.</b> '5수준+미도달'에서 '5수준'으로 바꾸면 이미 입력한 미도달 단계 자료는 삭제됨.</li><li>평가단계가 잘못된 상태이면 정기시험 추정분할점수의 저장･입력마감･승인요청･확정, 수행평가 추정분할점수의 저장, 학기말 추정분할점수의 산출･마감에서 안내 메시지가 나타나고 진행되지 않음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>성적산출기준과의 관계 (2026.9.11. 기능개선)</h4><ul><li>과목 목록에는 해당 고사에 등록된 과목 중 <code>[성적-정기시험/수행평가선행작업-성적산출기준관리]</code>에서 <b>'추정분할점수 사용'으로 설정한 과목만</b> 나타남(종전에는 해당 고사에 등록된 5단계 과목 전부). 수행평가추정분할점수산출관리, 학기말 추정분할점수산출에도 같게 적용됨.</li><li>화면에 과목의 성적산출단위(통합산출･학년별･계열별)가 표기됨. 학과별 산출이면 표기하지 않음.</li><li><span class="btn">{라운드등록}</span>･<span class="btn">{라운드삭제}</span>는 기준설정 학과가 아닌 학과에서도 할 수 있으며, <b>산출단위에 포함된 학과에 일괄 적용됨</b>(예: 계열별 산출 과목을 2학년 외국어계 관광일본어과에서 라운드 등록하면 같은 계열의 다른 학과에도 등록됨).</li><li>2026학년도 3학년은 현행 방식을 유지함(3학년은 2027학년도 1학기부터 성적산출기준 적용).</li></ul></div><div class="memo" style="margin-top:12px"><h4>라운드 운영</h4><ul><li><span class="btn">{라운드등록}</span>하면 '라운드 번호'가 추가되고 '복사대상라운드'에서 이전에 등록한 라운드를 선택하고 <span class="btn">{등록}</span>하면 선택한 라운드의 내용이 복사되고 수정할 수 있음.</li><li>나이스에서는 라운드를 1회만 진행해도 추정분할점수를 확정할 수 있으나, <b>2회 이상 라운드 실시를 권장함.</b></li><li>분할점수 산출 시 1, 2라운드를 합산하여 산출하는 것이 아닌 해당 라운드 중에 최종 확정한 라운드에 한해 학기말 분할점수에 활용하도록 되어 있음.</li><li><span class="btn">{라운드삭제}</span>에서 불필요한 라운드를 삭제할 수 있음.</li><li><b>추정분할점수 확정 시 동일교과 수업에 참여하는 모든 교사가 예상정답율 입력 후 마감이 되어야만 <span class="btn">{확정}</span>이 가능함.</b> 다만 현재는 한시적으로 모든 교사가 예상정답률을 등록하지 않아도 업무 처리가 가능함.</li></ul></div>
   <div class="memo" style="margin-top:12px"><h4>참고 · 고정분할점수와 추정분할점수</h4>
 <p class="refnote">이 업무가 왜 필요한지 이해하기 위한 참고 자료다. 나이스 매뉴얼 원문에는 없다.</p>
 
@@ -721,7 +721,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
 <div class="reftbl-wrap"><table class="reftbl">
 <thead><tr><th></th><th>고정분할점수</th><th>추정분할점수</th></tr></thead>
 <tbody>
-<tr><th>커트라인</th><td>90 / 80 / 70 / 60 / 40점으로 늘 같음</td><td>정기시험마다 학교가 산출(평가 시행 전)</td></tr>
+<tr><th>커트라인</th><td>90 / 80 / 70 / 60 / 40점으로 늘 같음(2026학년도 1･2학년 선택과목은 E 기준 0점)</td><td>정기시험마다 학교가 산출(평가 시행 전)</td></tr>
 <tr><th>절차</th><td>산출 절차가 없어 간단함</td><td>교과협의회 협의와 나이스 입력 절차가 필요함</td></tr>
 <tr><th>난이도 반영</th><td>반영하지 않음</td><td>문항 난이도를 반영함</td></tr>
 <tr><th>한계·장점</th><td>시험이 어렵게 출제되면 실력이 같아도 성취도가 낮게 나올 수 있음</td><td>실력과 성취도가 잘 대응함</td></tr>
@@ -775,7 +775,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">예상정답률 입력 중·마감 전후</span><span class="tag">조회 전용</span></div>
     <h3>교사별·문항범주별·예상분할점수 조회로 입력 내용 확인</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.819–820 열기">원문 p.819–820</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="4" title="원문 p.819–820 열기">원문 p.819–820</button><span class="tag">2026.9.11. 기능개선 8-2</span></p>
     <p class="desc">동일 교과를 여러 교사가 담당하는 과목이라면 라운드를 확정하기 전에 다른 교사의 입력 값과 산출될 분할점수 분포를 미리 확인한다. <strong>세 탭은 모두 조회 기능이므로 입력 값이 바뀌지 않으며, 절차는 탭을 선택하고 <span class="btn">{조회}</span>하는 것으로 같다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>정기시험 예상정답률 입력 중이거나 <span class="btn">{입력마감}</span> 이후 라운드 확정 전</dd></dl>
@@ -784,7 +784,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기' 확인 후 '고사', '학년', '과목', '라운드'를 선택하고 <span class="btn">{조회}</span>함 → <span class="btn">{교사별입력정보조회}</span> · <span class="btn">{문항범주별조회}</span> · <span class="btn">{예상분할점수조회}</span> 탭 중 필요한 탭을 선택하여 <span class="btn">{조회}</span>함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>교사 간 판단 차이와 성취수준별 분포를 확정 전에 눈으로 맞춰 보고, 한쪽으로 치우친 분할점수로 확정되는 일을 막으려고.</dd></dl>
     </div>
-<div class="memo"><h4>어떤 탭을 언제 여는가</h4><ul><li><span class="btn">{교사별입력정보조회}</span> 탭 — 다른 교사가 입력한 정기시험의 정답률이 나타나고 교사명을 입력하여 특정 교사의 입력 내용을 <span class="btn">{조회}</span>할 수 있음. <b>동일교과 모든 교사의 입력·마감 여부를 확인할 때 사용함.</b></li><li><span class="btn">{문항범주별조회}</span> 탭 — 정기시험 문항유형(난이도)에 따른 각 성취수준의 '평균', '표준편차', '최솟값', '최댓값'을 조회할 수 있음.</li><li><span class="btn">{예상분할점수조회}</span> 탭 — 해당 정기시험 예상분할점수 성취수준의 '평균', '표준편차', '최솟값', '최댓값'을 조회할 수 있음. <b>라운드를 확정하기 전 최종 확인용으로 사용함.</b></li></ul></div>
+<div class="memo"><h4>어떤 탭을 언제 여는가</h4><ul><li><span class="btn">{교사별입력정보조회}</span> 탭 — 다른 교사가 입력한 정기시험의 정답률이 나타나고 교사명을 입력하여 특정 교사의 입력 내용을 <span class="btn">{조회}</span>할 수 있음. <b>동일교과 모든 교사의 입력·마감 여부를 확인할 때 사용함.</b></li><li><span class="btn">{문항범주별조회}</span> 탭 — 정기시험 문항유형(난이도)에 따른 각 성취수준의 '평균', '표준편차', '최솟값', '최댓값'을 조회할 수 있음.</li><li><span class="btn">{예상분할점수조회}</span> 탭 — 해당 정기시험 예상분할점수 성취수준의 '평균', '표준편차', '최솟값', '최댓값'을 조회할 수 있음. <b>라운드를 확정하기 전 최종 확인용으로 사용함.</b></li><li>(2026.9.11. 기능개선) 성적산출기준이 통합산출･학년별･계열별인 과목은 세 탭 모두 <b>산출단위에 포함된 학과와 담당교사의 입력정보를 토대로</b> 조회됨. 분할점수가 산출된 결과는 <span class="btn">{전과목 엑셀다운로드}</span>로 내려받을 수 있음.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t7" data-num="7" data-stage="C" data-when="평가전입력" data-who="교과담당교사">
@@ -792,7 +792,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">정기시험과 수행평가 실시 전</span><span class="tag opt">전체영역 또는 영역별 중 택일</span></div>
     <h3>수행평가 추정분할점수 입력(전체영역 / 영역별)</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="9" title="원문 p.824–825 열기">원문 p.824–825</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="9" title="원문 p.824–825 열기">원문 p.824–825</button><span class="tag">2026.5.29. 기능개선 7-6</span><span class="tag">2026.9.11. 기능개선 8-4, 8-5</span></p>
     <p class="desc">수행평가 추정분할점수는 정기시험처럼 라운드를 돌려 산출하는 것이 아니라 <strong>교과별 평가계획에서 설정한 성취수준별 분할점수를 그대로 입력</strong>하는 업무입니다. '전체영역'과 '영역별' 중 하나를 선택하여 입력합니다. 학기말 추정분할점수 산출 전에 마쳐 두어야 합니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>정기시험과 수행평가 실시 전, 과목별 성취기준 등록이 끝난 뒤</dd></dl>
@@ -801,7 +801,24 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-분할점수-분할점수관리-수행평가추정분할점수산출관리]</code>에서 '학년도', '학기' 확인 후 '학년', '과목'을 선택하고 <span class="btn">{조회}</span> → '수행평가 추정분할점수'에서 '전체영역'을 선택 후 '성취수준별 추정분할점수'를 입력하고 <span class="btn">{저장}</span> → 영역별로 설정하는 경우에는 '수행평가 추정분할점수'에서 '영역별'을 선택 후 '성취수준별 분할점수'를 입력하여 <span class="btn">{저장}</span>.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>교과별 평가계획에서 합의한 성취수준 기준을 수행평가에도 그대로 적용해, 학기말 최종 추정 분할점수가 계획과 어긋나지 않게 하려고.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li>수행평가 분할점수는 <b>'전체영역' 혹은 '영역별' 중 하나를 선택</b>하여 수행평가에 대한 추정분할점수를 설정함.</li><li>수행평가에 대한 추정분할점수는 <b>교과별 평가계획에서 설정한 성취수준별 분할점수</b>를 설정함.</li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li>수행평가 분할점수는 <b>'전체영역' 혹은 '영역별' 중 하나를 선택</b>하여 수행평가에 대한 추정분할점수를 설정함.</li><li>수행평가에 대한 추정분할점수는 <b>교과별 평가계획에서 설정한 성취수준별 분할점수</b>를 설정함.</li><li><b>입력이 끝나면 업무 14에서 마감하고 승인요청(또는 확정)까지 해야</b> 학기말 추정분할점수 산출에 쓰임(2026학년도 2학기부터, 2026.9.11. 기능개선).</li></ul></div><div class="memo" style="margin-top:12px"><h4>평가단계 (2026.5.29. 기능개선)</h4><ul><li>2026학년도 1･2학년 수행평가의 평가단계는 공통과목 '5수준(A-E)+미도달', 선택과목 '5수준(A-E)'임. 선택과목은 E 입력란이 없고 A~D만 입력함.</li><li>수행평가 과목의 평가단계는 정기시험 과목의 평가단계와 같게 설정됨. 수행평가만 등록된 과목은 과목 유형(공통과목･선택과목)에 따라 자동 설정됨.</li></ul></div><div class="memo" style="margin-top:12px"><h4>성적산출기준에 따른 입력 (2026.9.11. 기능개선)</h4><ul><li>화면에 성적산출단위가 표기됨.</li><li><b>'전체영역'･'영역별' 구분은 기준설정 학과에서만 바꿀 수 있고, 산출단위에 포함된 학과에 똑같이 적용됨.</b> 기준설정 학과에서 '전체영역'을 '영역별'로(또는 반대로) 바꾸고 저장하면, 다른 학과가 먼저 입력해 둔 점수가 있을 때 안내메시지가 나타나고 그 점수는 삭제됨.</li><li>산출단위에 포함된 각 학과가 입력･마감한 점수의 <b>평균</b>으로 수행평가 추정분할점수가 산출됨. 조회용 탭 세 가지가 있음. <span class="btn">{학과별입력정보조회}</span>는 학과별 입력 점수와 마감 여부, <span class="btn">{영역범주별조회}</span>는 성취수준별 평균･표준편차･최솟값･최댓값, <span class="btn">{예상추정분할점수조회}</span>는 예상 수행평가추정분할점수(평균 점수 출력 가능)를 보여 줌.</li><li>2026학년도 3학년은 현행 방식을 유지함(2027학년도 1학기부터 성적산출기준 적용).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t14" data-num="14" data-stage="C" data-when="평가전입력" data-who="교과담당교사">
+  <div class="gutter"><b>14</b><span class="gstage" title="2026.9.11. 기능개선 · 수행 분할점수 마감">C</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">수행평가 추정분할점수 입력 후</span><span class="tag">2026학년도 2학기부터</span><span class="tag opt">결재문서 미사용 학교는 확정</span></div>
+    <h3>수행평가 추정분할점수 마감과 승인요청(확정)</h3>
+    <p class="src"><span class="tag">2026.9.11. 기능개선 6-1~6-8, 8-6</span></p>
+    <p class="desc">2026.9.11. 기능개선으로 수행평가 추정분할점수에도 정기시험처럼 마감과 결재 단계가 생겼다. <strong>2026학년도 2학기부터는 수행평가 추정분할점수를 마감하고 승인요청해 결재가 완결되어야 [학기말 추정분할점수산출]에서 쓸 수 있다.</strong> 결재문서를 사용하지 않는 학교는 승인요청 대신 <span class="btn">{확정}</span>으로 처리한다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>수행평가 추정분할점수(업무 7)를 입력한 뒤, 학기말 추정분할점수 산출(업무 8) 전</dd></dl>
+      <dl><dt>누가?</dt><dd>교과담당교사. 통합산출･학년별･계열별 산출 과목의 승인요청･확정은 기준설정 학과의 교과담당교사</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-수행평가추정분할점수산출관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년', '과목'을 선택하고 <span class="btn">{조회}</span> → 성취수준별 추정분할점수가 입력된 것을 확인하고 <span class="btn">{마감}</span>함 → 마감 후 나타나는 <span class="btn">{승인요청}</span>을 눌러 '기안문서상신' 창에서 결재선을 확인하고 <span class="btn">{상신}</span>함 → 결재가 완결되면 화면에 결재상태와 승인 완료가 표시됨. 결재문서를 사용하지 않는 학교는 <span class="btn">{마감}</span> 뒤 <span class="btn">{확정}</span>함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>교과협의로 정한 수행평가 분할점수를 학교 결재로 확정해, 학기말 최종 분할점수가 승인되지 않은 값으로 산출되는 일을 막으려고.</dd></dl>
+    </div>
+<div class="memo"><h4>마감･승인요청 조건</h4><ul><li>성취수준별 추정분할점수를 입력해야 <span class="btn">{마감}</span>할 수 있음. 입력 단계에는 <span class="btn">{마감}</span>이, 마감 이후에는 <span class="btn">{마감취소}</span>･<span class="btn">{승인요청}</span>이 나타남.</li><li><b>성적산출기준이 통합산출･학년별･계열별인 과목은 기준설정 학과에만 <span class="btn">{승인요청}</span>(결재문서 미사용 학교는 <span class="btn">{확정}</span>･<span class="btn">{확정취소}</span>)이 나타남.</b> 승인요청 이후에는 다른 학과에서 수정･마감･마감취소를 할 수 없음.</li><li>산출단위에 포함된 학과들이 입력･마감한 점수의 평균으로 수행평가 추정분할점수가 산출되며, 완결･완결(기결취소)을 처리하면 산출단위에 포함된 학과에 일괄 적용됨.</li><li>결재문서 사용이 기본값이며, 결재문서를 사용하지 않는 학교는 <span class="btn">{확정}</span>･<span class="btn">{확정취소}</span>로 대신함. 마감 후 <span class="btn">{확정}</span>이 활성화되고, 확정하면 <span class="btn">{확정취소}</span>가 활성화됨.</li><li><span class="btn">{마감취소}</span>할 때는 '수행평가 추정분할점수 입력마감 취소 사유 입력' 창에 취소 사유를 직접 입력함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>결재문서명과 이후 화면</h4><ul><li>결재문서명은 '수행평가 추정분할점수산출 마감(0000학년도 0학기 주간/야간 계열 학년 학과 과목명 – 산출단위)' 형식이며 성적산출기준에 따라 달라짐. 예를 들어 통합산출은 '수행평가 추정분할점수산출 마감(2026학년도 1학기 주간 영어Ⅰ - 통합산출)', 학과별은 '수행평가 추정분할점수산출 마감(2026학년도 1학기 주간 공업계 1학년 기계과 영어Ⅰ)'임.</li><li>승인이 끝난 수행평가 추정분할점수는 [학기말 추정분할점수산출]에서 조회･산출되고, <code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수 산출결과]</code>와 <code>[성적-성적처리-최소성취수준보장지도(추가학습)이수관리-최소성취수준보장지도(추가학습)대상자]</code>에서도 승인 완료된 점수가 조회됨. 결재문서 미사용 학교는 확정 완료된 점수가 조회됨.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t4" data-num="4" data-stage="B" data-when="라운드확정" data-who="교과담당교사">
@@ -809,7 +826,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">예상정답률 입력마감 후</span><span class="tag">결재 완료 시 자동 확정</span></div>
     <h3>정기시험 추정분할점수 라운드 확정 승인요청·상신</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.818–819 열기">원문 p.818–819</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="3" title="원문 p.818–819 열기">원문 p.818–819</button><span class="tag">2026.9.11. 기능개선 8-1, 8-3</span></p>
     <p class="desc">라운드별로 입력한 예상정답률 가운데 최종적으로 사용할 라운드 하나를 골라 확정하는 단계입니다. <strong>동일교과 수업에 참여하는 모든 교사가 예상정답율 입력 후 마감이 되어야만 <span class="btn">{확정}</span>이 가능함</strong>. 나이스에서는 라운드를 1회만 진행해도 추정분할점수를 확정할 수 있으나, 2회 이상 라운드 실시를 권장함.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>정기시험 실시 전, 문항정보표 마감과 최소능력자 예상정답률 입력마감이 끝난 뒤</dd></dl>
@@ -818,7 +835,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{추정분할점수산출결과관리}</span>에서 '정기시험추정분할점수-산출결과관리' 창에서 적용할 '라운드' 선택 후 <span class="btn">{승인요청}</span>하고 <span class="btn">{확인}</span>함 → '기안문서상신' 창에서 '내용', '결재선', 산출된 추정 분할점수 자료 확인 후 <span class="btn">{상신}</span>함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>여러 라운드 가운데 학교가 실제로 쓸 분할점수 기준 하나를 공식 결재로 못 박아 학기말 최종 분할점수의 근거로 삼으려고.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li>정기시험 추정 분할점수의 라운드 회차 확정은 '정기시험추정분할점수-산출결과관리' 창에서 <span class="btn">{승인요청}</span>해야 하며, <b>결재 완료 이후 해당 회차의 라운드가 자동 확정됨</b>.</li><li>분할점수 산출 시 1, 2라운드를 합산하여 산출하는 것이 아닌 해당 라운드 중에 <b>최종 확정한 라운드에 한해</b> 학기말 분할점수에 활용하도록 되어 있음.</li><li><b>확정한 라운드가 최종 학기말 분할점수로 산출됨.</b></li><li><span class="btn">{라운드삭제}</span>에서 불필요한 라운드를 삭제할 수 있음.</li><li>2026학년도 기준으로 평가단계는 5수준+미도달만 선택 가능함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 과목에서 '5수준(A-E)+미도달'을 선택하는 경우 E/미도달 추정 분할점수가 산출되나 확인용도로만 제공되며, <b>E 등급의 성취율은 0으로 고정 반영됨</b>.</li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li>정기시험 추정 분할점수의 라운드 회차 확정은 '정기시험추정분할점수-산출결과관리' 창에서 <span class="btn">{승인요청}</span>해야 하며, <b>결재 완료 이후 해당 회차의 라운드가 자동 확정됨</b>.</li><li>분할점수 산출 시 1, 2라운드를 합산하여 산출하는 것이 아닌 해당 라운드 중에 <b>최종 확정한 라운드에 한해</b> 학기말 분할점수에 활용하도록 되어 있음.</li><li><b>확정한 라운드가 최종 학기말 분할점수로 산출됨.</b></li><li><span class="btn">{라운드삭제}</span>에서 불필요한 라운드를 삭제할 수 있음.</li><li>2026학년도 1･2학년의 평가단계는 공통과목 '5수준(A-E)+미도달', 선택과목 '5수준(A-E)'으로 고정됨(2026.5.29. 기능개선). 평가단계가 잘못 등록되어 있으면 '산출결과관리' 창에 안내문구가 나타나고 <span class="btn">{승인요청}</span>이 진행되지 않음.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 과목에서 '5수준(A-E)+미도달'을 선택하는 경우 E/미도달 추정 분할점수가 산출되나 확인용도로만 제공되며, <b>E 등급의 성취율은 0으로 고정 반영됨</b>.</li></ul></div><div class="memo" style="margin-top:12px"><h4>기준설정 학과만 확정 (2026.9.11. 기능개선)</h4><ul><li><b><span class="btn">{추정분할점수산출결과관리}</span> 버튼은 성적산출기준관리에서 정한 기준설정 학과에만 나타나며, 라운드 확정(승인요청)은 기준설정 학과에서만 할 수 있음.</b> 다른 학과에서 조회하면 버튼이 나타나지 않음.</li><li>승인･승인취소를 처리하면 해당 과목의 산출단위에 포함된 학과에 일괄 적용됨.</li><li>결재문서명에 산출단위가 표기됨(예: 통합산출이면 '…영어Ⅰ - 통합산출', 학년별이면 '…1학년 영어Ⅰ - 학년별').</li><li>2026학년도 3학년은 현행 방식을 유지함.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t5" data-num="5" data-stage="B" data-when="수시확인" data-who="교과담당교사">
@@ -877,7 +894,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">정기시험·수행 추정분할점수 확정 후</span><span class="tag">학년별(학과별) 단위</span></div>
     <h3>학기말 추정분할점수 산출</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="11" title="원문 p.826 열기">원문 p.826</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="11" title="원문 p.826 열기">원문 p.826</button><span class="tag">2026.5.29. 기능개선 7-7, 9-1</span><span class="tag">2026.9.11. 기능개선 6-6, 8-7</span></p>
     <p class="desc">정기시험 추정분할점수 라운드 확정과 수행평가 추정분할점수 입력을 마친 과목이 대상이다. <strong>정기시험 추정분할점수의 라운드가 확정되어 있어야 학기말최종추정분할점수가 산출된다.</strong> 학과별로 산출이 가능하므로 학기말 성적을 학과별로 분리 산출하는 경우에는 각각의 학과에서 산출한다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>정기시험과 수행평가 실시 전, 정기시험 추정분할점수 라운드 확정과 수행평가 추정분할점수 입력을 마친 뒤</dd></dl>
@@ -886,24 +903,41 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-분할점수-분할점수관리-학기말추정분할점수산출]</code>에서 '학년도', '학기' 확인 후 '학년', '과목'을 선택하고 <span class="btn">{조회}</span> → <span class="btn">{추정분할점수산출결과}</span> 화면에서 '학기말최종추정분할점수'를 확인 → <span class="btn">{추정분할점수산출}</span>하여 <span class="btn">{확인}</span> 후 <span class="btn">{확인}</span>함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>정기시험과 수행평가로 나뉘어 있던 성취수준 기준을 한 학기 성취도 판정에 쓸 하나의 기준선으로 모으려고.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li>산출된 학기말 최종 추정 분할점수는 <b>학년별(학과별) 단위로 마감</b>되며, <span class="btn">{승인요청}</span> 후 결재가 완료되면 <span class="btn">{마감}</span> 버튼이 활성화됨.</li><li>추정분할점수는 학과별로 산출이 가능하여 학기말 성적을 학과별로 분리 산출하는 경우에는 각각의 학과에서 분할점수를 산출하여 처리할 수 있음.</li><li>문항 오류 등으로 정기시험 과목의 만점이 100점이 아닌 경우에도 학기말 최종 추정 분할점수 산출이 가능함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 과목에서 [정기시험추정분할점수산출관리]의 '평가단계' 5수준(A-E)을 선택하는 경우, <code>[교과담임-성적-분할점수-분할점수관리-학기말추정분할점수산출]</code>에서 산출된 '학기말최종추정분할점수'가 적용됨.</li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li><b>(2026.5.29. 기능개선) 이 화면의 결재상태 안내문구와 <span class="btn">{승인요청}</span>･학과별 <span class="btn">{마감}</span> 버튼은 없어짐.</b> 산출 후 이 화면에서는 과목별로 <span class="btn">{마감}</span>하고(업무 9), 학년 단위 마감과 승인요청은 새 메뉴 [학기말 분할점수 마감 관리]에서 함(업무 15). <span class="btn">{과목별 출력}</span>과 <span class="btn">{전과목 출력}</span>으로 산출 결과를 출력할 수 있음.</li><li>(2026.9.11. 기능개선) 2026학년도 2학기부터 수행평가 추정분할점수가 승인(결재문서 미사용 학교는 확정)되어야 이 화면에서 조회･산출됨(업무 14).</li><li>(2026.5.29. 기능개선) 과목 구분과 다른 평가단계로 등록된 과목은 "공통과목은 [5수준(A-E)+미도달]로 산출되어야 합니다." 같은 안내문구가 나타나고 <span class="btn">{추정분할점수산출}</span>이 되지 않음. 평가단계를 바꾼 뒤 산출함(업무 1 참고).</li><li>(2026.9.11. 기능개선) 성적산출기준이 통합산출･학년별･계열별인 과목은 산출단위가 표기되며, <b>기준설정 학과에서만 산출･산출취소･마감･마감취소를 할 수 있고 다른 학과는 조회만 가능함.</b> 산출하면 최종 결과가 산출단위에 포함된 학과에 일괄 적용됨. 2026학년도 3학년은 현행 방식을 유지함.</li><li>추정분할점수는 학과별로 산출이 가능하여 학기말 성적을 학과별로 분리 산출하는 경우에는 각각의 학과에서 분할점수를 산출하여 처리할 수 있음.</li><li>문항 오류 등으로 정기시험 과목의 만점이 100점이 아닌 경우에도 학기말 최종 추정 분할점수 산출이 가능함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 과목에서 [정기시험추정분할점수산출관리]의 '평가단계' 5수준(A-E)을 선택하는 경우, <code>[교과담임-성적-분할점수-분할점수관리-학기말추정분할점수산출]</code>에서 산출된 '학기말최종추정분할점수'가 적용됨.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t9" data-num="9" data-stage="D" data-when="학기말산출" data-who="교과담당교사">
   <div class="gutter"><b>09</b><span class="gstage" title="원문 STAGE D · 학기말 산출">D</span></div>
   <div class="body">
-    <div class="tags"><span class="tag now">학기말 추정분할점수 산출 직후</span></div>
-    <h3>학기말 추정분할점수 승인요청·상신 후 마감</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="11" title="원문 p.826 열기">원문 p.826</button></p>
-    <p class="desc">학기말최종추정분할점수를 산출한 과목이 대상이다. 산출만으로는 끝나지 않고 결재를 거쳐야 확정된다. <strong><span class="btn">{승인요청}</span> 후 결재가 완료되어야 <span class="btn">{마감}</span> 버튼이 활성화된다.</strong></p>
+    <div class="tags"><span class="tag now">학기말 추정분할점수 산출 직후</span><span class="tag">2026.5.29. 이후 절차</span></div>
+    <h3>학기말 추정분할점수 과목별 마감</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="11" title="원문 p.826 열기">원문 p.826</button><span class="tag">2026.5.29. 기능개선 9-1</span></p>
+    <p class="desc">학기말최종추정분할점수를 산출한 과목이 대상이다. <strong>2026.5.29. 기능개선으로 이 화면의 <span class="btn">{승인요청}</span>과 학과별 <span class="btn">{마감}</span>이 없어지고, 교과담당교사는 과목별 <span class="btn">{마감}</span>만 한다.</strong> 학년 단위 마감과 결재는 성적 업무담당자가 새 메뉴 [학기말 분할점수 마감 관리]에서 한다(업무 15).</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말 추정분할점수 산출을 마친 직후</dd></dl>
       <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-학기말추정분할점수산출]</code></dd></dl>
-      <dl><dt>무엇을<br>어떻게?</dt><dd><span class="btn">{승인요청}</span>하여 '기안문서상신' 창에서 '내용', '결재선', 상신할 문서 선택 후 <span class="btn">{상신}</span> → 결재가 완료되면 <span class="btn">{마감}</span>하여 <span class="btn">{확인}</span>함.</dd></dl>
-      <dl class="why"><dt>왜?</dt><dd>학년(학과) 단위로 쓸 성취도 판정 기준을 학교 결재로 공식화해 이후 성적산출에서 흔들리지 않게 하려고.</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년', '과목'을 선택하고 <span class="btn">{조회}</span> → 산출된 '학기말최종추정분할점수'를 확인 → <span class="btn">{마감}</span>하여 <span class="btn">{확인}</span>함 → 필요하면 <span class="btn">{과목별 출력}</span>으로 산출 결과를 출력함.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>과목마다 산출이 끝났음을 표시해 두어, 업무담당자가 [학기말 분할점수 마감 관리]에서 학년 단위로 마감할 때 빠진 과목을 가려낼 수 있게 하려고.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li>산출된 학기말 최종 추정 분할점수는 학년별(학과별) 단위로 마감되며, <b><span class="btn">{승인요청}</span> 후 결재가 완료되면 <span class="btn">{마감}</span> 버튼이 활성화</b>되어 <span class="btn">{마감}</span>함.</li><li>학기말 추정 분할점수의 산출 및 <span class="btn">{승인요청}</span> 후 결재가 완료되면 문항정보표에서 <span class="btn">{마감취소}</span>하여 수정 가능함.</li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li>기능개선 전(원문 p.826)에는 이 화면에서 <span class="btn">{승인요청}</span> 후 결재가 완료되어야 학년별(학과별) <span class="btn">{마감}</span>이 활성화되었음. <b>2026.5.29. 이후에는 결재상태 안내문구, <span class="btn">{승인요청}</span>, 학과별 <span class="btn">{마감}</span>이 이 화면에서 제거되었음.</b></li><li>과목별 마감 여부는 [학기말 분할점수 마감 관리]의 '마감여부' 열에 O/X로 나타남.</li><li>과목별 마감을 하지 않은 과목이 있어도 업무담당자가 학기별 마감을 할 수는 있음(마감 시 안내창에 해당 과목 목록이 나타남).</li><li>성적산출기준이 통합산출･학년별･계열별인 과목은 기준설정 학과에서만 마감･마감취소를 할 수 있음(2026.9.11. 기능개선).</li></ul></div>
+  <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
+</article>
+<article class="task" id="t15" data-num="15" data-stage="D" data-when="학기말산출" data-who="성적처리담당교사">
+  <div class="gutter"><b>15</b><span class="gstage" title="2026.5.29. 기능개선 · 신규 메뉴">D</span></div>
+  <div class="body">
+    <div class="tags"><span class="tag now">과목별 학기말 추정분할점수 산출･마감 후</span><span class="tag">신규 메뉴</span><span class="tag opt">업무담당자</span></div>
+    <h3>학기말 분할점수 학기별 마감과 승인요청</h3>
+    <p class="src"><span class="tag">2026.5.29. 기능개선 9-2~9-5</span><span class="tag">2026.9.11. 기능개선 9-2, 9-3</span></p>
+    <p class="desc">2026.5.29.에 새로 생긴 메뉴다. 교과담당교사가 과목별로 산출･마감한 학기말 추정분할점수를 <strong>학교의 업무담당자가 학년(계열･학과) 단위로 한꺼번에 조회하고, 학기별 마감과 결재 상신을 한다.</strong> 종전에는 교과담당교사가 [학기말추정분할점수산출]에서 과목별로 하던 승인요청이 이 메뉴로 옮겨졌다.</p>
+    <div class="w6">
+      <dl><dt>언제?</dt><dd>학기말, 과목별 학기말 추정분할점수 산출과 마감(업무 8, 9)이 끝난 뒤 성적산출 전</dd></dl>
+      <dl><dt>누가?</dt><dd>성적처리담당교사(학교별 업무담당자)</dd></dl>
+      <dl><dt>어디서?</dt><dd><code>[성적-분할점수-학기말 분할점수 마감 관리]</code></dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>'학년도', '학기', '학년'을 선택하고 <span class="btn">{조회}</span> → 과목별 '학기말 최종 추정분할점수', '산출여부', '산출 담당자', '마감여부'를 확인(과목명을 누르면 '추정분할점수산출결과' 팝업이 열림) → <span class="btn">{학기별 마감}</span>하여 확인창에서 <span class="btn">{확인}</span>함 → 마감 후 나타나는 <span class="btn">{승인요청}</span>을 눌러 '기안문서상신' 창에서 <span class="btn">{상신}</span>함 → 결재가 완결되면 '결재상태: 완결'로 표시됨.</dd></dl>
+      <dl class="why"><dt>왜?</dt><dd>과목마다 흩어져 있던 학기말 분할점수 결재를 업무담당자 한 사람이 학년 단위로 모아 처리하게 해, 빠진 과목을 한눈에 확인하고 결재 건수를 줄이려고.</dd></dl>
+    </div>
+<div class="memo"><h4>화면 읽는 법</h4><ul><li>학년/계열/학과 기준으로 학기말 추정분할점수 산출 대상 과목이 조회됨. 조회되는 과목은 학기말에 반영되는 정기시험 고사 또는 수행평가 영역이 등록된 과목임.</li><li>'산출여부'의 O는 해당 과목의 학기말 추정분할점수가 산출된 상태, X는 미산출 상태임. '마감여부'의 O는 과목별 마감이 된 상태, X는 미마감 상태임.</li><li>계열/학과가 있는 학교만 화면에 '계열/학과'가 표시됨.</li><li>과목명을 누르면 해당 과목의 '추정분할점수산출결과' 팝업이 열리며, 과목 유형(공통과목･선택과목)에 맞지 않는 평가단계는 붉은색으로 표시됨.</li><li>(2026.9.11. 기능개선) 성적산출기준관리에서 '추정분할점수 사용'으로 설정한 과목만 조회되고, 과목별 성적산출단위가 표기됨. 팝업에도 성적산출기준이 표기됨. 2026학년도 3학년은 현행 방식을 유지함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>마감･승인요청 조건</h4><ul><li><span class="btn">{학기별 마감}</span>은 계열/학년/학과 단위로 처리됨. 과목별 마감이 되지 않은 과목이 있으면 그 목록과 함께 "해당 과목의 추정분할점수 과목마감 없이 진행하시겠습니까?"라는 확인창이 나타나며, 확인하면 그대로 마감됨.</li><li>추정분할점수 마감이 이루어지지 않더라도 학기별 마감 처리가 가능함. 이런 과목은 성적처리 선행작업 단계에서 고정분할점수로 처리할 수 있음.</li><li><b><span class="btn">{승인요청}</span>은 <span class="btn">{학기별 마감}</span>이 먼저 되어 있어야 함.</b> 정상 마감하면 <span class="btn">{학기별 마감취소}</span>와 <span class="btn">{승인요청}</span>이 나타남. 상신 후 결재상태가 '상신(진행)'으로 바뀌고, 승인되면 '완결'로 표시됨.</li><li>학기별 마감을 되돌릴 때는 <span class="btn">{학기별 마감취소}</span>함.</li><li>기능개선으로 새로 생긴 메뉴이므로 메뉴가 보이지 않으면 <code>[학교업무분장관리-업무관리(메뉴, 자료권한관리)]</code>에서 메뉴가 등록되었는지 확인함. 5.29 안내서는 이 메뉴의 권한 설정 방법을 따로 적지 않았음.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t11" data-num="11" data-stage="E" data-when="성적산출반영" data-who="교과담당교사 성적처리담당교사">
@@ -911,7 +945,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">학기말 추정분할점수 산출 후</span><span class="tag">2025학년부터 수기입력 제한</span></div>
     <h3>분할점수산출결과에 학기말 최종 추정 분할점수 가져오기</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="12" title="원문 p.827 열기">원문 p.827</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="12" title="원문 p.827 열기">원문 p.827</button><span class="tag">2026.5.29. 기능개선 7-9</span><span class="tag">2026.9.11. 기능개선 9-6</span></p>
     <p class="desc">학기말 최종 추정 분할점수를 산출한 과목은 성적산출 선행작업에 그 값을 옮겨야 성취율이 반영된다. <strong>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]에서 2025학년부터 수기 입력이 제한되며</strong>, <span class="btn">{산출결과가져오기}</span>로만 입력할 수 있다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말, [교과담임-성적-분할점수-분할점수관리-학기말추정분할점수산출]에서 학기말 최종 추정 분할점수를 산출한 뒤.</dd></dl>
@@ -920,24 +954,24 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>에서 <span class="btn">{산출결과가져오기}</span> → ‘분할점수 산출결과가져오기’ 창에서 해당 과목의 학기말 최종 추정 분할점수를 선택 → <span class="btn">{저장}</span>하여 입력함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>교과에서 협의로 정한 추정 분할점수가 학기말 성적의 성취율 산출에 실제로 쓰이게 하려고.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]에서 2025학년부터 수기 입력이 제한되며, <b><span class="btn">{산출결과가져오기}</span>하여 해당 과목의 학기말 최종 추정 분할점수를 선택 및 <span class="btn">{저장}</span>하여 입력해야 함.</b></li><li>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]에서 과목별로 산출결과를 <span class="btn">{산출결과가져오기}</span>하여 입력된 정보가 있을 경우 ‘분할점수 산출결과에서 사용됨’이라는 안내문구가 나타나며, <b><span class="btn">{추정분할점수산출취소}</span>할 수 없음.</b></li><li>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]에서 해당 과목의 성취율을 <span class="btn">{삭제}</span> 후 취소가 가능함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 과목에서 [정기시험추정분할점수산출관리]의 ‘평가단계’ 5수준(A-E)을 선택하는 경우, [교과담임-성적-분할점수-분할점수관리-학기말추정분할점수산출]에서 산출된 ‘학기말최종추정분할점수’가 적용됨.</li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]에서 2025학년부터 수기 입력이 제한되며, <b><span class="btn">{산출결과가져오기}</span>하여 해당 과목의 학기말 최종 추정 분할점수를 선택 및 <span class="btn">{저장}</span>하여 입력해야 함.</b></li><li>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]에서 과목별로 산출결과를 <span class="btn">{산출결과가져오기}</span>하여 입력된 정보가 있을 경우 ‘분할점수 산출결과에서 사용됨’이라는 안내문구가 나타나며, <b><span class="btn">{추정분할점수산출취소}</span>할 수 없음.</b></li><li>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]에서 해당 과목의 성취율을 <span class="btn">{삭제}</span> 후 취소가 가능함.</li><li>2015 개정 교육과정을 적용받는 2026학년도 3학년 과목에서 [정기시험추정분할점수산출관리]의 ‘평가단계’ 5수준(A-E)을 선택하는 경우, [교과담임-성적-분할점수-분할점수관리-학기말추정분할점수산출]에서 산출된 ‘학기말최종추정분할점수’가 적용됨.</li><li><b>(2026.5.29. 기능개선) 가져올 산출결과를 선택해 저장하면 선택과목은 E 성취 기준 점수가 0점으로 저장됨.</b> 선택과목의 E 기준 성취율이 '60% 미만'으로 바뀌었기 때문임.</li><li>(2026.9.11. 기능개선) '산출결과가져오기' 창에 산출단위가 표기되고 <b>'산출결과 타학과복사'</b> 체크박스가 생김. 체크하고 저장하면 성적산출단위에 포함된 다른 학과에도 같은 추정분할점수가 저장됨(업무 12).</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t12" data-num="12" data-stage="E" data-when="성적산출반영" data-who="교과담당교사">
   <div class="gutter"><b>12</b><span class="gstage" title="원문 STAGE E · 성적산출 반영">E</span></div>
   <div class="body">
-    <div class="tags"><span class="tag now">학기말 성적산출 전</span><span class="tag opt">학과별 통합산출 과목 한정</span><span class="tag opt">권장 경로</span></div>
-    <h3>통합산출 과목의 대표학과 분할점수 산출결과복사</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="13" title="원문 p.828 열기">원문 p.828</button></p>
-    <p class="desc">학과가 여러 개인 학교에서 학기말 성적을 학과별로 통합산출하는 과목에만 해당한다. 추정분할점수는 학과별로 산출이 가능하므로 학과별로 분리 산출하는 경우에는 각각의 학과에서 산출하면 되지만, <strong>학기말 성적산출 시 통합산출하는 과목의 분할점수는 동일해야 성적산출이 가능하다.</strong></p>
+    <div class="tags"><span class="tag now">학기말 성적산출 전</span><span class="tag opt">여러 학과가 같은 분할점수를 쓰는 과목</span></div>
+    <h3>여러 학과에 같은 분할점수 저장(타학과복사)</h3>
+    <p class="src"><button type="button" class="srcbtn" data-page="13" title="원문 p.828 열기">원문 p.828</button><span class="tag">2026.9.11. 기능개선 8-7, 9-6</span></p>
+    <p class="desc">학과가 여러 개인 학교에서 여러 학과가 성적을 함께 산출하는 과목에만 해당한다. <strong>학기말 성적산출 시 통합산출하는 과목의 분할점수는 동일해야 성적산출이 가능하다.</strong> 2026학년도 1･2학년은 2026.9.11. 기능개선으로 성적산출기준관리에서 정한 산출단위를 따라 분할점수를 한 번에 맞추고, 3학년은 종전처럼 대표학과 결과를 복사한다.</p>
     <div class="w6">
-      <dl><dt>언제?</dt><dd>학기말, 대표학과에서 학기말 최종 추정 분할점수를 산출한 뒤 성적산출 전.</dd></dl>
+      <dl><dt>언제?</dt><dd>학기말, 기준설정 학과(3학년은 대표학과)에서 학기말 최종 추정 분할점수를 산출한 뒤 성적산출 전.</dd></dl>
       <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code></dd></dl>
-      <dl><dt>무엇을<br>어떻게?</dt><dd>추정분할점수 산출 시 대표학과에 대해서만 분할점수를 산출함 → 다른 학과에서는 <code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>에서 <span class="btn">{산출결과복사}</span>로 대표 학과의 분할점수를 가져와 처리함.</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd><b>2026학년도 1･2학년</b> <span class="btn">{산출결과가져오기}</span> → '산출결과가져오기' 창에서 과목을 선택하고 '산출결과 타학과복사'를 체크한 뒤 <span class="btn">{저장}</span>함 → 성적산출단위에 일괄 저장된다는 안내메시지를 확인함. <b>2026학년도 3학년</b> 추정분할점수 산출 시 대표학과에 대해서만 분할점수를 산출함 → 다른 학과에서는 <span class="btn">{산출결과복사}</span>로 대표 학과의 분할점수를 가져와 처리함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>통합산출 과목의 학과별 분할점수를 어긋나지 않게 맞춰 학기말 성적이 막히지 않도록 하려고.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li>추정분할점수는 학과별로 산출이 가능하여 학기말 성적을 학과별로 분리 산출하는 경우에는 각각의 학과에서 분할점수를 산출하여 처리할 수 있음.</li><li>학과별로 성적을 통합산출하는 과목의 경우에는 추정분할점수 산출 시 <b>대표학과에 대해서만 분할점수를 산출하고</b>, 다른 학과에서는 <span class="btn">{산출결과복사}</span>로 대표 학과의 분할점수를 가져오기 하여 처리하는 것을 권장함.</li><li><b>학기말 성적산출 시 통합산출하는 과목의 분할점수는 동일해야 성적산출이 가능함.</b></li><li>문항 오류 등으로 정기시험 과목의 만점이 100점이 아닌 경우에도 학기말 최종 추정 분할점수 산출이 가능함.</li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li>'산출결과 타학과복사'를 쓰려면 <code>[성적-성적처리선행작업-성적산출선행작업관리-성적산출 대상(고사/영역)관리]</code>에서 다른 계열/학년/학과도 해당 과목을 등록해 두어야 함.</li><li>2026학년도 1･2학년의 학기말 추정분할점수는 기준설정 학과에서 산출하면 최종 결과가 산출단위에 포함된 학과에 일괄 적용됨(학기말 추정분할점수산출 화면, 2026.9.11. 기능개선).</li><li>특수학교의 '산출결과가져오기' 창은 현행을 유지함.</li><li>추정분할점수는 학과별로 산출이 가능하여 학기말 성적을 학과별로 분리 산출하는 경우에는 각각의 학과에서 분할점수를 산출하여 처리할 수 있음.</li><li>2026학년도 3학년처럼 성적산출기준을 적용받지 않는 경우, 학과별로 성적을 통합산출하는 과목은 추정분할점수 산출 시 <b>대표학과에 대해서만 분할점수를 산출하고</b>, 다른 학과에서는 <span class="btn">{산출결과복사}</span>로 대표 학과의 분할점수를 가져오기 하여 처리하는 것을 권장함.</li><li>문항 오류 등으로 정기시험 과목의 만점이 100점이 아닌 경우에도 학기말 최종 추정 분할점수 산출이 가능함.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t13" data-num="13" data-stage="E" data-when="수시확인" data-who="성적처리담당교사">
@@ -954,7 +988,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl><dt>무엇을<br>어떻게?</dt><dd>해당 학년의 과목별 자료 권한 부여에 따라 <span class="btn">{전과목출력}</span> → ‘학기말 추정분할점수 조회-전체교과목’ 창에서 과목별 학기말 추정 분할점수를 확인 → 저장 또는 출력함.</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>교과별로 흩어진 분할점수를 한자리에서 확인해 학생·학부모 안내 자료를 정확하게 만들려고.</dd></dl>
     </div>
-<div class="memo"><h4>실무 메모</h4><ul><li>성적처리 담당교사의 경우 [성적-분할점수-분할점수관리-학기말추정분할점수산출관리] 메뉴에 있는 <span class="btn">{전과목 출력}</span> 기능을 통해 확인이 가능함.</li><li>이때 <b>해당 교사에게는 분할점수를 확인하기 위한 모든 교과목 권한이 부여되어 있어야 조회할 수 있음.</b></li><li><span class="btn">{전과목출력}</span>으로 해당 학년의 과목별 자료 권한 부여에 따라 <span class="btn">{전과목출력}</span>하여 ‘학기말 추정분할점수 조회-전체교과목’ 창에서 과목별 학기말 추정 분할점수를 확인하여 저장 또는 출력할 수 있음.</li></ul></div>
+<div class="memo"><h4>실무 메모</h4><ul><li>성적처리 담당교사의 경우 [성적-분할점수-분할점수관리-학기말추정분할점수산출관리] 메뉴에 있는 <span class="btn">{전과목 출력}</span> 기능을 통해 확인이 가능함.</li><li>이때 <b>해당 교사에게는 분할점수를 확인하기 위한 모든 교과목 권한이 부여되어 있어야 조회할 수 있음.</b></li><li>(2026.5.29. 기능개선) [학기말추정분할점수산출] 화면에 <span class="btn">{과목별 출력}</span>이 추가되어 한 과목의 산출 결과만 출력할 수도 있음. 학년 단위 조회는 [학기말 분할점수 마감 관리]에서도 할 수 있음(업무 15).</li><li><span class="btn">{전과목출력}</span>으로 해당 학년의 과목별 자료 권한 부여에 따라 <span class="btn">{전과목출력}</span>하여 ‘학기말 추정분할점수 조회-전체교과목’ 창에서 과목별 학기말 추정 분할점수를 확인하여 저장 또는 출력할 수 있음.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t10" data-num="10" data-stage="D" data-when="수시확인" data-who="교과담당교사">
@@ -962,16 +996,16 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">문항정보표·예상정답률 수정이 필요할 때</span><span class="tag opt">필요 시</span></div>
     <h3>학기말 추정분할점수 산출취소와 마감취소</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="12" title="원문 p.827 열기">원문 p.827</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="12" title="원문 p.827 열기">원문 p.827</button><span class="tag">2026.5.29. 기능개선 9-1, 9-4</span></p>
     <p class="desc">산출 또는 마감을 마친 뒤 문항정보표나 예상정답률을 고쳐야 하는 경우에만 하는 업무다. <strong>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]에서 <span class="btn">{산출결과가져오기}</span>로 입력된 정보가 있으면 '분할점수 산출결과에서 사용됨' 안내문구가 나타나며 <span class="btn">{추정분할점수산출취소}</span>를 할 수 없다.</strong> 이때는 해당 과목의 성취율을 <span class="btn">{삭제}</span>한 후에 취소가 가능하다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말 추정분할점수 산출 또는 마감 이후, 문항정보표나 예상정답률 수정이 필요한 때</dd></dl>
       <dl><dt>누가?</dt><dd>교과담당교사</dd></dl>
       <dl><dt>어디서?</dt><dd><code>[성적-분할점수-분할점수관리-학기말추정분할점수산출]</code>, <code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>, <code>[승인사항-상신함]</code></dd></dl>
-      <dl><dt>무엇을<br>어떻게?</dt><dd>산출 결과를 되돌릴 때는 <span class="btn">{추정분할점수산출취소}</span>함 → 이미 마감한 경우 <code>[승인사항-상신함]</code>에서 해당 과목의 '학기말 추정분할점수산출 마감' 문서를 <span class="btn">{기결문서취소}</span>로 업무승인과정을 거쳐 결재를 완료하면 <span class="btn">{마감취소}</span>가 <span class="btn">{마감}</span>으로 변경됨.</dd></dl>
+      <dl><dt>무엇을<br>어떻게?</dt><dd>산출 결과를 되돌릴 때는 <span class="btn">{추정분할점수산출취소}</span>함 → 과목별로 마감한 경우 먼저 <span class="btn">{마감취소}</span>함 → 업무담당자가 [학기말 분할점수 마감 관리]에서 학기별 마감을 한 상태라면 업무담당자와 협의해 <span class="btn">{학기별 마감취소}</span> 여부를 정함(업무 15).</dd></dl>
       <dl class="why"><dt>왜?</dt><dd>문항정보표나 예상정답률이 잘못된 채 확정된 기준으로 성취도가 판정되는 것을 막으려고.</dd></dl>
     </div>
-<div class="memo"><h4>산출취소가 막히는 경우</h4><ul><li><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>에서 과목별로 산출결과를 <span class="btn">{산출결과가져오기}</span>하여 입력된 정보가 있을 경우 '분할점수 산출결과에서 사용됨'이라는 안내문구가 나타나며, <b><span class="btn">{추정분할점수산출취소}</span>할 수 없음</b>.</li><li><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>에서 해당 과목의 성취율을 <span class="btn">{삭제}</span> 후 취소가 가능함.</li><li><span class="btn">{추정분할점수산출}</span> 이후 문항정보표나 예상정답율에 대한 수정이 필요한 경우 <span class="btn">{추정분할점수산출취소}</span>를 통해 산출된 결과 취소할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>마감취소 절차</h4><ul><li><span class="btn">{마감}</span>하면 <span class="btn">{마감취소}</span> 버튼이 생성되며, <code>[승인사항-상신함]</code>에서 해당 과목의 '학기말 추정분할점수산출 마감' 문서를 <b><span class="btn">{기결문서취소}</span>로 업무승인과정을 거쳐 결재를 완료해야</b> <span class="btn">{마감취소}</span>가 <span class="btn">{마감}</span>으로 변경됨.</li><li>학기말 추정 분할점수의 산출 및 <span class="btn">{승인요청}</span> 후 결재가 완료되면 문항정보표에서 <span class="btn">{마감취소}</span>하여 수정 가능함.</li><li>정기시험 추정분할점수 확정 이후에도 문항정보표 수정이 가능하나, <b>학기말 추정분할점수까지 산출된 경우에는 학기말 추정분할점수 산출 취소 후 재산출해야</b> 정기시험추정분할점수의 변경된 기준으로 처리됨.</li></ul></div>
+<div class="memo"><h4>산출취소가 막히는 경우</h4><ul><li><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>에서 과목별로 산출결과를 <span class="btn">{산출결과가져오기}</span>하여 입력된 정보가 있을 경우 '분할점수 산출결과에서 사용됨'이라는 안내문구가 나타나며, <b><span class="btn">{추정분할점수산출취소}</span>할 수 없음</b>.</li><li><code>[성적-성적처리선행작업-성적산출선행작업관리-분할점수산출결과]</code>에서 해당 과목의 성취율을 <span class="btn">{삭제}</span> 후 취소가 가능함.</li><li><span class="btn">{추정분할점수산출}</span> 이후 문항정보표나 예상정답율에 대한 수정이 필요한 경우 <span class="btn">{추정분할점수산출취소}</span>를 통해 산출된 결과 취소할 수 있음.</li></ul></div><div class="memo" style="margin-top:12px"><h4>마감취소 절차</h4><ul><li><b>2026.5.29. 기능개선으로 결재가 [학기말 분할점수 마감 관리]의 학기별 승인요청으로 옮겨졌음.</b> 원문 p.827의 절차(<code>[승인사항-상신함]</code>에서 과목별 '학기말 추정분할점수산출 마감' 문서를 <span class="btn">{기결문서취소}</span>)는 과목별로 결재하던 기능개선 전 방식임. 학기별 결재가 완결된 뒤 마감을 풀어야 한다면 결재 취소 방법을 [학기말 분할점수 마감 관리] 화면에서 확인함.</li><li>2026.9.11. 이후 성적산출기준이 통합산출･학년별･계열별인 과목은 기준설정 학과에서만 산출취소･마감취소를 할 수 있음.</li><li>학기말 추정 분할점수의 산출 및 <span class="btn">{승인요청}</span> 후 결재가 완료되면 문항정보표에서 <span class="btn">{마감취소}</span>하여 수정 가능함.</li><li>정기시험 추정분할점수 확정 이후에도 문항정보표 수정이 가능하나, <b>학기말 추정분할점수까지 산출된 경우에는 학기말 추정분할점수 산출 취소 후 재산출해야</b> 정기시험추정분할점수의 변경된 기준으로 처리됨.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 

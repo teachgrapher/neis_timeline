@@ -810,7 +810,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">학기말</span><span class="tag">이수시간기준일 = 학기종료일</span></div>
     <h3>자율･자치활동(자율활동) 학생부 자료 기록 (이수시간반영·특기사항)</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="7" title="원문 p.633–634 열기">원문 p.633–634</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="7" title="원문 p.633–634 열기">원문 p.633–634</button><span class="tag">2026.9.11. 기능개선 14-1</span></p>
     <p class="desc">자율･자치활동(자율활동) 누가기록을 마친 뒤 학교생활기록부에 올라갈 이수시간과 특기사항을 확정하는 업무입니다. 이수시간은 누가기록 시간이 합산되는 것이 아니라 전체시간표에 등록된 시수와 일일출결현황으로 자동 계산되므로, <strong>'이수시간기준일'을 '학기종료일'로 설정한 뒤 {이수시간반영}</strong>해야 학기 전체가 반영됩니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 자율･자치활동(자율활동) 누가기록 입력이 끝난 학기말.</dd></dl>
@@ -820,6 +820,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl class="why"><dt>왜?</dt><dd>학생이 실제로 참여해 이수한 자율･자치활동 시간과 활동 모습을 학교생활기록부에 사실대로 남기려고.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li>특기사항을 다른 사용자와 동시에 수정하는 경우, <b>마지막으로 저장한 사용자가 입력한 내용이 저장됨</b>.</li><li>학적변동자(반변경, 전입 등)의 경우 학생부 이수시간과 누가기록 이수시간의 합계가 다를 수 있으니 확인하여 수기 입력함.</li><li><b>이수시간 반영 시 이수시간기준일을 설정하지 않으면 현재 시스템 일자로 반영됨.</b></li><li>'이수시간'은 누가기록의 시간이 합산되는 것이 아니라 <code>[교육과정-시간표관리-전체시간표관리]</code>에서 자율･자치활동(자율활동)으로 등록된 시수와 <code>[교육과정-학사일정관리]</code>의 <code>{행사코드관리}</code> 탭에서 '학생부 특별활동'이 '자율･자치활동(자율활동)'으로 등록된 행사가 전체시간표관리에 등록된 시수에 '이수시간기준일'까지 학생의 일일출결현황에 따라 자동 계산됨(자율･자치활동(자율활동)과 진로활동의 내용이 같음).</li><li>창의적 체험활동의 영역별 이수시간은 정규교육과정 내에서 실시한 학년･학급 단위의 활동시간을 기준으로, 본인이 실제로 참여하여 이수한 시간을 입력함.</li></ul></div>
+<div class="memo" style="margin-top:12px"><h4>엑셀 일괄 업로드 (2026.9.11. 기능개선)</h4><ul><li>{학생부자료기록} 탭에 <span class="btn">{엑셀내려받기}</span>와 <span class="btn">{엑셀업로드}</span>가 추가되어 특기사항을 엑셀로 한꺼번에 올릴 수 있음. 업로드할 때 유효성 검사를 거침.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t12" data-num="12" data-stage="D" data-when="학기말" data-who="학급담임교사">
@@ -844,7 +845,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">학기말</span><span class="tag">희망분야 입력 포함</span></div>
     <h3>진로활동 학생부 자료 기록 (이수시간반영·특기사항·희망분야)</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="15" title="원문 p.641 열기">원문 p.641</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="15" title="원문 p.641 열기">원문 p.641</button><span class="tag">2026.5.29. 기능개선 2-1, 2-3</span><span class="tag">2026.9.11. 기능개선 14-3</span></p>
     <p class="desc">진로활동 누가기록을 마친 뒤 학교생활기록부에 올릴 이수시간, 특기사항, 희망분야를 확정하는 업무입니다. 자율･자치활동과 절차는 같지만 <strong>진로활동은 '특기사항'과 함께 '희망분야'까지 입력</strong>해야 하고, 조회 조건이 '계열/학년/학과'로 나옵니다.</p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기중, 진로활동 누가기록 입력이 끝난 학기말.</dd></dl>
@@ -854,6 +855,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl class="why"><dt>왜?</dt><dd>학생의 진로 탐색 과정과 희망 방향을 학교생활기록부에 남겨 이후 진로지도의 근거로 삼으려고.</dd></dl>
     </div>
 <div class="memo"><h4>실무 메모</h4><ul><li><b>진로활동 특기사항의 최대 입력 가능 글자 수가 500자로 조정됨(2026. 5. 29.(금) 적용, 종전 700자).</b></li><li>봉사활동 시간을 창의적체험활동 영역별 시수와 중복으로 인정하는 것이 아님에 유의(2026학년도 학교생활기록부 기재요령 참조).</li><li>학년말에 '학생부자료기록'의 이수시간과 '누가기록'의 누가기록 이수시간 합계를 <b>반드시 대조･확인하여 일치시키도록 함</b>.</li><li>학기중 반변경 학생 또는 위탁학생의 경우 학생부 이수시간과 누가기록 이수시간 합계가 다를 수 있으니 확인이 필요함.</li></ul></div>
+<div class="memo" style="margin-top:12px"><h4>기능개선으로 달라진 점</h4><ul><li>(2026.5.29. 기능개선) 진로활동 특기사항은 최대 500자(1,500Byte)까지 입력됨(종전 700자). 기능개선 전에 500자를 넘게 입력한 내용은 학교생활기록부 자료검증에서 "진로활동 특기사항 글자 수가 500자 초과하였습니다."로 나타나므로 줄여야 함.</li><li>(2026.9.11. 기능개선) {학생부자료기록} 탭에 <span class="btn">{엑셀내려받기}</span>와 <span class="btn">{엑셀업로드}</span>가 추가됨. 업로드할 때 유효성 검사를 거침.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t14" data-num="14" data-stage="D" data-when="학기말" data-who="학급담임교사">
@@ -895,7 +897,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
   <div class="body">
     <div class="tags"><span class="tag now">학년말 대조 시점</span><span class="tag">수기 수정 필요</span></div>
     <h3>학생부 이수시간과 누가기록 이수시간 합계 대조·수정</h3>
-    <p class="src"><button type="button" class="srcbtn" data-page="18" title="원문 p.644 열기">원문 p.644</button></p>
+    <p class="src"><button type="button" class="srcbtn" data-page="18" title="원문 p.644 열기">원문 p.644</button><span class="tag">2026.5.29. 기능개선 16-1, 16-2</span></p>
     <p class="desc">{ 학생부자료기록 }의 '학생부이수시간'은 누가기록 시간을 더한 값이 아니라 시간표와 출결로 자동 계산되는 값이므로 두 값이 어긋날 수 있다. 반변경 학생, 위탁학생, 수학여행 미참여 학생처럼 사정이 다른 학생이 있으면 특히 그렇다. <strong>학년말에 '학생부자료기록'의 이수시간과 '누가기록'의 누가기록 이수시간 합계를 반드시 대조 ･ 확인하여 일치시켜야 한다.</strong></p>
     <div class="w6">
       <dl><dt>언제?</dt><dd>학기말·학년말 학생부 자료 기록을 마무리하는 시점, 누가기록과 출결마감이 끝난 뒤 수시로 확인함.</dd></dl>
@@ -905,6 +907,7 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
       <dl class="why"><dt>왜?</dt><dd>학생이 실제로 참여해 이수한 시간만 학교생활기록부에 남도록 하여, 참여하지 않은 활동시간이 인정되거나 참여한 시간이 빠지는 것을 막으려고.</dd></dl>
     </div>
 <div class="memo"><h4>이수시간이 계산되는 방식</h4><ul><li>이수시간 반영 시 <b>'이수시간기준일'을 설정하지 않으면 현재 시스템 일자로 반영</b>됨.</li><li>'이수시간'은 누가기록의 시간이 합산되는 것이 아니라 [교육과정-시간표관리-전체시간표관리]에서 자율 ･ 자치활동(자율활동)으로 등록된 시수와 [교육과정-학사일정관리]의 { 행사코드관리 } 탭에서 '학생부 특별활동'이 '자율 ･ 자치활동(자율활동)'으로 등록된 행사가 전체시간표관리에 등록된 시수에 '이수시간기준일'까지 학생의 일일출결현황에 따라 자동 계산됨(자율 ･ 자치활동(자율활동)과 진로활동의 내용이 같음).</li><li>창의적 체험활동의 영역별 이수시간은 정규교육과정 내에서 실시한 학년 ･ 학급 단위의 활동시간을 기준으로, 본인이 실제로 참여하여 이수한 시간을 입력함.</li><li><b>학년말에 '학생부자료기록'의 이수시간과 '누가기록'의 누가기록 이수시간 합계를 반드시 대조 ･ 확인하여 일치</b>시키도록 함.</li></ul></div><div class="memo" style="margin-top:12px"><h4>값이 어긋나는 대표 사례</h4><ul><li>학기중 반변경 학생 또는 위탁학생, 학적변동자(반변경, 전입 등)의 경우 학생부 이수시간과 누가기록 이수시간 합계가 다를 수 있으니 확인하여 수기 입력함.</li><li>반 변경한 학생은 { 학생부자료기록 } 탭에서 <b>반 변경 이전의 이수시간만 자동으로 계산</b>되므로, 반 변경 이전과 반 변경 후의 이수시간을 수기로 합산하여 등록함.</li><li>누가기록을 먼저 등록하고 나중에 결석처리를 한 경우 기존에 등록된 누가기록은 <b>자동으로 삭제되지 않고 수동으로 삭제</b>해야 함.</li><li>특정 학생만 특정 일자가 조회되지 않으면, 해당 반 강의실에 '자율 ･ 자치활동(자율활동)' 시간표가 등록되어 있는지와 수강학생편성여부를 확인함. 정상 편성되어 있다면 그 일자에 결석(과)을 한 경우이거나 해당 교시 출석상태에 '/' 표시가 되어 있어 조회되지 않음.</li><li>수학여행 미참여 학생에 대한 창의적 체험활동 계획이 별도로 마련되지 않은 경우에는 { 누가기록 } 탭에 입력하지 않으며, 등교한 학생은 출석이 인정되어 두 값이 일치하지 않으므로 해당 학생의 이수시간을 확인하여 수동으로 수정해야 함.</li></ul></div>
+<div class="memo" style="margin-top:12px"><h4>누가기록을 입력하지 않은 경우 (2026.5.29. 기능개선, 전학년)</h4><ul><li><b>창의적 체험활동 누가기록은 자율입력이므로, 자율･자치활동･동아리활동･진로활동의 누가기록을 입력하지 않았으면 학교생활기록부 자료검증에서 누가기록 합산 시수와 학생부 이수시간 합산 시수 비교 검증이 제외됨.</b> 누가기록을 입력한 경우에는 이 카드의 대조가 그대로 필요함.</li></ul></div>
   <p class="cardnav"><a href="#timeline">타임라인으로 돌아가기</a></p></div>
 </article>
 <article class="task" id="t17" data-num="17" data-stage="E" data-when="수시확인" data-who="학급담임교사">
