@@ -8,6 +8,7 @@ Part 1~9로 나뉜 나이스 업무 타임라인 문서 53편, 업무카드 632�
 /
 ├─ index.html          허브 (Part 목록 + 검색)
 ├─ manifest.js         Part 구성과 문서 목록
+├─ map-links.js        카드 → 나이스 지도 항목 연결 자료(neismap 저장소 스크립트가 만듦)
 ├─ pages/              타임라인 · FAQ html 원본 (53편, 아래 목록 참고)
 ├─ templates/          복사해서 쓰는 FAQ 틀
 │   └─ 나이스_FAQ_모음_v1.html
@@ -16,7 +17,8 @@ Part 1~9로 나뉜 나이스 업무 타임라인 문서 53편, 업무카드 632�
 │   ├─ patch_pages.py         pages 문서에 복귀 링크·앞뒤 이동 막대를 넣는 스크립트
 │   ├─ patch_sitebar_rail.py  전역 상단바(검색·Part 이동)와 왼쪽 세로 타임라인을 넣는 스크립트
 │   ├─ patch_handout.py       연수자료 뽑기(카드 골라 A4 인쇄)를 넣는 스크립트
-│   └─ patch_wall_link.py     문서 상단바에 카드 벽 링크를 넣는 스크립트
+│   ├─ patch_wall_link.py     문서 상단바에 카드 벽 링크를 넣는 스크립트
+│   └─ patch_map_link.py      카드 끝에 '나이스 지도에서 보기' 링크를 넣는 스크립트
 ├─ checklist.md
 ├─ context-notes.md
 ├─ review-checklist.md   원문 PDF와 카드를 대조하는 검수 절차와 Part별 진행 현황

@@ -491,6 +491,14 @@ body.hoselect .task.hoon .gutter{background:var(--dropout)}
 .wall-link:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
 .sitenav .bar{gap:0}
 /* == walllink:end == */
+/* == maplink:begin == */
+.maplinks{display:flex;flex-wrap:wrap;gap:6px 14px;margin:14px 0 0;padding-top:10px;border-top:1px solid var(--rule-soft);font-size:12.5px}
+.maplinks a{color:var(--mark);text-decoration:none;border-bottom:1px solid var(--mark);word-break:keep-all;overflow-wrap:normal;hyphens:none}
+.maplinks a:hover{border-bottom-width:2px}
+.maplinks a:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+.cardnav{margin-top:10px}
+@media print{.maplinks{display:none}}
+/* == maplink:end == */
 </style>
 </head>
 <body>
@@ -1184,5 +1192,25 @@ document.addEventListener('keydown', function(e){
 });
 })();
 </script>
-<!-- handout:end --></body>
+<!-- handout:end --><!-- maplink:begin -->
+<script src="../map-links.js"></script>
+<script>
+(function(){
+  var M = window.MAP_LINKS; if(!M) return;
+  var f = decodeURIComponent(location.pathname.split('/').pop());
+  var here = M.cards[f]; if(!here) return;
+  var esc = function(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+  document.querySelectorAll('article.task').forEach(function(a){
+    var list = here[a.id], body = a.querySelector('.body'); if(!list || !body) return;
+    var nav = body.querySelector('.cardnav');
+    var box = document.createElement('p'); box.className = 'maplinks';
+    box.innerHTML = list.map(function(x){
+      return '<a href="' + M.base + 'part' + x[0] + '#' + encodeURIComponent(x[1]) + '" target="_blank" rel="noopener" title="나이스 지도 Part ' + x[0] + ' ' + esc(M.parts[x[0]]) + ' · ' + esc(x[3]) + '">나이스 지도에서 보기 · ' + esc(M.parts[x[0]]) + ' › ' + esc(x[2]) + ' ↗</a>';
+    }).join('');
+    body.insertBefore(box, nav);
+  });
+})();
+</script>
+<!-- maplink:end -->
+</body>
 </html>
